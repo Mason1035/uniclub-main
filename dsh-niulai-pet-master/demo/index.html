@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>牛来桌宠 · 在线试玩 — dsh-niulai-pet</title>
+<meta name="description" content="任务一完成，它就蹦出来喊「妈」——DeepSeek Harness 桌宠插件的在线试玩页，同一套代码，免安装。">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    min-height:100vh; overflow:hidden; color:#fff;
+    font-family:'Noto Sans CJK SC','PingFang SC','Microsoft YaHei',system-ui,sans-serif;
+    background:
+      radial-gradient(700px 460px at 85% 80%, rgba(240,168,48,.10), transparent 65%),
+      radial-gradient(800px 500px at 10% 0%, rgba(64,110,255,.10), transparent 60%),
+      #0d1126;
+  }
+  .hero {
+    position:fixed; left:50%; top:40%; transform:translate(-50%,-50%);
+    text-align:center; color:rgba(255,255,255,.35); pointer-events:none; width:90%;
+  }
+  .hero h1 { font-size:28px; color:rgba(255,255,255,.75); margin-bottom:10px; font-weight:800; }
+  .hero p { font-size:15px; line-height:1.8; }
+  .links {
+    position:fixed; left:16px; bottom:14px; z-index:99998;
+    font-size:13px; color:rgba(255,255,255,.45);
+  }
+  .links a { color:#f0a830; text-decoration:none; }
+  @media (max-width:640px) {
+    .hero h1 { font-size:22px; }
+  }
+</style>
+</head>
+<body>
+  <div class="hero">
+    <h1>牛来桌宠 · 在线试玩</h1>
+    <p>戳右下角那头牛逗它，右键它开菜单（手机长按）换皮肤<br>点左上角「跑一个任务」——完成的那一刻，听它喊妈<br>右上角 🛫 一起飞、👪 全家福列队<br>做了自定义角色包？把 .nlpack.zip 拖进本页直接试玩（没有包？下个<a href="https://github.com/whitefirer/dsh-niulai-pet/raw/master/docs/assets/robot.nlpack.zip">示例包</a>试试）</p>
+  </div>
+  <div class="links">
+    <a href="https://github.com/whitefirer/dsh-niulai-pet">开源仓库</a> ·
+    <a href="https://whitefirer.org/posts/2026/08/19/dsh-niulai-pet/">制作全过程</a> ·
+    dsh 插件版一行安装
+  </div>
+  <script src="./niulai-standalone.js"></script>
+  <!-- 访问计数（hits.sh）：1px 隐身 img，加载即计数，不可见 -->
+  <img src="https://hits.sh/whitefirer.org/niulai-pet/?style=flat-square&label=&color=D97757&labelColor=1f2937&logo=googleanalytics&logoColor=white" alt="" aria-hidden="true" style="position:absolute;width:1px;height:1px;opacity:0;clip:rect(0 0 0 0);pointer-events:none">
+</body>
+</html>

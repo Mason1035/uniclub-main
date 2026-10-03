@@ -1,0 +1,3 @@
+#!/bin/bash
+cd /var/user
+exec /var/lang/node18/bin/node src/app.js

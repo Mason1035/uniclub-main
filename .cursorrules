@@ -1,0 +1,133 @@
+# Cursor AI Rules for Uniclub Project
+
+## Project Context
+This is a React + Node.js full-stack application for a university club platform.
+- **Frontend:** React 18 + TypeScript + Vite (port 8081)
+- **Backend:** Express + MongoDB (port 5000)
+- **Platform:** Primarily developed on Windows with PowerShell
+
+## Development Environment
+
+### Windows Development (Primary)
+When starting/stopping servers on Windows, ALWAYS use:
+```powershell
+npm run start:win  # Start both servers
+npm run stop:win   # Stop servers
+npm run check:ports # Check server status
+```
+
+Never suggest using `&&` in PowerShell commands - use `;` instead.
+
+### Server Management Rules
+1. **Before starting servers**: Suggest `npm run check:ports` to verify ports are free
+2. **Port conflicts**: Suggest `npm run stop:win` or `npm run kill:all`
+3. **Server logs**: Remind users to check separate terminal windows (BACKEND SERVER / FRONTEND SERVER)
+4. **Background processes**: Always verify servers are running with `npm run check:ports`
+
+## Code Style
+- TypeScript for frontend
+- Functional components with hooks
+- Tailwind CSS for styling
+- shadcn/ui components
+- ESLint configured
+
+## File Structure
+- `src/` - Frontend React code
+- `uniclub-backend/` - Backend Express code
+- `scripts/` - PowerShell automation scripts (Windows)
+- `public/` - Static assets
+
+## Common Tasks
+
+### Starting Development
+```powershell
+npm run start:win
+```
+
+### Checking Status
+```powershell
+npm run check:ports
+```
+
+### Stopping Servers
+```powershell
+npm run stop:win
+```
+
+### Emergency Reset
+```powershell
+npm run kill:all
+Start-Sleep -Seconds 3
+npm run start:win
+```
+
+## Documentation References
+- Windows Setup: `WINDOWS_SETUP.md`
+- Quick Start: `QUICK_START_WINDOWS.md`
+- General README: `README.md`
+- API Docs: `API_DOCUMENTATION.md`
+
+## Important Notes
+1. Backend must be running on port 5000 for frontend to work
+2. CORS is configured for localhost:8080, 8081, 8082
+3. MongoDB connection required (check .env file)
+4. All API routes use `/api/` prefix
+
+## When User Reports Server Issues
+1. First ask them to run: `npm run check:ports`
+2. If ports are blocked: `npm run stop:win`
+3. Then start fresh: `npm run start:win`
+4. If still stuck: `npm run kill:all` then retry
+
+## PowerShell Syntax Reminders
+- Use `;` not `&&` for command chaining
+- Use `Get-NetTCPConnection` not `netstat` for port checking
+- Use `Stop-Process` not `kill` for stopping processes
+- Use `$env:VAR` not `$VAR` for environment variables
+
+## Never Suggest
+- Using `&&` in PowerShell commands
+- Running servers without port cleanup
+- Manually typing long PowerShell commands (we have scripts!)
+- Using bash syntax on Windows
+
+## Always Suggest
+- Using `npm run start:win` for Windows development
+- Checking `WINDOWS_SETUP.md` for detailed troubleshooting
+- Using `npm run check:ports` to diagnose issues
+- Opening separate terminals for backend/frontend when manual control needed
+
+## News Curation
+
+### When User Asks to Run News Curation
+Windows (Recommended):
+```powershell
+npm run curate:win           # One-time run, exits when done
+npm run curate:win:verbose   # Verbose output for debugging
+```
+
+Linux/Mac:
+```bash
+npm run curate:news
+npm run curate:news:verbose
+```
+
+### Important Notes
+- `npm run curate:win` runs ONCE and exits (for development) ✅
+- `npm run curate:daemon` runs FOREVER as background job (for production only) ❌
+- Never suggest `npm run daily-curator` (legacy name for daemon)
+- Curation fetches new articles from News API and curates with AI
+- Requires: NEWS_API_KEY and ANTHROPIC_API_KEY in .env
+
+### Production Setup
+For production servers, use daemon:
+```bash
+npm run curate:daemon  # Runs at midnight daily
+```
+Or integrate into main server (see NEWS_CURATION_GUIDE.md)
+
+### Troubleshooting
+- Detailed guide: `NEWS_CURATION_GUIDE.md`
+- If user reports "stuck terminal" - they ran daemon instead of one-time script
+- Solution: Press Ctrl+C, then use `npm run curate:win`
+

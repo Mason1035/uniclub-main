@@ -1,0 +1,29 @@
+[Unit]
+Description=ClassHub API
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=classhub
+Group=classhub
+WorkingDirectory=/opt/classhub/current/uniclub-backend
+EnvironmentFile=/opt/classhub/shared/backend.env
+ExecStart=/usr/bin/node index.js
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/classhub/shared
+MemoryHigh=450M
+MemoryMax=650M
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=classhub
+
+[Install]
+WantedBy=multi-user.target

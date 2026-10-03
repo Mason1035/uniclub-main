@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="320" viewBox="0 0 300 320">
+<g transform="translate(150 170) scale(1.1) translate(-150 -170)">
+  <!-- 耳朵 -->
+  <circle cx="90" cy="64" r="27" fill="#453D3F"/>
+  <circle cx="210" cy="64" r="27" fill="#453D3F"/>
+  <!-- 手臂(身体两侧) -->
+  <ellipse cx="48" cy="196" rx="20" ry="38" fill="#453D3F" transform="rotate(20 48 196)"/>
+  <ellipse cx="252" cy="196" rx="20" ry="38" fill="#453D3F" transform="rotate(-20 252 196)"/>
+  <!-- 圆身体(头身一体) -->
+  <ellipse cx="150" cy="176" rx="100" ry="118" fill="#FDFBF6" stroke="#37302F" stroke-width="5"/>
+  <!-- 脚 -->
+  <ellipse cx="106" cy="288" rx="30" ry="18" fill="#453D3F"/>
+  <ellipse cx="194" cy="288" rx="30" ry="18" fill="#453D3F"/>
+  <!-- 眼罩 -->
+  <ellipse cx="114" cy="132" rx="21" ry="27" fill="#453D3F" transform="rotate(16 114 132)"/>
+  <ellipse cx="186" cy="132" rx="21" ry="27" fill="#453D3F" transform="rotate(-16 186 132)"/>
+  <!-- 鼻子 -->
+  <path d="M141 156 Q150 150 159 156 Q157 167 150 169 Q143 167 141 156 Z" fill="#37302F"/>
+  <!-- 嘴 -->
+  <path d="M136 176 Q143 183 150 177 Q157 183 164 176" fill="none" stroke="#37302F" stroke-width="4" stroke-linecap="round"/>
+  <!-- 腮红 -->
+  <ellipse cx="94" cy="170" rx="10" ry="7" fill="#F4A7BC" opacity="0.5"/>
+  <ellipse cx="206" cy="170" rx="10" ry="7" fill="#F4A7BC" opacity="0.5"/>
+  <!-- 竹子(斜靠在右臂上) -->
+  <line x1="238" y1="164" x2="266" y2="242" stroke="#86C86F" stroke-width="15" stroke-linecap="round"/>
+  <line x1="241.2" y1="194.9" x2="256.8" y2="189.1" stroke="#5FA352" stroke-width="3" stroke-linecap="round"/>
+  <line x1="248.3" y1="219.5" x2="263.9" y2="213.7" stroke="#5FA352" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="232" cy="152" rx="13" ry="6.5" fill="#79BE66" transform="rotate(-38 232 152)"/>
+  <ellipse cx="250" cy="156" rx="11" ry="5.5" fill="#79BE66" transform="rotate(18 250 156)"/>
+  <!--EYES-->
+  <path d="M104 133 Q117 117 130 133" fill="none" stroke="#FDFBF6" stroke-width="5" stroke-linecap="round"/>
+  <path d="M170 133 Q183 117 196 133" fill="none" stroke="#FDFBF6" stroke-width="5" stroke-linecap="round"/>
+  <!--/EYES-->
+</g>
+</svg>

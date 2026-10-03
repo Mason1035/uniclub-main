@@ -1,0 +1,21 @@
+.account-settings-nav { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .2rem 1rem; padding-block: .75rem; margin: 1.5rem 0 2.5rem; border-block: 1px solid hsl(var(--line)); }
+.account-settings-nav a { display: flex; align-items: center; gap: .6rem; min-height: 44px; font-size: .875rem; color: hsl(var(--ink-muted)); }
+.account-settings-nav a:hover, .account-settings-nav a:focus-visible { color: hsl(var(--action)); }
+.account-section { min-width: 0; margin-bottom: 3rem; scroll-margin-top: 8rem; }
+.account-section-heading { display: flex; align-items: baseline; gap: .7rem; padding-bottom: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid hsl(var(--line)); }
+.account-section-heading h2 { font-size: 1.25rem; font-weight: 700; }
+.account-section-number { font: .75rem var(--font-mono); color: hsl(var(--ink-muted)); }
+.account-avatar { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.account-identity { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1rem; padding-block: 1rem; margin-bottom: 1.5rem; border-block: 1px solid hsl(var(--line)); }
+.account-identity dt { font-size: .8125rem; color: hsl(var(--ink-muted)); margin-bottom: .5rem; }
+.account-identity dd { overflow-wrap: anywhere; }
+.account-form-footer { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.account-form-footer p { font-size: .875rem; }
+.account-email-state { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.account-security-item { padding-block: 1.25rem; border-top: 1px solid hsl(var(--line)); }
+.account-notification-row { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; padding-block: 1.2rem; border-bottom: 1px solid hsl(var(--line)); }
+.account-notification-row > div { min-width: 0; }
+.account-notification-row label { font-size: .9375rem; font-weight: 600; }
+.account-notification-row p { margin-top: .3rem; font-size: .8125rem; color: hsl(var(--ink-muted)); }
+.account-password-dialog, .account-avatar-dialog { max-height: calc(100dvh - 2rem); overflow-y: auto; }
+@media (max-width: 480px) { .account-settings-nav { grid-template-columns: repeat(2,minmax(0,1fr)); } .account-avatar { gap: 1rem; } .account-identity { grid-template-columns: minmax(0,1fr); } }

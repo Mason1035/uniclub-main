@@ -1,0 +1,18 @@
+{
+  "date": "2026-09-30",
+  "framework": "Vite 5 / React 18 / TypeScript",
+  "tailwind": "3.4",
+  "ui": "shadcn/ui + Radix",
+  "router": "react-router-dom 6",
+  "tokens": "HSL triplets mapped to semantic variables",
+  "source": "/Users/alexmason/Desktop/uniclub-main",
+  "mode": "multi-page redesign",
+  "preserved": [
+    "routes",
+    "APIs",
+    "auth",
+    "permissions",
+    "moderation"
+  ],
+  "fonts": "Self-hosted Unicode-subset Noto Sans SC / Noto Serif SC, OFL"
+}

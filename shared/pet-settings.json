@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "defaults": {
+    "petEnabled": true,
+    "petSkin": "panda",
+    "petSize": 120,
+    "petOpacity": 1,
+    "petMuted": false,
+    "petVolume": 35,
+    "petTalkative": true,
+    "petWalkable": true,
+    "petHue": 0,
+    "petPokeAction": "hops",
+    "petCelebrateAction": "signature",
+    "petInteractive": true,
+    "petPageMessages": true,
+    "petActivity": "normal"
+  },
+  "skins": ["panda", "whale", "niulai", "orig", "young", "nailong", "cat", "dagou", "xiaonailong"],
+  "actions": ["signature", "fly", "dance", "spin", "hops", "roll", "breach", "sway", "random"],
+  "activities": ["quiet", "normal", "active"],
+  "ranges": {
+    "petSize": [72, 200],
+    "petOpacity": [0.2, 1],
+    "petVolume": [0, 100],
+    "petHue": [0, 360]
+  }
+}

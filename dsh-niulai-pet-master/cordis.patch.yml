@@ -1,0 +1,14 @@
+# dsh-niulai-pet bundle patch
+#
+# 通过官方 CLI 安装时 ——
+#
+#   dsh plugin --profile <name> add github:whitefirer/dsh-niulai-pet
+#
+# —— 该命令把本包装进 profile 的 dependencies，并把 `dsh-niulai-pet`
+# 追加进 `dsh.profile.bundles` 层栈；profile 启动时把下面的 insert 行
+# 合并进 cordis 树。host 半是空插件（index.js），桌宠全部由 client 半
+# （lib/client.js）在浏览器里挂载。
+- insert:
+    - id: niulai-pet
+      name: 'dsh-niulai-pet'
+      config: {}

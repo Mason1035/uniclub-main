@@ -1,0 +1,12 @@
+{
+  "notifications": {
+    "announcements": true,
+    "activities": true,
+    "fees": true,
+    "materials": true,
+    "news": false,
+    "browser": false
+  },
+  "limits": { "displayName": 30, "bio": 200, "email": 254, "passwordMin": 8, "passwordBytesMax": 72 },
+  "emailPattern": "^\\w+([.-]?\\w+)*@\\w+([.-]?\\w+)*(\\.\\w{2,})+$"
+}

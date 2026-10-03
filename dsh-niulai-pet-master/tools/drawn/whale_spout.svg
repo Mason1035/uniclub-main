@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="300" viewBox="0 0 380 300">
+  <defs>
+    <clipPath id="bodyclip">
+      <path d="M 345 155 C 350 122 330 92 295 84 C 255 72 205 74 170 88 C 140 99 112 108 96 120 L 101 138 C 112 168 145 205 190 220 C 240 240 300 233 330 202 C 345 185 350 170 345 155 Z"/>
+    </clipPath>
+  </defs>
+  <g transform="translate(195 140) scale(1.12) translate(-195 -140)">
+    <!-- 尾鳍双叶(大张: 一叶左展一叶上翘, 根部被尾柄盖住) -->
+    <path d="M 98 120 C 82 120 60 114 44 100 C 36 92 38 80 46 77 C 64 82 82 94 96 106 Z" fill="#4D6BFE" stroke="#37302F" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M 101 118 C 96 98 96 72 105 54 C 109 45 119 43 123 49 C 129 67 125 93 113 112 Z" fill="#4D6BFE" stroke="#37302F" stroke-width="5" stroke-linejoin="round"/>
+    <!-- 背鳍小凸起 -->
+    <ellipse cx="175" cy="83" rx="13" ry="8" fill="#4D6BFE" stroke="#37302F" stroke-width="5" transform="rotate(-10 175 83)"/>
+    <!-- 小胸鳍(下半露出腹缘) -->
+    <ellipse cx="225" cy="222" rx="22" ry="10" fill="#3A54E6" stroke="#37302F" stroke-width="4.5" transform="rotate(25 225 222)"/>
+    <!-- 身体: 短胖圆, 头大, 尾柄短, 头右尾左 -->
+    <path d="M 345 155 C 350 122 330 92 295 84 C 255 72 205 74 170 88 C 140 99 112 108 96 120 L 101 138 C 112 168 145 205 190 220 C 240 240 300 233 330 202 C 345 185 350 170 345 155 Z" fill="#4D6BFE" stroke="#37302F" stroke-width="5" stroke-linejoin="round"/>
+    <!-- 白色腹部 swoosh: 尾部细, 中部宽, 头部上扬收尖 -->
+    <path d="M 98 134 C 112 164 146 200 192 214 C 238 227 296 220 328 194 C 338 184 344 172 347 158 L 350 252 L 95 252 Z" fill="#F2F6FF" clip-path="url(#bodyclip)"/>
+    <!-- 虎鲸眼斑(眼睛后上方白色椭圆斑) -->
+    <ellipse cx="274" cy="110" rx="19" ry="11.5" fill="#F2F6FF" transform="rotate(-20 274 110)"/>
+    <!-- 喷气孔 -->
+    <ellipse cx="305" cy="95" rx="5.5" ry="3.5" fill="#37302F"/>
+    <g stroke="#A8D9F6" fill="none" stroke-linecap="round">
+      <path d="M 305 93 C 304 78 302 62 300 48" stroke-width="9"/>
+      <path d="M 301 54 C 293 44 285 38 277 34" stroke-width="8"/>
+      <path d="M 302 52 C 310 42 318 36 326 32" stroke-width="8"/>
+    </g>
+    <circle cx="271" cy="30" r="5" fill="#A8D9F6"/>
+    <circle cx="332" cy="26" r="5.5" fill="#A8D9F6"/>
+    <circle cx="301" cy="22" r="4.5" fill="#A8D9F6"/>
+    <!--EYES-->
+    <ellipse cx="298" cy="140" rx="11" ry="13" fill="#37302F"/>
+    <circle cx="294" cy="135" r="4" fill="#FFFFFF"/>
+    <circle cx="302" cy="146" r="2" fill="#FFFFFF"/>
+    <!--/EYES-->
+    <!-- 微笑 -->
+    <path d="M 310 166 Q 321 173 333 168" fill="none" stroke="#37302F" stroke-width="4.5" stroke-linecap="round"/>
+    <!-- 腮红 -->
+    <ellipse cx="282" cy="162" rx="8" ry="6" fill="#F4A7BC" opacity="0.5"/>
+  </g>
+</svg>

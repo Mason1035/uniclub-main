@@ -1,0 +1,17 @@
+# Prevent nodemon from restarting during curation processes
+manual-curation.js
+jobs/midnightCuration.js
+
+# Ignore log files that might be created during curation
+*.log
+logs/
+curation-*.json
+
+# Ignore temporary files created during article processing
+temp/
+tmp/
+*.tmp
+
+# Ignore uploaded media files
+uploads/
+public/uploads/ 

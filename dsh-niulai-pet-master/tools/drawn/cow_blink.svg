@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="340" viewBox="0 0 300 340">
+<g transform="translate(150 168) scale(1.09) translate(-150 -168)">
+  <!-- 腿(深色短桩) -->
+  <rect x="105" y="296" width="38" height="30" rx="14" fill="#453D3F"/>
+  <rect x="157" y="296" width="38" height="30" rx="14" fill="#453D3F"/>
+  <!-- 身体 -->
+  <ellipse cx="150" cy="232" rx="86" ry="76" fill="#FDFBF6" stroke="#37302F" stroke-width="5"/>
+  <ellipse cx="200" cy="238" rx="33" ry="42" fill="#453D3F" transform="rotate(-15 200 238)"/>
+  <ellipse cx="99" cy="262" rx="25" ry="30" fill="#453D3F" transform="rotate(12 99 262)"/>
+  <!-- 耳朵 外撇 -->
+  <ellipse cx="50" cy="96" rx="34" ry="17" fill="#FDFBF6" stroke="#37302F" stroke-width="5" transform="rotate(-35 50 96)"/>
+  <ellipse cx="50" cy="96" rx="18" ry="8" fill="#F6BECB" transform="rotate(-35 50 96)"/>
+  <ellipse cx="250" cy="96" rx="34" ry="17" fill="#FDFBF6" stroke="#37302F" stroke-width="5" transform="rotate(35 250 96)"/>
+  <ellipse cx="250" cy="96" rx="18" ry="8" fill="#F6BECB" transform="rotate(35 250 96)"/>
+  <!-- 头 -->
+  <ellipse cx="150" cy="115" rx="78" ry="68" fill="#FDFBF6" stroke="#37302F" stroke-width="5"/>
+  <!-- 小牛角(画在头上层, 根部被刘海压住) -->
+  <ellipse cx="100" cy="48" rx="10" ry="16" fill="#EBDCC0" stroke="#37302F" stroke-width="5" transform="rotate(-22 100 48)"/>
+  <ellipse cx="200" cy="48" rx="10" ry="16" fill="#EBDCC0" stroke="#37302F" stroke-width="5" transform="rotate(22 200 48)"/>
+  <!-- 额头刘海斑块(避开眼睛) -->
+  <path d="M95 62 C110 52 130 48 150 48 C170 48 190 52 205 62 C200 72 192 68 186 76 C180 84 170 80 164 86 C158 91 152 88 150 90 C148 88 142 91 136 86 C130 80 120 84 114 76 C108 68 100 72 95 62 Z" fill="#453D3F"/>
+  <!-- 腮红 -->
+  <ellipse cx="88" cy="140" rx="9" ry="6.5" fill="#F4A7BC" opacity="0.5"/>
+  <ellipse cx="212" cy="140" rx="9" ry="6.5" fill="#F4A7BC" opacity="0.5"/>
+  <!-- 鼻吻 -->
+  <ellipse cx="150" cy="162" rx="50" ry="33" fill="#F8CCD5" stroke="#37302F" stroke-width="5"/>
+  <ellipse cx="131" cy="158" rx="5.5" ry="7.5" fill="#D08397"/>
+  <ellipse cx="169" cy="158" rx="5.5" ry="7.5" fill="#D08397"/>
+  <path d="M139 179 Q150 187 161 179" fill="none" stroke="#37302F" stroke-width="4" stroke-linecap="round"/>
+  <!--EYES-->
+  <path d="M108 115 Q121 99 134 115" fill="none" stroke="#37302F" stroke-width="5" stroke-linecap="round"/>
+  <path d="M166 115 Q179 99 192 115" fill="none" stroke="#37302F" stroke-width="5" stroke-linecap="round"/>
+  <!--/EYES-->
+</g>
+</svg>

@@ -1,0 +1,5 @@
+export default function FilterToolbar({ options, value, onChange, onBeforeChange, count, label = '分类筛选' }: { options: Array<string | { value: string; label: string }>; value: string; onChange: (value: string) => void; onBeforeChange?: () => void; count?: number; label?: string }) {
+  const change = (next: string) => { onBeforeChange?.(); onChange(next); };
+  const first = typeof options[0] === 'string' ? options[0] : options[0]?.value;
+  return <div className="filter-bar"><div className="filter-options" role="group" aria-label={label}>{options.map(option => { const id = typeof option === 'string' ? option : option.value; const name = typeof option === 'string' ? option : option.label; return <button key={id} className="filter-option" aria-pressed={value === id} onClick={() => change(id)}>{name}</button>; })}</div>{value !== first && <button className="text-link text-sm min-h-11" onClick={() => change(first)}>清空筛选</button>}{count !== undefined && <span className="result-count" role="status">{count} 条结果</span>}</div>;
+}

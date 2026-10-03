@@ -1,0 +1,221 @@
+/* Theme fonts are bundled in /fonts/fonts.css; avoid blocking on external CSS. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom animations for comments system */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 210 11% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 210 11% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 11% 15%;
+
+    --primary: 142 69% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 11% 96%;
+    --secondary-foreground: 210 11% 15%;
+
+    --muted: 210 11% 96%;
+    --muted-foreground: 210 11% 46%;
+
+    --accent: 142 69% 58%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 142 69% 58%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 220 100% 2%;
+    --foreground: 213 31% 91%;
+
+    --card: 220 100% 2%;
+    --card-foreground: 213 31% 91%;
+
+    --popover: 220 100% 2%;
+    --popover-foreground: 213 31% 91%;
+
+    --primary: 142 69% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 100% 4%;
+    --secondary-foreground: 213 31% 91%;
+
+    --muted: 220 100% 4%;
+    --muted-foreground: 217 32% 65%;
+
+    --accent: 142 69% 58%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 213 31% 91%;
+
+    --border: 220 100% 4%;
+    --input: 220 100% 4%;
+    --ring: 142 69% 58%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground font-inter;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100%;
+    position: relative;
+  }
+
+  /* Hide scrollbars everywhere while keeping functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Apply to all scroll containers */
+  .overflow-x-auto,
+  .overflow-y-auto,
+  .overflow-auto {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .overflow-x-auto::-webkit-scrollbar,
+  .overflow-y-auto::-webkit-scrollbar,
+  .overflow-auto::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Global scrollbar hiding for all elements */
+  *::-webkit-scrollbar {
+    display: none;
+  }
+
+  * {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@layer utilities {
+  .font-sf {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  }
+  
+  .card-shadow {
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  }
+  
+  .card-shadow-hover {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  }
+
+  .glass-card {
+    @apply bg-white/95 backdrop-blur-sm border border-gray-100/80 shadow-sm;
+  }
+
+  .glass-card-hover {
+    @apply hover:bg-white hover:border-gray-200/80 hover:shadow-md;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .mobile-container {
+    @apply max-w-md mx-auto bg-background relative;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .animate-fade-up {
+    animation: fadeUp 0.3s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Add new utility classes for scroll behavior */
+  .overscroll-none {
+    overscroll-behavior: none;
+  }
+
+  .overscroll-contain {
+    overscroll-behavior: contain;
+  }
+}

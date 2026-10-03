@@ -1,0 +1,84 @@
+[
+  {
+    "date": "2026-09-30",
+    "macrostructure": "ecosystem-index",
+    "theme": "studied-DNA",
+    "source": "https://www.usehallmark.com/examples/riso-01/",
+    "navigation": "N6 newspaper-masthead",
+    "footer": "Ft4 compact-colophon",
+    "enrichment": "original SVG print sheets",
+    "brief": "ClassHub 中文班级网站全站重设计，保留真实业务接口。",
+    "critique": {
+      "P": 5,
+      "H": 5,
+      "E": 4,
+      "S": 5,
+      "R": 5,
+      "V": 4
+    },
+    "status": "implemented; synchronized to original; original TypeScript, ESLint, production build and browser smoke passed",
+    "validation": {
+      "widths": [
+        320,
+        375,
+        414,
+        768,
+        1280,
+        1440
+      ],
+      "realPageWidthChecks": 126,
+      "fixtureDetailWidthChecks": 30,
+      "authAndRegisterWidthChecks": 12,
+      "interactionChecks": 18,
+      "contrastPages": 40,
+      "textContrastChecks": 1540,
+      "runtimeErrors": 0,
+      "typecheck": "pass",
+      "eslint": "pass (zero warnings)",
+      "productionBuild": "pass",
+      "realData": "Local MongoDB: one approved resource; other content sections empty",
+      "fixtureScope": "Browser interception only; no fixture data written to MongoDB",
+      "screenshots": "/Users/alexmason/Documents/Codex/2026-09-26/users-alexmason-desktop-uniclub-main-src/outputs/redesign-checks",
+      "report": "/Users/alexmason/Documents/Codex/2026-09-26/users-alexmason-desktop-uniclub-main-src/outputs/UniClub前端重设计-实施与验收.md",
+      "postModalWidthChecks": 6,
+      "keyboardFileChooser": "Native filechooser opened with Enter at all six widths",
+      "originalBrowser": "8081; backend health 200; actual screenshots; zero runtime errors"
+    }
+  },
+  {
+    "id": "classhub-admin-ai-2026-10-03",
+    "date": "2026-10-03",
+    "target": "/admin/ai",
+    "macrostructure": "Workbench",
+    "theme": "existing ClassHub editorial Riso",
+    "navigation": "existing admin sidebar",
+    "footer": "existing admin shell",
+    "brief": "DeepSeek AI 助手：图片、结构化实时预览、人工确认发布、安全密钥管理",
+    "critique": {
+      "P": 4,
+      "H": 5,
+      "E": 4,
+      "S": 5,
+      "R": 5,
+      "V": 4
+    },
+    "status": "implemented locally",
+    "validation": {
+      "widths": [
+        320,
+        375,
+        414,
+        768,
+        1440
+      ],
+      "typecheck": "pass",
+      "eslint": "pass (modified frontend files)",
+      "productionBuild": "pass",
+      "backendAiTests": 13,
+      "streamingPreviewTests": 3,
+      "runtimeErrors": 0,
+      "browserScope": "AI route only; isolated fixtures; no publication into real database",
+      "realDeepSeek": "connection, text, PNG vision, JSON and SSE; synthetic inputs only"
+    }
+  }
+]

@@ -1,0 +1,31 @@
+/* Hallmark · genre: editorial · macrostructure: ecosystem-index · design-system: design.md · designed-as: app */
+/* Hallmark · pre-emit critique: P5 H5 E4 S5 R5 V4 */
+/* Hallmark · contrast-check: PASS · normal text >= 4.5:1 · large text >= 3:1 · input and focus >= 3:1 · verified light and dark */
+:root {
+  color-scheme: light;
+  --paper: 13 65% 89%; --paper-raised: 13 60% 93%; --paper-deep: 13 46% 84%;
+  --ink: 12 65% 10%; --ink-muted: 13 26% 34%; --line: 13 25% 65%; --line-strong: 13 27% 45%;
+  --cyan: 195 100% 32%; --action: 195 100% 26%; --action-hover: 195 100% 21%; --on-action: 20 70% 97%;
+  --yellow: 44 100% 44%; --magenta: 347 72% 53%; --error: 2 74% 34%; --success: 165 66% 24%;
+  --background: var(--paper); --foreground: var(--ink); --card: var(--paper-raised); --card-foreground: var(--ink);
+  --popover: var(--paper-raised); --popover-foreground: var(--ink); --primary: var(--action); --primary-foreground: var(--on-action);
+  --secondary: var(--paper-deep); --secondary-foreground: var(--ink); --muted: var(--paper-deep); --muted-foreground: var(--ink-muted);
+  --accent: var(--paper-deep); --accent-foreground: var(--ink); --destructive: var(--error); --destructive-foreground: var(--on-action);
+  --border: var(--line); --input: var(--line-strong); --ring: var(--action); --radius: .1875rem;
+  --font-display: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-body: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-reading: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  --space-1: .25rem; --space-2: .5rem; --space-3: .75rem; --space-4: 1rem; --space-6: 1.5rem; --space-8: 2rem; --space-12: 3rem; --space-16: 4rem;
+  --page-max: 78rem; --reading-max: 46rem; --page-gutter: clamp(1rem, 4vw, 3rem);
+  --text-small: .8125rem; --text-body: 1rem; --text-reading: 1.0625rem; --text-title: clamp(2rem, 4.8vw, 4rem); --text-hero: clamp(2.6rem, 6.2vw, 5.4rem);
+  --motion-fast: 160ms; --motion-panel: 240ms; --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --z-header: 30; --z-pet: 35; --z-bottom: 40; --z-overlay: 50;
+}
+.dark {
+  color-scheme: dark;
+  --paper: 13 30% 10%; --paper-raised: 13 24% 14%; --paper-deep: 13 22% 19%;
+  --ink: 14 56% 89%; --ink-muted: 15 26% 70%; --line: 13 17% 38%; --line-strong: 13 20% 54%;
+  --cyan: 191 78% 57%; --action: 191 73% 64%; --action-hover: 191 74% 73%; --on-action: 13 50% 10%;
+  --error: 4 80% 73%; --success: 163 54% 65%;
+}

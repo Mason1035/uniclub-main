@@ -1,0 +1,9 @@
+{
+  "name": "classhub-quantification-download",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/app.js",
+  "scripts": { "start": "node src/app.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": { "express": "5.1.0", "cos-nodejs-sdk-v5": "3.0.0" }
+}

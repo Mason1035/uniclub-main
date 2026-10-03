@@ -1,0 +1,2 @@
+import { Link } from 'react-router-dom';
+export default function SiteFooter() { return <footer className="site-footer"><div className="site-container footer-inner"><div><Link className="footer-name" to="/">ClassHub</Link><p>软件工程班级信息平台</p></div><nav aria-label="页脚导航"><Link className="text-link" to="/announcements">班级公告</Link><Link className="text-link" to="/resources">共享资源</Link><Link className="text-link" to="/settings">个人设置</Link></nav><p>记录日常，共享所学。</p></div></footer>; }

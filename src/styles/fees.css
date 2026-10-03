@@ -1,0 +1,34 @@
+.fee-page { min-width: 0; }
+.fee-workspace, .fee-admin-settings { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-8); }
+.fee-qr-desk { min-width: 0; padding-top: var(--space-6); border-top: 3px double hsl(var(--line-strong)); }
+.fee-submission-desk { min-width: 0; background: hsl(var(--paper-raised)); border: 1px solid hsl(var(--line)); padding: clamp(1rem, 3vw, 2rem); }
+.fee-page h2 { font: 800 1.25rem/1.5 var(--font-display); margin: 0 0 1.5rem; }
+.fee-image { display: block; width: 100%; height: auto; max-height: 32rem; object-fit: contain; }
+.fee-qr-image { max-width: 25rem; margin-inline: auto; }
+.fee-admin-qr { max-width: 18rem; max-height: 22rem; margin-inline: auto; }
+.fee-image-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 10rem; padding: 1rem; font-size: .875rem; text-align: center; color: hsl(var(--ink-muted)); }
+.fee-image-dialog { max-height: 90dvh; overflow-y: auto; }
+.fee-image-dialog .fee-image { max-height: 70dvh; }
+.fee-form { display: grid; gap: 1.5rem; }
+.fee-field-label { display: block; font-size: .8125rem; font-weight: 600; margin-bottom: .6rem; }
+.fee-file-control { position: relative; display: flex; align-items: center; justify-content: center; gap: .75rem; min-height: 5.5rem; padding: 1rem; border: 1px dashed hsl(var(--line-strong)); background: hsl(var(--paper)); cursor: pointer; }
+.fee-file-control input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.fee-file-control:focus-within { outline: 2px solid hsl(var(--action)); outline-offset: 3px; }
+.fee-file-control[aria-disabled="true"] { opacity: .6; cursor: not-allowed; }
+.fee-file-control[aria-disabled="true"] input { cursor: not-allowed; }
+.fee-hint { font-size: .8125rem; line-height: 1.8; color: hsl(var(--ink-muted)); }
+.fee-picker > .fee-hint { margin-top: .6rem; }
+.fee-selected-image { margin-top: 1rem; border: 1px solid hsl(var(--line)); padding: .75rem; }
+.fee-selected-image .fee-image { max-height: 22rem; }
+.fee-selected-image figcaption { margin-top: .75rem; font-size: .75rem; color: hsl(var(--ink-muted)); overflow-wrap: anywhere; }
+.fee-receipt { border-bottom: 1px solid hsl(var(--line)); padding-bottom: 1.5rem; margin-bottom: 1.5rem; }
+.fee-facts { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: .75rem 1rem; font-size: .875rem; line-height: 1.8; }
+.fee-facts dt { color: hsl(var(--ink-muted)); }
+.fee-facts dd { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.fee-notice { display: flex; align-items: flex-start; gap: .6rem; padding: 1rem; background: hsl(var(--paper-deep)); border-left: 3px solid hsl(var(--action)); font-size: .875rem; line-height: 1.7; }
+.fee-notice svg { flex-shrink: 0; margin-top: .15rem; }
+.fee-success, .fee-error { margin-top: 1rem; font-size: .875rem; line-height: 1.8; overflow-wrap: anywhere; }
+.fee-success { color: hsl(var(--success)); }
+.fee-error { color: hsl(var(--error)); }
+.fee-table-remark { display: block; min-width: 5rem; max-width: 14rem; overflow-wrap: anywhere; white-space: pre-wrap; }
+@media (min-width: 48rem) { .fee-workspace { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); } .fee-admin-settings { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); } }
