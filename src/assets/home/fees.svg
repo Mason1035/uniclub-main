@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none">
+  <defs>
+    <linearGradient id="edge" x1="47" y1="28" x2="132" y2="130" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFEEA4"/><stop offset=".48" stop-color="#FFC15C"/><stop offset="1" stop-color="#F58C46"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="38" y1="30" x2="106" y2="126" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFBD2"/><stop offset=".35" stop-color="#FFE991"/><stop offset=".72" stop-color="#FFD16B"/><stop offset="1" stop-color="#FFB64D"/>
+    </linearGradient>
+    <linearGradient id="recess" x1="44" y1="40" x2="101" y2="116" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ED9B19"/><stop offset=".52" stop-color="#FFC640"/><stop offset="1" stop-color="#FFE68A"/>
+    </linearGradient>
+    <radialGradient id="face" cx="0" cy="0" r="1" gradientTransform="translate(59 52) rotate(62) scale(91 71)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE98C"/><stop offset=".5" stop-color="#FFD04F"/><stop offset="1" stop-color="#FFAE2E"/>
+    </radialGradient>
+    <linearGradient id="symbol" x1="66" y1="38" x2="101" y2="110" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFDE2"/><stop offset=".5" stop-color="#FFF2BA"/><stop offset="1" stop-color="#FFE098"/>
+    </linearGradient>
+    <filter id="shadow" x="10" y="130" width="144" height="30" filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="4"/></filter>
+    <filter id="relief" x="-30%" y="-20%" width="170%" height="160%"><feDropShadow dx="1" dy="3" stdDeviation="1.4" flood-color="#C87814" flood-opacity=".28"/></filter>
+    <path id="yen" d="M57 40H69L81 62L93 40H105L87 71V76H103V85H87V92H103V101H87V115H75V101H59V92H75V85H59V76H75V71L57 40Z"/>
+  </defs>
+  <ellipse cx="86" cy="145" rx="43" ry="5" fill="#CF995D" opacity=".18" filter="url(#shadow)"/>
+  <!-- Offset back face forms the coin's solid, warm edge. -->
+  <g transform="rotate(28 79 77)">
+    <ellipse cx="91" cy="80" rx="48" ry="63" fill="url(#edge)"/>
+    <path d="M120 38C136 63 134 106 113 129" stroke="#FFD181" stroke-width="1.5" stroke-linecap="round" opacity=".6"/>
+    <ellipse cx="78" cy="76" rx="48" ry="63" fill="url(#rim)"/>
+    <ellipse cx="78" cy="76" rx="47" ry="62" stroke="#FFF7C7" stroke-width="1.2" opacity=".8"/>
+    <ellipse cx="78" cy="76" rx="39" ry="53" fill="url(#recess)"/>
+    <ellipse cx="79" cy="78" rx="37" ry="50" fill="url(#face)"/>
+    <path d="M38 65C39 39 57 16 77 15" stroke="#FFFDE6" stroke-width="2.5" stroke-linecap="round" opacity=".8"/>
+    <path d="M61 135C79 145 99 131 113 109" stroke="#FFE6A0" stroke-width="1.8" stroke-linecap="round" opacity=".65"/>
+    <g transform="translate(13 14) scale(.82 .8)" filter="url(#relief)">
+      <use href="#yen" transform="translate(2 3)" fill="#F2A33D"/>
+      <use href="#yen" fill="url(#symbol)" stroke="#FFF8D6" stroke-width=".8" stroke-linejoin="round"/>
+    </g>
+  </g>
+</svg>

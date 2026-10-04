@@ -1,0 +1,7 @@
+.privacy-page .reading-body { max-width: 68ch; margin-top: 1.5rem; }
+.privacy-page section + section { margin-top: 2rem; }
+.privacy-page h2 { font-family: var(--font-ui); font-size: var(--text-h3); font-weight: 650; line-height: 1.5; margin-bottom: .75rem; }
+.privacy-page p, .privacy-page li { font-family: var(--font-ui); font-size: .9375rem; line-height: 1.9; }
+.privacy-page p + p, .privacy-page li + li { margin-top: .75rem; }
+.privacy-page .reading-body > a { margin-top: 2rem; }
+.privacy-page #cookies { scroll-margin-top: 8rem; }

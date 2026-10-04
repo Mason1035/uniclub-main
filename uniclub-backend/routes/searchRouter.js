@@ -1,187 +1,24 @@
 const express = require('express');
+const authenticateToken = require('../middleware/auth');
+const { searchContent, MAX_QUERY_LENGTH } = require('../services/GlobalSearchService');
 const router = express.Router();
-const News = require('../models/News');
-const Event = require('../models/Event');
-const PastEvent = require('../models/PastEvent');
-const Resource = require('../models/Resource');
-const SocialPost = require('../models/SocialPost');
 
-// GET /api/search - global search across all content
-router.get('/', async (req, res) => {
+// Search is a member feature, just like its Header entry point. Reuse JWT
+// verification (including tokenVersion); never expose private snippets to guests.
+router.get('/', authenticateToken, async (req, res) => {
+  const q = req.query.q ?? '';
+  if (typeof q !== 'string' || q.length > MAX_QUERY_LENGTH) {
+    return res.status(400).json({ success: false, error: '请输入不超过 200 个字符的关键词。' });
+  }
+  res.set('Cache-Control', 'private, no-store');
   try {
-    const { q, limit = 20 } = req.query;
-    
-    if (!q || q.trim().length === 0) {
-      return res.json({
-        success: true,
-        results: []
-      });
-    }
-    
-    const searchQuery = q.trim();
-    const searchRegex = new RegExp(searchQuery, 'i');
-    const limitNum = parseInt(limit);
-    
-    // Search across all content types in parallel
-    const [news, upcomingEvents, pastEvents, resources, socialPosts] = await Promise.all([
-      // Search News
-      News.find({
-        $or: [
-          { title: searchRegex },
-          { description: searchRegex },
-          { category: searchRegex }
-        ]
-      })
-      .select('title description category thumbnail createdAt')
-      .limit(limitNum)
-      .sort({ createdAt: -1 }),
-      
-      // Search Upcoming Events
-      Event.find({
-        $or: [
-          { title: searchRegex },
-          { description: searchRegex },
-          { location: searchRegex }
-        ]
-      })
-      .select('title description date location poster')
-      .limit(limitNum)
-      .sort({ date: 1 }),
-      
-      // Search Past Events
-      PastEvent.find({
-        $or: [
-          { title: searchRegex },
-          { description: searchRegex },
-          { location: searchRegex }
-        ]
-      })
-      .select('title description date location imageUrl')
-      .limit(limitNum)
-      .sort({ date: -1 }),
-      
-      // Search Resources
-      Resource.find({
-        status: 'approved',
-        $or: [
-          { title: searchRegex },
-          { description: searchRegex },
-          { type: searchRegex },
-          { category: searchRegex },
-          { tags: searchRegex }
-        ]
-      })
-      .select('title description type category tags thumbnailUrl')
-      .limit(limitNum)
-      .sort({ downloadCount: -1, views: -1 }),
-      
-      // Search Social Posts
-      SocialPost.find({
-        $or: [
-          { content: searchRegex }
-        ]
-      })
-      .populate('author', 'name profile.avatar')
-      .select('content media createdAt')
-      .limit(limitNum)
-      .sort({ createdAt: -1 })
-    ]);
-    
-    // Format results with consistent structure
-    const results = [];
-    
-    // Add news results
-    news.forEach(item => {
-      results.push({
-        id: item._id,
-        type: 'News',
-        category: 'News',
-        title: item.title,
-        description: item.description,
-        thumbnail: item.thumbnail,
-        date: item.createdAt,
-        url: `/news/${item._id}`
-      });
-    });
-    
-    // Add upcoming events
-    upcomingEvents.forEach(item => {
-      results.push({
-        id: item._id,
-        type: 'Event',
-        category: 'Events',
-        title: item.title,
-        description: item.description,
-        thumbnail: item.poster,
-        date: item.date,
-        location: item.location,
-        url: `/event/${item._id}`
-      });
-    });
-    
-    // Add past events
-    pastEvents.forEach(item => {
-      results.push({
-        id: item._id,
-        type: 'Past Event',
-        category: 'Events',
-        title: item.title,
-        description: item.description,
-        thumbnail: item.imageUrl,
-        date: item.date,
-        location: item.location,
-        url: `/past-events`
-      });
-    });
-    
-    // Add resources
-    resources.forEach(item => {
-      results.push({
-        id: item._id,
-        type: item.type,
-        category: 'Resources',
-        title: item.title,
-        description: item.description,
-        thumbnail: item.thumbnailUrl,
-        tags: item.tags,
-        url: `/resource/${item._id}`
-      });
-    });
-    
-    // Add social posts
-    socialPosts.forEach(item => {
-      results.push({
-        id: item._id,
-        type: 'Post',
-        category: 'Social',
-        title: item.content.substring(0, 50) + (item.content.length > 50 ? '...' : ''),
-        description: item.content,
-        thumbnail: item.media && item.media.length > 0 ? item.media[0].url : null,
-        author: item.author,
-        date: item.createdAt,
-        url: `/social`
-      });
-    });
-    
-    // Sort by relevance (you can improve this with a scoring algorithm)
-    // For now, we'll keep them sorted by their original query order
-    
-    res.json({
-      success: true,
-      query: searchQuery,
-      count: results.length,
-      results: results.slice(0, limitNum)
-    });
-    
+    const result = await searchContent(q, { userId: req.user.userId, limit: req.query.limit });
+    return res.json({ success: true, query: q.trim(), ...result });
   } catch (error) {
-    console.error('Search error:', error);
-    res.status(500).json({ 
-      success: false,
-      error: 'Failed to perform search', 
-      details: error.message 
-    });
+    // No document bodies, credentials or database error details.
+    console.error('Global search failed:', error.name);
+    return res.status(500).json({ success: false, error: '搜索暂时不可用，请稍后重试。' });
   }
 });
 
 module.exports = router;
-

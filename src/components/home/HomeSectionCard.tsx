@@ -13,7 +13,7 @@ type Props = {
 };
 
 /** Presentation only: the existing queries and content cards own all behavior. */
-export default function HomeSectionCard({ kind, title, titleTone = 'ui', to, linkLabel, wide, children }: Props) {
+export default function HomeSectionCard({ kind, title, titleTone = 'editorial', to, linkLabel, wide, children }: Props) {
   const headingId = `home-${kind}-title`;
   return (
     <section className={`home-card home-card--${kind}${wide ? ' home-card--wide' : ''} home-section`} aria-labelledby={headingId}>

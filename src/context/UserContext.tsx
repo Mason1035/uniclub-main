@@ -1,6 +1,7 @@
 import { clearSession, readToken } from '../lib/session';
 import { UserContext, type User, type AuthUser } from './userContextState';
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useSyncExternalStore } from 'react';
+import { hasConsent, subscribeConsent } from '../lib/privacy/consent';
 
 const defaultUser: User = {
   id: '',
@@ -19,15 +20,29 @@ const defaultUser: User = {
   profileImage: null,
 };
 
+function readSavedAuthUser(): string | null {
+  try { return localStorage.getItem('authUser'); } catch { return null; }
+}
 
 
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
+  const preferencesAllowed = useSyncExternalStore(subscribeConsent, () => hasConsent('preferences'), () => false);
   const [user, setUser] = useState<User>(() => {
-    // Initialize from localStorage
-    const savedImage = localStorage.getItem('userProfileImage');
+    let savedImage: string | null = null;
+    if (hasConsent('preferences')) {
+      try { savedImage = localStorage.getItem('userProfileImage'); } catch { /* Fetch the avatar normally without a local cache. */ }
+    }
     return { ...defaultUser, profileImage: savedImage || null };
   });
+
+  useEffect(() => {
+    if (!preferencesAllowed || !hasConsent('preferences')) return;
+    try {
+      if (user.profileImage) localStorage.setItem('userProfileImage', user.profileImage);
+      else localStorage.removeItem('userProfileImage');
+    } catch { /* The displayed avatar does not depend on optional storage. */ }
+  }, [preferencesAllowed, user.profileImage]);
   
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -80,8 +95,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     void 0;
     
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      const savedAuthUser = localStorage.getItem('authUser');
+      const token = readToken();
+      const savedAuthUser = readSavedAuthUser();
       
       void 0;
       void 0;
@@ -206,12 +221,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             return updatedUser;
           });
 
-          // Store avatar in localStorage
-          if (avatarData) {
-            localStorage.setItem('userProfileImage', avatarData);
-          } else {
-            localStorage.removeItem('userProfileImage');
-          }
         }
       } else {
         console.error('Failed to fetch user profile:', response.statusText, '- keeping existing user data');
@@ -256,11 +265,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       // Update user state immediately with Base64 data
       setUser((prev) => ({ ...prev, profileImage: image }));
       
-      if (image) {
-        localStorage.setItem('userProfileImage', image);
-      } else {
-        localStorage.removeItem('userProfileImage');
-      }
     } catch (error) {
       console.error('Error updating profile image:', error);
     }
@@ -297,4 +301,4 @@ const getAvatarUrl = (
     return user.avatar.data;
   }
   return null;
-}; 
+};

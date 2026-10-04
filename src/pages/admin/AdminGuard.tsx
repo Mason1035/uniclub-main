@@ -122,11 +122,13 @@ const AdminGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     setStatus('checking');
     const token = readToken();
     if (!token) {
+      setUser(null);
       setStatus('anonymous');
       return;
     }
     try {
       const me = await fetchMe();
+      if (readToken() !== token) return;
       if (me.isAdmin === true) {
         setUser(me);
         setStatus('granted');
@@ -135,6 +137,7 @@ const AdminGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         setStatus('denied');
       }
     } catch (error) {
+      if (readToken() !== token) return;
       setStatus('anonymous');
       setNotice('当前会话无效或已过期，请重新登录管理员账号。');
       void error;
@@ -143,6 +146,9 @@ const AdminGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   useEffect(() => {
     void check();
+    const sync = () => { void check(); };
+    window.addEventListener('auth:changed', sync);
+    return () => window.removeEventListener('auth:changed', sync);
   }, [check]);
 
   if (status === 'checking') {

@@ -83,6 +83,16 @@ MongoDB 数据存放在 Docker 卷 `classhub-mongo-data`。桌宠设置仍在用
 
 后端通过非登录系统账号 `classhub` 运行，只监听 `127.0.0.1:5050`。数据库只映射 `127.0.0.1:27017`，开启认证；网站账号只有 `uniclub` 的 `readWrite` 权限。只有 Nginx 的 80/443 对公网提供网站服务。
 
+## 动态图片上传修复
+
+动态附件保存在 `shared/uploads/social/`，通过每个版本的 `uniclub-backend/public/uploads` 软链接访问。发布包不包含本地上传文件。`activate.sh` 在切换版本前创建上传目录，并设置为 `classhub:classhub`、0750；后端在每次有附件的请求中也会创建缺失的子目录、检查可写权限，不再仅在开发环境创建目录。
+
+图片仍限制为每张 10 MiB，视频每个 50 MiB，后端最多 5 个附件（当前界面最多 4 个）。Nginx 仅对 `/api/social/posts` 及其子路径放宽整个 multipart 请求至 251 MiB，容纳现有后端附件限额和请求开销，其他 API 保持 10 MiB。下一次执行 `push.sh` 时，发布脚本会给现有 `/etc/nginx/sites-enabled/classhub` 指向的配置补充此路由，保留域名、证书和其他设置；先备份原配置，再 `nginx -t` 和 reload，失败恢复原配置并停止发布。重复部署不会重复添加配置块。自定义站点文件名时，需要手动应用模板中的 `CLASSHUB SOCIAL UPLOAD` 配置块。
+
+前端附件请求超时调整为 120 秒，并区分文件过大、格式错误、目录不可写及网络超时，失败保留输入。目录错误的服务端日志只记录错误代码（如 `EACCES`、`ENOENT`），不向浏览器暴露服务器文件路径。
+
+针对性回归：`node --test uniclub-backend/test/socialUpload.test.js`。测试使用临时目录，不连接业务数据库或服务器。
+
 ## SSH 与常用维护
 
 ```bash

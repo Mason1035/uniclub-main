@@ -1,5 +1,16 @@
 /* Member-facing design primitives, extracted from the accepted homepage. */
 .page-shell { min-width: 0; }
+/* Announcements, news and events share the existing Source Han Serif stack.
+   Scope these roles to their content so navigation and admin keep UI fonts. */
+.editorial-content {
+  --font-ui: var(--font-editorial);
+  --font-body: var(--font-editorial);
+  --font-display: var(--font-editorial);
+  font-family: var(--font-editorial);
+}
+.editorial-content :is(h1, h2, h3) { font-family: var(--font-editorial); }
+/* Resource, social and function titles use serif without changing their UI. */
+.page-shell.editorial-titles :is(h1, h2, h3) { font-family: var(--font-editorial); }
 .illustration { display: block; object-fit: contain; height: auto; flex-shrink: 0; user-select: none; }
 .illustration--small { width: 4.5rem; }
 .illustration--medium { width: 7.5rem; }

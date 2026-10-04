@@ -1,0 +1,70 @@
+/* Search keeps its prefix separate from the input's text area and form styles. */
+.dialog-panel.search-panel {
+  --search-padding: 1.5rem;
+  --search-title-line: 1.75rem;
+  --search-close-size: 2.75rem;
+  width: min(calc(100vw - 2rem), 30rem);
+  height: auto;
+  min-height: 0;
+  padding: var(--search-padding);
+}
+.search-panel .search-title {
+  margin: 0 0 1.25rem;
+  padding-right: var(--search-close-size);
+  font-family: var(--font-ui);
+  font-size: 1.125rem;
+  font-weight: 650;
+  line-height: var(--search-title-line);
+  letter-spacing: 0;
+}
+.search-panel > .icon-control {
+  top: calc(var(--search-padding) + (var(--search-title-line) - var(--search-close-size)) / 2);
+  right: calc(var(--search-padding) - .5rem);
+  width: var(--search-close-size);
+  height: var(--search-close-size);
+}
+.search-field {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding-inline: .875rem;
+  border: 1px solid hsl(var(--line-strong));
+  border-radius: var(--radius-control);
+  background: hsl(var(--paper-raised));
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.search-field:focus-within {
+  border-color: hsl(var(--action));
+  box-shadow: 0 0 0 2px hsl(var(--action) / .12);
+}
+.search-field__icon { width: 1.125rem; height: 1.125rem; flex: 0 0 auto; color: hsl(var(--ink-muted)); pointer-events: none; }
+.search-panel .search-field__input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  min-height: 3rem;
+  padding: .625rem 0;
+  border: 0;
+  background: transparent;
+  color: hsl(var(--ink));
+  line-height: 1.5;
+  box-shadow: none;
+}
+.search-panel .search-field__input::placeholder { color: hsl(var(--ink-muted)); opacity: 1; }
+/* The surrounding field provides the visible keyboard focus indicator. */
+.search-panel .search-field__input:focus-visible { outline: none !important; outline-offset: 0; }
+.search-results {
+  margin-top: 1rem;
+  padding-top: .5rem;
+  border-top: 1px solid var(--border-subtle);
+  max-height: min(50vh, 26rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-padding-block: .5rem;
+}
+.search-result__type { display: block; margin-bottom: .25rem; color: hsl(var(--ink-muted)); font-size: .75rem; line-height: 1.4; }
+.search-panel .search-result > div { min-width: 0; overflow-wrap: anywhere; }
+.search-panel .search-result h3 { line-height: 1.5; }
+.search-panel .search-result p { margin-top: .25rem; line-height: 1.65; }
+.search-status { padding: 1rem .75rem; color: hsl(var(--ink-muted)); font-size: .875rem; line-height: 1.6; }
+@media (prefers-reduced-motion: reduce) { .search-field { transition: none; } }

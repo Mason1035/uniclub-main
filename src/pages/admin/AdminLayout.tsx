@@ -46,14 +46,14 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const Brand: React.FC = () => (
-  <div className="flex items-center gap-2.5 px-2">
-    <span className="flex h-9 w-9 items-center justify-center rounded-sm bg-primary text-primary-foreground text-sm font-bold">
-      CH
-    </span>
-    <div className="leading-tight">
-      <p className="text-sm font-semibold text-foreground">ClassHub</p>
-      <p className="text-[11px] text-muted-foreground">软件工程班级信息中枢</p>
-    </div>
+  <div className="flex items-center px-2">
+    <img
+      src="/branding/classhub-logo-v2.png"
+      alt="ClassHub"
+      width="2172"
+      height="724"
+      className="block h-auto w-full max-w-[208px]"
+    />
   </div>
 );
 

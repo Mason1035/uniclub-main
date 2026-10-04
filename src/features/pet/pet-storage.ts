@@ -1,7 +1,10 @@
+import { hasConsent } from '../../lib/privacy/consent';
+
 export interface PetPosition { x: number; viewportWidth: number; facing: 1 | -1 }
 const positionKey = (userId: string) => `classhub:pet-position:${userId}`;
 
 export function readPetPosition(userId: string): PetPosition | null {
+  if (!hasConsent('preferences')) return null;
   try {
     const raw = localStorage.getItem(positionKey(userId));
     if (!raw) return null;
@@ -12,6 +15,7 @@ export function readPetPosition(userId: string): PetPosition | null {
 }
 
 export function savePetPosition(userId: string, position: PetPosition): void {
+  if (!hasConsent('preferences')) return;
   try { localStorage.setItem(positionKey(userId), JSON.stringify(position)); } catch { /* pet remains usable */ }
 }
 

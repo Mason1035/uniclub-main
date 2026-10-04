@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import ContentState from './components/ContentState';
 import { Routes, Route } from 'react-router-dom';
 const Homepage = lazy(() => import('./pages/Homepage'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const NewsPage = lazy(() => import('./pages/NewsPage'));
 const AnnouncementsPage = lazy(() => import('./pages/AnnouncementsPage'));
 const EventsPage = lazy(() => import('./pages/EventsPage'));
@@ -75,6 +76,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/comments/:type/:id" element={<CommentsPage />} />
       <Route path="/debug" element={<DebugPage />} />
       <Route path="/" element={<Homepage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/news" element={<NewsPage />} />
       <Route path="/announcements" element={<AnnouncementsPage />} />
       <Route path="/events" element={<EventsPage />} />

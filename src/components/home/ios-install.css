@@ -1,0 +1,74 @@
+.ios-install-card {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+  margin-top: var(--home-card-gap);
+  padding: 1.25rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--home-card-radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+.ios-install-card__icon, .ios-install-guide__icon { display: block; height: auto; border-radius: 14px; }
+.ios-install-card__copy { min-width: 0; }
+.ios-install-card h2 { font-family: var(--font-editorial); font-size: 1.25rem; font-weight: 650; line-height: 1.5; letter-spacing: 0; }
+.ios-install-card p { margin-top: .4rem; color: hsl(var(--ink-muted)); font-size: var(--text-ui); line-height: 1.75; }
+.ios-install-card__action {
+  grid-column: 1 / -1;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  min-height: 44px;
+  min-width: 64px;
+  padding: .5rem .75rem;
+  border-radius: var(--radius-control);
+  color: hsl(var(--action));
+  font-weight: 600;
+}
+.ios-install-card__action:hover { background: hsl(var(--action) / .06); }
+.ios-install-backdrop { position: fixed; inset: 0; z-index: var(--z-overlay); background: rgb(0 0 0 / .2); }
+.ios-install-guide {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: calc(var(--z-overlay) + 1);
+  box-sizing: border-box;
+  max-height: calc(100vh - env(safe-area-inset-top, 0px) - 1rem);
+  max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 1rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.75rem max(1.25rem, env(safe-area-inset-right, 0px)) calc(1.5rem + env(safe-area-inset-bottom, 0px)) max(1.25rem, env(safe-area-inset-left, 0px));
+  border-radius: 28px 28px 0 0;
+  background: var(--surface-solid);
+  color: hsl(var(--ink));
+  font-family: var(--font-ui);
+  box-shadow: 0 -8px 32px rgb(28 34 48 / .06);
+}
+.ios-install-close { position: absolute; top: .75rem; right: .75rem; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: hsl(var(--ink-muted)); }
+.ios-install-close:hover { background: hsl(var(--paper-deep) / .5); }
+.ios-install-guide__icon { margin-bottom: 1.25rem; }
+.ios-install-guide__title { padding-right: .25rem; font-family: var(--font-editorial); font-size: clamp(1.35rem, 5.5vw, 1.65rem); font-weight: 650; line-height: 1.5; letter-spacing: 0; }
+.ios-install-guide__description { margin-top: .65rem; font-size: var(--text-ui); color: hsl(var(--ink-muted)); line-height: 1.75; }
+.ios-install-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; list-style: none; padding: 0; margin: 1.75rem 0 1.5rem; }
+.ios-install-steps li { min-width: 0; text-align: center; }
+.ios-install-step__icon { height: 64px; display: grid; place-items: center; color: hsl(var(--ink)); }
+.ios-install-step__icon img { display: block; border-radius: 11px; }
+.ios-install-step__number { display: block; margin-top: .35rem; font-size: var(--text-caption); color: hsl(var(--ink-muted)); font-variant-numeric: tabular-nums; }
+.ios-install-steps p { margin-top: .45rem; font-size: clamp(.75rem, 3vw, .8125rem); font-weight: 550; line-height: 1.75; overflow-wrap: anywhere; }
+.ios-install-guide__hint { margin-bottom: 1.25rem; font-size: var(--text-caption); line-height: 1.75; color: hsl(var(--ink-muted)); }
+.ios-install-done { display: block; width: 100%; min-height: 50px; padding: .8rem 1rem; border-radius: 14px; background: hsl(var(--ink)); color: var(--surface-solid); font-size: var(--text-ui); font-weight: 600; }
+.ios-install-done:hover { opacity: .9; }
+.ios-install-card__action:focus-visible, .ios-install-close:focus-visible, .ios-install-done:focus-visible { outline: 2px solid hsl(var(--action)); outline-offset: 3px; }
+
+.ios-install-backdrop[data-state='open'] { animation: ios-install-fade-in var(--motion-panel) ease-out; }
+.ios-install-backdrop[data-state='closed'] { animation: ios-install-fade-out var(--motion-panel) ease-in; }
+.ios-install-guide[data-state='open'] { animation: ios-install-slide-in var(--motion-panel) var(--ease-out); }
+.ios-install-guide[data-state='closed'] { animation: ios-install-slide-out var(--motion-panel) ease-in; }
+@keyframes ios-install-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ios-install-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes ios-install-slide-in { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes ios-install-slide-out { from { transform: translateY(0); opacity: 1; } to { transform: translateY(100%); opacity: 0; } }
+@media (min-width: 768px) { .ios-install-card, .ios-install-guide, .ios-install-backdrop { display: none; } }
+@media (prefers-reduced-motion: reduce) { .ios-install-guide[data-state], .ios-install-backdrop[data-state] { animation: none; } }

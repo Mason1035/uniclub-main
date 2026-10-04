@@ -12,6 +12,7 @@ import AppRoutes from './routes';
 import { AuthProvider } from './context/AuthContext';
 import PetProvider from './features/pet/PetProvider';
 import PetLayer from './features/pet/PetLayer';
+import CookieConsent from './components/privacy/CookieConsent';
 
 // Create a QueryClient instance for React Query
 const queryClient = new QueryClient({
@@ -47,11 +48,27 @@ const AppShell: React.FC = () => {
 function App() {
   useEffect(() => {
     // Drop any leftover "portfolio demo" session from the original Uniclub build
-    // so visitors land on the sign-in page instead of being auto-logged in.
+    // so visitors see the public homepage rather than a fabricated member session.
     cleanupLegacyDemoSession();
     
     // Initialize mobile features
     initializeMobileFeatures().catch(console.error);
+    // Discard account-specific cached data before another session can reuse it.
+    const clearAccountQueries = () => {
+      void queryClient.cancelQueries();
+      queryClient.clear();
+    };
+    const syncSession = (event: StorageEvent) => {
+      if (event.key === null || ['token', 'authToken', 'authUser'].includes(event.key)) {
+        window.dispatchEvent(new Event('auth:changed'));
+      }
+    };
+    window.addEventListener('auth:changed', clearAccountQueries);
+    window.addEventListener('storage', syncSession);
+    return () => {
+      window.removeEventListener('auth:changed', clearAccountQueries);
+      window.removeEventListener('storage', syncSession);
+    };
   }, []);
 
   return (
@@ -65,6 +82,7 @@ function App() {
                 <PetProvider>
                   <AppShell />
                   <PetLayer />
+                  <CookieConsent />
                 </PetProvider>
               </PopupProvider>
             </UserProvider>

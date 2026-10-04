@@ -1,8 +1,7 @@
 import { createContext, useContext } from 'react';
 
 interface ThemeContextType {
-  isDarkMode: boolean;
-  toggleDarkMode: () => void;
+  readonly isDarkMode: false;
 }
 
 

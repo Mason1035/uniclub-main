@@ -6,8 +6,8 @@ import ContentCard from '../components/ContentCard';
 import Illustration from '../components/Illustration';
 
 export default function FunctionsPage() {
-  return <PageShell className="functions-page">
-    <PageHeading title="功能" description="材料提交与班级事务，在这里办理。"/>
+  return <PageShell className="functions-page editorial-titles">
+    <PageHeading tone="editorial" title="功能" description="材料提交与班级事务，在这里办理。"/>
     <div className="feature-grid">
       <ContentCard className="feature-card" aria-labelledby="materials-title">
         <Illustration kind="resource" size="large"/>
@@ -15,7 +15,7 @@ export default function FunctionsPage() {
         <Link className="ed-button" to="/quantification"><Archive aria-hidden="true" size={18}/>进入材料提交<ArrowUpRight aria-hidden="true" size={18}/></Link>
       </ContentCard>
       <ContentCard className="feature-card" aria-labelledby="class-fees-title">
-        <Illustration kind="activity" size="large"/>
+        <Illustration kind="fees" size="large"/>
         <div data-pet-avoid><h2 id="class-fees-title">交班费</h2><p>查看班费付款二维码，完成付款后提交支付成功截图，由管理员确认到账。</p></div>
         <Link className="ed-button" to="/fees"><Wallet aria-hidden="true" size={18}/>进入班费缴纳<ArrowUpRight aria-hidden="true" size={18}/></Link>
       </ContentCard>

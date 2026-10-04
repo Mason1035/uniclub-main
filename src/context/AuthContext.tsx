@@ -17,6 +17,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
         return;
       }
+      setLoading(true);
+      setUser(null);
       try {
         const response = await fetch('/api/auth/me', { headers: authHeaders() });
         if (!active || current !== request) return;

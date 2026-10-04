@@ -26,20 +26,33 @@ img { max-width: 100%; }
 .masthead > .site-container { position: relative; }
 .masthead-brand, .masthead-actions, .masthead-nav { pointer-events: auto; }
 .masthead-inner { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; padding-block: .7rem .25rem; }
-.masthead-edition { visibility: hidden; color: hsl(var(--ink-muted)); font-size: var(--text-small); }
-.masthead-edition time { font-family: var(--font-ui); font-variant-numeric: tabular-nums; display: block; }
 .wordmark { display: block; font-family: var(--font-ui); text-align: center; font-weight: 800; font-size: clamp(2rem, 4.6vw, 3.7rem); line-height: 1.1; letter-spacing: -.035em; text-shadow: -1.3px 0 hsl(var(--cyan)), 1.3px 1px hsl(var(--magenta)); }
-.masthead-brand { display: block; width: clamp(15rem, 22vw, 18rem); }
+.masthead-brand { display: block; grid-column: 2; width: clamp(15rem, 22vw, 18rem); }
 .masthead-logo { display: block; width: 100%; height: auto; }
 .masthead-actions { display: flex; justify-content: flex-end; align-items: center; gap: .35rem; }
+.masthead-login { display: inline-flex; min-height: 44px; min-width: 44px; align-items: center; justify-content: center; padding: .5rem .75rem; color: hsl(var(--action)); font-family: var(--font-ui); font-size: .875rem; font-weight: 550; border-radius: var(--radius-control); }
+.masthead-login:hover { background: hsl(var(--action) / .06); }
 .icon-control { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid transparent; border-radius: 50%; flex-shrink: 0; }
 .icon-control:hover { background: hsl(var(--action) / .05); border-color: transparent; }
 .icon-control svg { width: 20px; height: 20px; stroke-width: 1.8; }
-.masthead-nav { display: flex; justify-content: center; gap: clamp(1.6rem, 3.2vw, 3rem); padding-block: .45rem .85rem; font-size: .875rem; font-weight: 550; }
+.masthead-nav { display: flex; width: max-content; max-width: 100%; margin-inline: auto; justify-content: center; gap: clamp(1.6rem, 3.2vw, 3rem); padding-block: .45rem .85rem; font-size: .875rem; font-weight: 550; }
 .masthead-nav a { padding: .3rem 0; border-bottom: 2px solid transparent; white-space: nowrap; }
 .masthead-nav a:hover, .masthead-nav a[aria-current='page'] { border-bottom-color: hsl(var(--action)); color: hsl(var(--action)); }
 .header-reserve { height: 11rem; position: relative; }
 .header-reserve .masthead { position: fixed; inset-inline: 0; top: 0; }
+/* Geometry is measured only when needed; scroll frames change transforms. */
+.masthead[data-morph-mode]:not([data-morph-mode='measuring']) .masthead-brand {
+  transform-origin: center;
+  transform: translate3d(calc(var(--header-logo-x, 0px) * var(--header-horizontal-progress, 0)), var(--header-logo-y, 0px), 0) scale(calc(1 + (var(--header-logo-scale, 1) - 1) * var(--header-horizontal-progress, 0)));
+}
+.masthead[data-morph-mode]:not([data-morph-mode='measuring']) .masthead-nav {
+  transform: translate3d(calc(var(--header-nav-start-x, 0px) * (1 - var(--header-horizontal-progress, 0)) + var(--header-nav-end-x, 0px) * var(--header-horizontal-progress, 0)), calc(var(--header-nav-y, 0px) * var(--header-nav-rise, 0)), 0);
+}
+.masthead[data-morph-mode]:not([data-morph-mode='measuring']) .masthead-nav a { transform: translate3d(calc(var(--header-link-shift, 0px) * (1 - var(--header-horizontal-progress, 0))), 0, 0); }
+.masthead[data-morph-mode]:not([data-morph-mode='measuring']) .masthead-actions { transform: translate3d(0, calc(var(--header-tools-y, 0px) * var(--header-progress, 0)), 0); }
+.masthead[data-morph-mode]:not([data-morph-mode='measuring']) .masthead-paper { transform-origin: center top; transform: scaleY(calc(1 + (var(--header-paper-scale, 1) - 1) * var(--header-progress, 0))); }
+.masthead[data-morph-mode='mobile'] .masthead-brand { transform-origin: left center; }
+.masthead[data-morphing='true'] :is(.masthead-brand, .masthead-nav, .masthead-nav a, .masthead-actions, .masthead-paper) { will-change: transform; }
 .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; padding-bottom: .5rem; margin-bottom: 1.75rem; flex-wrap: wrap; }
 .page-heading h1 { font-size: clamp(1.85rem, 1.4rem + 1.8vw, 3rem); font-weight: 750; line-height: 1.3; letter-spacing: -.02em; }
 .page-heading--editorial h1, .editorial-heading { font-family: var(--font-editorial); font-weight: 650; line-height: 1.4; letter-spacing: 0; }
@@ -113,11 +126,16 @@ img { max-width: 100%; }
 .archive-entry img { width: 100%; aspect-ratio: 8/5; object-fit: cover; margin-bottom: .85rem; }
 .archive-entry h3 { font-family: var(--font-editorial); font-size: var(--text-h3); font-weight: 650; line-height: 1.55; }
 .archive-entry p { color: hsl(var(--ink-muted)); font-size: .875rem; margin-top: .4rem; }
-.site-footer { border-top: 1px solid hsl(var(--line)); padding-block: 1.5rem 2rem; }
-.footer-inner { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem 3rem; font-size: .8125rem; }
-.footer-name { font-weight: 900; font-size: 1.4rem; }
-.footer-inner p { color: hsl(var(--ink-muted)); }
-.footer-inner nav { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.site-footer { border-top: 1px solid hsl(var(--line) / .65); padding-block: 1rem 1.25rem; }
+.footer-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .25rem 2rem; font-size: var(--text-caption); color: hsl(var(--ink-muted)); }
+.footer-identity { display: flex; align-items: center; gap: .5rem; }
+.footer-logo { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: 6px; }
+.footer-logo img { display: block; width: 28px; height: 28px; }
+.footer-credit { margin: 0; line-height: 1.8; }
+.footer-credit span { display: inline-block; }
+.footer-links { display: flex; align-items: center; gap: .25rem 1.25rem; flex-wrap: wrap; }
+.footer-links a { display: inline-flex; align-items: center; gap: .35rem; min-height: 44px; text-decoration: none; white-space: nowrap; }
+.footer-links a:hover { color: hsl(var(--ink)); text-decoration: underline; text-underline-offset: 3px; }
 .mobile-nav { display: none; }
 .dialog-panel { position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: var(--z-overlay); width: min(calc(100vw - 2rem), 36rem); max-height: calc(100dvh - 2rem); overflow-y: auto; background: var(--surface-solid); border: 1px solid var(--border-subtle); border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: 1.75rem; }
 .dialog-overlay { position: fixed; inset: 0; z-index: var(--z-overlay); background: hsl(var(--ink) / .5); }
@@ -125,7 +143,6 @@ img { max-width: 100%; }
 .search-result { display: flex; align-items: flex-start; gap: .75rem; padding: .75rem; min-height: 44px; cursor: pointer; }
 .search-result h3 { font-size: .9375rem; font-weight: 600; }
 .search-result p { color: hsl(var(--ink-muted)); font-size: .8125rem; }
-.search-hint { color: hsl(var(--ink-muted)); font-size: .75rem; padding-top: 1rem; }
 .auth-layout { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,.9fr); gap: clamp(2rem,8vw,8rem); max-width: 68rem; margin: auto; padding: clamp(1.5rem,5vw,4rem); min-height: 100dvh; align-items: center; }
 .auth-logo { display: block; width: min(100%, 20rem); height: auto; margin-bottom: 1.5rem; }
 .auth-brand h1 { font-family: var(--font-editorial); font-weight: 700; font-size: var(--text-display); line-height: 1.35; }
@@ -176,8 +193,8 @@ img { max-width: 100%; }
 @media (max-width: 767px) {
   .header-reserve { height: 6.25rem; }
   .masthead-inner { grid-template-columns: minmax(0,1fr) auto; gap: .5rem; padding-block: .75rem; }
-  .masthead-edition,.masthead-nav { display: none; }
-  .masthead .masthead-brand { width: min(100%, 11.5rem); }
+  .masthead-nav { display: none; }
+  .masthead .masthead-brand { grid-column: 1; width: min(100%, 11.5rem); }
   .masthead-logo { max-height: 4rem; object-fit: contain; object-position: left center; }
   .wordmark { text-align: left; font-size: 2rem; }
   .masthead-actions { gap: 0; }

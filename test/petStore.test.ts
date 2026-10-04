@@ -7,6 +7,7 @@ import { PET_SKINS } from '../src/features/pet/pet-skins';
 import definition from '../shared/pet-settings.json';
 import { createPetAudio } from '../src/features/pet/pet-audio';
 import { browserNotificationState, enableBrowserNotifications } from '../src/features/settings/browser-notifications';
+import { CONSENT_STORAGE_KEY, getConsent, hasConsent, saveConsent, subscribeConsent } from '../src/lib/privacy/consent';
 
 const pause = (ms = 0) => new Promise(resolve => setTimeout(resolve, ms));
 let records: Map<string, string>, requests: { method: string; token: string; body: object }[], saved: Record<string, Record<string, unknown>>;
@@ -16,11 +17,19 @@ const windowEvents = new EventTarget();
 Object.assign(globalThis, { window: windowEvents });
 beforeEach(() => {
   records = new Map(); requests = []; saved = {};
-  Object.assign(globalThis, { localStorage: {
+  const storage = {
+    get length() { return records.size; },
+    key: (index: number) => [...records.keys()][index] ?? null,
     getItem: (key: string) => records.get(key) ?? null,
     setItem: (key: string, value: string) => records.set(key, value),
     removeItem: (key: string) => records.delete(key),
-  }});
+  };
+  Object.assign(globalThis, { localStorage: storage });
+  Object.assign(windowEvents, { localStorage: storage, sessionStorage: { length: 0, key: () => null, removeItem: () => {} } });
+  // A storage event resets the real consent store to this fresh browser state.
+  const unsubscribe = subscribeConsent(() => {});
+  windowEvents.dispatchEvent(Object.assign(new Event('storage'), { key: null }));
+  unsubscribe();
   globalThis.fetch = async (_path, options = {}) => {
     const token = (options.headers as Record<string, string>).Authorization;
     const body = options.body ? JSON.parse(options.body as string) : {};
@@ -34,6 +43,57 @@ async function start(id = 'a', token = 'token-a') {
   const store = new ClassHubPetConfigStore(id, token);
   stop = store.start(); await pause(); return store;
 }
+test('consent rejects old versions and malformed records without granting optional storage', () => {
+  records.set('token', 'keep-login');
+  for (const record of [
+    { version: 0, necessary: true, preferences: true, statistics: true, updatedAt: new Date().toISOString() },
+    { version: 1, necessary: true, preferences: 'yes', statistics: true, updatedAt: new Date().toISOString() },
+  ]) {
+    records.set(CONSENT_STORAGE_KEY, JSON.stringify(record));
+    const unsubscribe = subscribeConsent(() => {});
+    windowEvents.dispatchEvent(Object.assign(new Event('storage'), { key: CONSENT_STORAGE_KEY }));
+    unsubscribe();
+    assert.equal(getConsent(), null);
+    assert.equal(hasConsent('preferences'), false);
+    assert.equal(hasConsent('statistics'), false);
+    assert.equal(records.get('token'), 'keep-login');
+  }
+});
+test('consent survives unavailable localStorage and cookies with a session-only choice', () => {
+  const storage = globalThis.localStorage;
+  const previousDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
+  try {
+    Object.assign(globalThis, { localStorage: {
+      getItem() { throw new Error('blocked'); },
+      setItem() { throw new Error('blocked'); },
+    } });
+    Object.defineProperty(globalThis, 'document', { configurable: true, value: { set cookie(_value: string) { throw new Error('blocked'); } } });
+    assert.equal(saveConsent({ preferences: true, statistics: false }), false);
+    assert.equal(hasConsent('preferences'), true);
+    assert.equal(hasConsent('statistics'), false);
+    assert.equal(saveConsent({ preferences: false, statistics: false }), false);
+    assert.equal(hasConsent('preferences'), false);
+  } finally {
+    Object.assign(globalThis, { localStorage: storage });
+    if (previousDocument) Object.defineProperty(globalThis, 'document', previousDocument);
+    else Reflect.deleteProperty(globalThis, 'document');
+  }
+});
+test('consent withdrawal cannot restore a stale grant after a quota write failure', () => {
+  assert.equal(saveConsent({ preferences: true, statistics: true }), true);
+  const storage = globalThis.localStorage;
+  const originalSetItem = storage.setItem;
+  try {
+    storage.setItem = () => { throw new Error('quota exceeded'); };
+    assert.equal(saveConsent({ preferences: false, statistics: false }), false);
+    assert.equal(records.has(CONSENT_STORAGE_KEY), false);
+    const unsubscribe = subscribeConsent(() => {});
+    windowEvents.dispatchEvent(Object.assign(new Event('storage'), { key: CONSENT_STORAGE_KEY }));
+    unsubscribe();
+    assert.equal(hasConsent('preferences'), false);
+    assert.equal(hasConsent('statistics'), false);
+  } finally { storage.setItem = originalSetItem; }
+});
 test('load is shared and 60 slider updates produce one debounced write', async () => {
   const store = await start();
   let updates = 0; const unsubscribe = store.subscribe(() => updates++);
@@ -152,6 +212,7 @@ test('disposing during an in-flight save releases timers and sends the old accou
   assert.equal(requests.filter(request => request.method === 'PATCH').length, 2);
 });
 test('position storage is per user and storage denial is harmless', () => {
+  saveConsent({ preferences: true, statistics: false });
   const position = { x: 500, viewportWidth: 1200, facing: -1 as const };
   savePetPosition('a', position);
   assert.deepEqual(readPetPosition('a'), position);
@@ -165,6 +226,28 @@ test('position storage is per user and storage denial is harmless', () => {
   assert.doesNotThrow(() => savePetPosition('a', position));
   assert.doesNotThrow(() => clearPetPosition('a'));
   assert.equal(readPetPosition('a'), null);
+});
+test('pet positions require live preferences consent and withdrawal preserves authentication', () => {
+  const position = { x: 500, viewportWidth: 1200, facing: -1 as const };
+  assert.equal(getConsent(), null);
+  records.set('token', 'existing-account-session');
+  records.set('classhub:pet-position:a', JSON.stringify(position));
+  assert.equal(readPetPosition('a'), null);
+  savePetPosition('b', position);
+  assert.equal(records.has('classhub:pet-position:b'), false);
+
+  saveConsent({ preferences: true, statistics: false });
+  assert.deepEqual(readPetPosition('a'), position);
+  savePetPosition('b', position);
+  assert.deepEqual(readPetPosition('b'), position);
+
+  saveConsent({ preferences: false, statistics: false });
+  assert.equal(records.has('classhub:pet-position:a'), false);
+  assert.equal(records.has('classhub:pet-position:b'), false);
+  assert.equal(records.get('token'), 'existing-account-session');
+  savePetPosition('a', position);
+  assert.equal(readPetPosition('a'), null);
+  assert.equal(records.has('classhub:pet-position:a'), false);
 });
 test('a released pet settles within the screen and stale pointer samples impart no velocity', () => {
   let state = { x: 95, liftY: -250, vx: 1.2, vy: 0 };

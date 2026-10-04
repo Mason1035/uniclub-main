@@ -27,56 +27,10 @@ const {
   requireClubMembership,
   blockUnauthorizedActions
 } = require('../middleware/privacy');
-const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
-
-// Set up media uploads directory
-const uploadsDir = path.join(__dirname, '../public/uploads/social');
-console.log('📁 Uploads directory path:', uploadsDir);
-
-// Only check/create directory in local development (not in serverless)
-if (process.env.NODE_ENV !== 'production') {
-  console.log('📁 Directory exists:', fs.existsSync(uploadsDir));
-  
-  if (!fs.existsSync(uploadsDir)) {
-    console.log('📁 Creating uploads directory...');
-    fs.mkdirSync(uploadsDir, { recursive: true });
-    console.log('📁 Directory created successfully');
-  }
-} else {
-  console.log('📁 Running in production - skipping file system checks');
-}
-
-// Enhanced multer configuration for images and videos
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadsDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const fileType = file.mimetype.startsWith('video/') ? 'video' : 'image';
-    cb(null, `${fileType}-${uniqueSuffix}${path.extname(file.originalname)}`);
-  }
-});
-
-const fileFilter = (req, file, cb) => {
-  const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-  const allowedVideoTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
-  
-  if (allowedImageTypes.includes(file.mimetype) || allowedVideoTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error('Invalid file type. Only images and videos are allowed.'));
-  }
-};
-
-const upload = multer({
-  storage: storage,
-  limits: { 
-    fileSize: 50 * 1024 * 1024 // 50MB for videos
-  },
-  fileFilter: fileFilter
+const { createSocialUpload } = require('../middleware/socialUpload');
+const receiveMedia = createSocialUpload({
+  uploadsDir: path.join(__dirname, '../public/uploads/social')
 });
 
 // ==================== FEED ENDPOINTS ====================
@@ -141,7 +95,7 @@ router.get('/suggested', authenticateToken, requireClubMembership, async (req, r
 // ==================== POST MANAGEMENT ====================
 
 // POST /api/social/posts - Create a new social post with optional media
-router.post('/posts', authenticateToken, requireClubMembership, createPostLimit, upload.array('media', 5), validateMediaFiles, sanitizeContent, validateContent, async (req, res) => {
+router.post('/posts', authenticateToken, requireClubMembership, createPostLimit, receiveMedia, validateMediaFiles, sanitizeContent, validateContent, async (req, res) => {
   try {
     const { 
       content, 
@@ -333,7 +287,7 @@ router.get('/posts', async (req, res) => {
 });
 
 // PUT /api/social/posts/:id - Update a social post
-router.put('/posts/:id', authenticateToken, upload.array('media', 5), validateMediaFiles, async (req, res) => {
+router.put('/posts/:id', authenticateToken, receiveMedia, validateMediaFiles, async (req, res) => {
   try {
     const { id } = req.params;
     const { content, postType, imagesToDelete } = req.body;

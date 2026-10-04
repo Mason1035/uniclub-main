@@ -1,9 +1,13 @@
-export const readToken = (): string | null =>
-  localStorage.getItem('token') || sessionStorage.getItem('authToken') || localStorage.getItem('authToken');
+export const readToken = (): string | null => {
+  try { return localStorage.getItem('token') || sessionStorage.getItem('authToken') || localStorage.getItem('authToken'); }
+  catch { return null; }
+};
 
 export const clearSession = (): void => {
-  for (const storage of [localStorage, sessionStorage]) {
-    for (const key of ['token', 'authToken', 'authUser', 'user', 'userProfileImage']) storage.removeItem(key);
+  for (const area of ['localStorage', 'sessionStorage'] as const) {
+    try {
+      for (const key of ['token', 'authToken', 'authUser', 'user', 'userProfileImage']) window[area].removeItem(key);
+    } catch { /* A guest can still browse when browser storage is disabled. */ }
   }
   window.dispatchEvent(new Event('auth:changed'));
 };

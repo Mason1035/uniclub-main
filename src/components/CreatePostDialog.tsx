@@ -5,6 +5,7 @@ import { Image, Smile, X } from 'lucide-react';
 import { useUser } from '../context/userContextState';
 import { useQueryClient } from '@tanstack/react-query';
 import api from '../lib/axios';
+import { isAxiosError } from 'axios';
 import EmojiPicker from './EmojiPicker';
 
 interface CreatePostDialogProps {
@@ -113,6 +114,11 @@ const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     if (files.length > 0) {
+      if (files.some(file => file.size > (file.type.startsWith('video/') ? 50 : 10) * 1024 * 1024)) {
+        setErrorMessage('每张图片最多 10 MB，每个视频最多 50 MB，请选择较小的附件。');
+        event.target.value = '';
+        return;
+      }
       // Check if adding these files would exceed the limit
       const availableSlots = maxMediaAllowed - existingMediaCount;
       const totalAfterAdding = existingMediaCount + files.length;
@@ -192,6 +198,7 @@ const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
                      void 0;
            
            const response = await api.put(`/api/social/posts/${editData.id}`, formData, {
+             timeout: 120_000,
              headers: {
                'Content-Type': 'multipart/form-data',
              },
@@ -304,6 +311,7 @@ const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
         }
 
         const response = await api.post('/api/social/posts', formData, {
+          timeout: 120_000,
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -331,7 +339,24 @@ const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
     } catch (error) {
       console.error('Error saving post:', error);
       // Show error message to user
-      setErrorMessage(editMode ? '动态更新未成功，内容已保留，请重试。' : '动态发布未成功，内容已保留，请重试。');
+      let reason = editMode ? '动态更新未成功' : '动态发布未成功';
+      if (isAxiosError(error)) {
+        const code = error.response?.data?.code;
+        if (code === 'UPLOAD_STORAGE_UNAVAILABLE') {
+          reason = '图片上传服务暂不可用，请联系管理员检查上传目录权限';
+        } else if (code === 'FILE_TOO_LARGE' || error.response?.status === 413) {
+          reason = '附件过大：每张图片最多 10 MB、每个视频最多 50 MB；也可能超过服务器请求限制';
+        } else if (code === 'INVALID_FILE_TYPE') {
+          reason = '不支持此附件格式，请选择 JPEG、PNG、GIF、WebP 或支持的视频';
+        } else if (code === 'TOO_MANY_FILES') {
+          reason = '附件数量过多，请减少附件后重试';
+        } else if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
+          reason = '上传超时，请检查网络并稍后刷新列表确认是否已发布';
+        } else if (!error.response) {
+          reason = '无法连接上传服务，请检查网络';
+        }
+      }
+      setErrorMessage(`${reason}。内容已保留。`);
     } finally {
       setIsSubmitting(false);
       submitLock.current = false;
@@ -526,4 +551,4 @@ const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
   </>);
 };
 
-export default CreatePostDialog; 
+export default CreatePostDialog;

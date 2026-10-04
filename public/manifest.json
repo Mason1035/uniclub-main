@@ -2,8 +2,8 @@
   "name": "ClassHub 软件工程班级信息平台",
   "short_name": "ClassHub",
   "description": "ClassHub - 软件工程班级信息平台：班级成员、活动、新闻、资源与 AI 助手",
-  "theme_color": "#006485",
-  "background_color": "#f5d9d1",
+  "theme_color": "#E9E9E9",
+  "background_color": "#E9E9E9",
   "display": "standalone",
   "orientation": "portrait-primary",
   "start_url": "/",
@@ -12,16 +12,16 @@
   "dir": "ltr",
   "icons": [
     {
-      "src": "Assets/App Logo.png",
+      "src": "/branding/classhub-icon-192-v2.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "Assets/App Logo.png",
+      "src": "/branding/classhub-icon-512-v2.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
   "categories": [

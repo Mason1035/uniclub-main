@@ -2,7 +2,6 @@ import PageShell from '../components/PageShell';
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useUser } from '../context/userContextState';
-import { useTheme } from '../context/themeContextState';
 import { Switch } from '../components/ui/switch';
 import PageHeading from '../components/PageHeading';
 import ContentState from '../components/ContentState';
@@ -30,7 +29,7 @@ function Section({ id, number, title, children }: { id: string; number: string; 
 }
 function AccountSettings({ store }: { store: ClassHubPetConfigStore }) {
   const { account, notifications, available, status, error: preferencesError } = useSyncExternalStore(store.subscribe, store.getSnapshot);
-  const { setUser, logout } = useUser(); const { isDarkMode, toggleDarkMode } = useTheme(); const { hash } = useLocation();
+  const { setUser, logout } = useUser(); const { hash } = useLocation();
   const [displayName, setDisplayName] = useState(''), [bio, setBio] = useState(''), [email, setEmail] = useState('');
   const [profilePending, setProfilePending] = useState(false), [emailPending, setEmailPending] = useState(false);
   const [profileMessage, setProfileMessage] = useState(''), [profileError, setProfileError] = useState('');
@@ -94,7 +93,7 @@ function AccountSettings({ store }: { store: ClassHubPetConfigStore }) {
       <p role={preferencesError ? 'alert' : 'status'} className={`text-sm mt-3 ${preferencesError ? 'text-destructive' : 'text-muted-foreground'}`}>{preferencesError || (status === 'saving' ? '正在保存偏好…' : '偏好已同步到账号。')}{preferencesError && <button type="button" className="text-link min-h-11 ml-3" onClick={store.retry}>重试保存</button>}</p>
       <Link to="/notifications" className="text-link inline-flex items-center min-h-11 mt-2">打开通知中心 →</Link>
     </Section>
-    <Section id="appearance-settings" number="04" title="外观"><div className="account-notification-row"><div><label htmlFor="theme-toggle">深色模式</label><p>切换浅色或深色界面，选择更舒服的阅读方式。</p></div><Switch id="theme-toggle" checked={isDarkMode} onCheckedChange={toggleDarkMode}/></div></Section>
+    <Section id="appearance-settings" number="04" title="外观"><div className="account-notification-row"><div><p className="font-semibold text-foreground">浅色界面</p><p>ClassHub 统一使用浅色外观。</p></div><span className="status-label">浅色</span></div></Section>
     <PetSettings sectionNumber="05"/>
     <Section id="account-actions" number="06" title="账户操作"><p className="text-sm text-muted-foreground mb-4">退出此浏览器的当前账号，个人资料和偏好将保留。</p><button type="button" className="ed-button secondary" onClick={logout}>退出当前账号</button><div className="mt-4"><Link to="/saved-posts" className="text-link inline-flex min-h-11 items-center">我的收藏 →</Link></div></Section>
     <AvatarManagementModal isOpen={avatarOpen} onClose={() => setAvatarOpen(false)} onSaved={profile => { store.setProfile(profile); setProfileMessage('头像已更新。'); }}/>
