@@ -1,3 +1,4 @@
+import PageShell from '../components/PageShell';
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useUser } from '../context/userContextState';
@@ -93,7 +94,7 @@ function AccountSettings({ store }: { store: ClassHubPetConfigStore }) {
       <p role={preferencesError ? 'alert' : 'status'} className={`text-sm mt-3 ${preferencesError ? 'text-destructive' : 'text-muted-foreground'}`}>{preferencesError || (status === 'saving' ? '正在保存偏好…' : '偏好已同步到账号。')}{preferencesError && <button type="button" className="text-link min-h-11 ml-3" onClick={store.retry}>重试保存</button>}</p>
       <Link to="/notifications" className="text-link inline-flex items-center min-h-11 mt-2">打开通知中心 →</Link>
     </Section>
-    <Section id="appearance-settings" number="04" title="外观"><div className="account-notification-row"><div><label htmlFor="theme-toggle">深色模式</label><p>切换暖墨纸面，选择更舒服的阅读方式。</p></div><Switch id="theme-toggle" checked={isDarkMode} onCheckedChange={toggleDarkMode}/></div></Section>
+    <Section id="appearance-settings" number="04" title="外观"><div className="account-notification-row"><div><label htmlFor="theme-toggle">深色模式</label><p>切换浅色或深色界面，选择更舒服的阅读方式。</p></div><Switch id="theme-toggle" checked={isDarkMode} onCheckedChange={toggleDarkMode}/></div></Section>
     <PetSettings sectionNumber="05"/>
     <Section id="account-actions" number="06" title="账户操作"><p className="text-sm text-muted-foreground mb-4">退出此浏览器的当前账号，个人资料和偏好将保留。</p><button type="button" className="ed-button secondary" onClick={logout}>退出当前账号</button><div className="mt-4"><Link to="/saved-posts" className="text-link inline-flex min-h-11 items-center">我的收藏 →</Link></div></Section>
     <AvatarManagementModal isOpen={avatarOpen} onClose={() => setAvatarOpen(false)} onSaved={profile => { store.setProfile(profile); setProfileMessage('头像已更新。'); }}/>
@@ -102,5 +103,5 @@ function AccountSettings({ store }: { store: ClassHubPetConfigStore }) {
 }
 export default function SettingsPage({ onBack }: { onBack?: () => void }) {
   const { store } = usePet();
-  return <div className="settings-workspace">{onBack && <button className="back-link" onClick={onBack}>返回个人资料</button>}<PageHeading title="个人设置" description="让这个班级空间，更符合你的使用习惯。"/>{store ? <AccountSettings key={store.userId} store={store}/> : <ContentState loading/>}</div>;
+  return <PageShell className="settings-workspace">{onBack && <button className="back-link" onClick={onBack}>返回个人资料</button>}<PageHeading title="个人设置" description="让这个班级空间，更符合你的使用习惯。"/>{store ? <AccountSettings key={store.userId} store={store}/> : <ContentState loading/>}</PageShell>;
 }

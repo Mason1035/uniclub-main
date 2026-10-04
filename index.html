@@ -6,6 +6,8 @@
     <title>ClassHub · 班级信息平台</title>
     <meta name="description" content="ClassHub - 软件工程班级信息平台：班级成员、活动、新闻、资源与 AI 助手" />
     <meta name="author" content="ClassHub" />
+    <link rel="preload" href="/fonts/classhub/latin.06f626d915.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/classhub/sans-core.addfeeae45.woff2" as="font" type="font/woff2" crossorigin />
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/branding/classhub-favicon.png">
@@ -29,7 +31,15 @@
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <noscript>
+        <main>
+          <h1 lang="en">The future isn't writing code. It's securing it.</h1>
+          <p>ClassHub · 班级信息平台：查公告、找资料、参与活动，和同学一起记录每一天。</p>
+          <p>请启用 JavaScript 后登录并使用 ClassHub。</p>
+        </main>
+      </noscript>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

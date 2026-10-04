@@ -1,3 +1,4 @@
+import PageShell from '../components/PageShell';
 import { useEffect, useRef, useState, type DragEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -137,8 +138,8 @@ export default function QuantificationPage() {
   const pendingId = confirmId || (!file ? mine.data?.pendingUpload?.id : '') || '';
   const transferredPending = Boolean(pendingId && progress?.percent === 100 && phase === 'error');
 
-  return <div className="quant-page"><Link className="text-primary text-sm inline-flex items-center gap-2 mb-4" to="/functions"><ArrowLeft size={16} aria-hidden="true"/>返回功能</Link><PageHeading title="上传量化文件" description="把材料整理成 ZIP，按收集期提交。" actions={access.data?.canManage && <Link className="ed-button secondary" to="/admin/quantification">管理收集</Link>}/>
-    <ContentState loading={collections.isPending} error={collections.error} onRetry={() => void collections.refetch()} empty={!collections.data?.collections.length} emptyTitle="暂时没有已发布的收集期" emptyDescription="管理员发布收集期后，你就可以在这里提交材料。">
+  return <PageShell className="quant-page"><Link className="text-primary text-sm inline-flex items-center gap-2 mb-4" to="/functions"><ArrowLeft size={16} aria-hidden="true"/>返回功能</Link><PageHeading title="上传量化文件" description="把材料整理成 ZIP，按收集期提交。" actions={access.data?.canManage && <Link className="ed-button secondary" to="/admin/quantification">管理收集</Link>}/>
+    <ContentState illustration="resource" loading={collections.isPending} error={collections.error} onRetry={() => void collections.refetch()} empty={!collections.data?.collections.length} emptyTitle="暂时没有已发布的收集期" emptyDescription="管理员发布收集期后，你就可以在这里提交材料。">
       <div className="quant-toolbar"><label htmlFor="quant-period"><span className="text-sm">选择收集期</span><select id="quant-period" value={collectionId} disabled={busy} onChange={e => {
         if (session.current) void quantificationApi.abort(session.current.upload.id).catch(() => undefined);
         setSelectedId(e.target.value); setFile(null); setPhase('idle'); setError(''); setProgress(null); setConfirmId(''); session.current = null; fileValidation.current++;
@@ -161,5 +162,5 @@ export default function QuantificationPage() {
         </section></div>}
       </ContentState>
     </ContentState><QuantificationDownloads result={download} onClose={() => setDownload(null)}/>
-  </div>;
+  </PageShell>;
 }

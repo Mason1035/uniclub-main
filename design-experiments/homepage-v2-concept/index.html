@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light" data-motion="reduced">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#F1F0E9" />
+    <meta name="description" content="ClassHub 首页视觉方向实验：一个真正活着的数字班级。所有内容均为本地示例。" />
+    <title>ClassHub — 在一起，在发生。</title>
+    <script>
+      try {
+        const savedTheme = localStorage.getItem('classhub-homepage-concept-theme');
+        document.documentElement.dataset.theme = savedTheme === 'dark' || (!savedTheme && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+      } catch (_) {}
+    </script>
+    <link rel="preload" href="/fonts/serif.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/sans.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/fonts/fonts.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { useUser } from '../context/userContextState';
 import SignInForm from './SignInForm';
-import RisoArtwork from '../components/RisoArtwork';
+import Illustration from '../components/Illustration';
 
 export default function AuthPage() {
   const { isAuthenticated } = useUser();
@@ -18,7 +18,7 @@ export default function AuthPage() {
       />
       <h1>班级日常，<br/>一起记录。</h1>
       <p>软件工程班级信息平台<br/>查公告、找资料、参与活动。</p>
-      <RisoArtwork/>
+      <Illustration kind="gallery" size="large" className="auth-illustration"/>
     </section>
     <section className="auth-form">
       <h2>欢迎回来</h2>

@@ -4,7 +4,7 @@
 .account-section { min-width: 0; margin-bottom: 3rem; scroll-margin-top: 8rem; }
 .account-section-heading { display: flex; align-items: baseline; gap: .7rem; padding-bottom: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid hsl(var(--line)); }
 .account-section-heading h2 { font-size: 1.25rem; font-weight: 700; }
-.account-section-number { font: .75rem var(--font-mono); color: hsl(var(--ink-muted)); }
+.account-section-number { font: .75rem var(--font-ui); font-variant-numeric: tabular-nums; color: hsl(var(--ink-muted)); }
 .account-avatar { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
 .account-identity { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1rem; padding-block: 1rem; margin-bottom: 1.5rem; border-block: 1px solid hsl(var(--line)); }
 .account-identity dt { font-size: .8125rem; color: hsl(var(--ink-muted)); margin-bottom: .5rem; }

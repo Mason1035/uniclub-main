@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none">
+  <defs>
+    <linearGradient id="back" x1="29" y1="47" x2="111" y2="136" gradientUnits="userSpaceOnUse"><stop stop-color="#F4EFFF"/><stop offset="1" stop-color="#C9B8E7"/></linearGradient>
+    <linearGradient id="frame" x1="41" y1="35" x2="132" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#E9DBFF"/><stop offset="1" stop-color="#BDA1EF"/></linearGradient>
+    <linearGradient id="sky" x1="55" y1="48" x2="103" y2="108" gradientUnits="userSpaceOnUse"><stop stop-color="#E8DEFF"/><stop offset="1" stop-color="#D4BEF6"/></linearGradient>
+    <linearGradient id="mountain" x1="74" y1="84" x2="109" y2="126" gradientUnits="userSpaceOnUse"><stop stop-color="#B796E8"/><stop offset="1" stop-color="#8F6AC6"/></linearGradient>
+    <linearGradient id="sun" x1="107" y1="55" x2="119" y2="76" gradientUnits="userSpaceOnUse"><stop stop-color="#FFCD93"/><stop offset="1" stop-color="#F79E76"/></linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="3"/></filter>
+  </defs>
+  <ellipse cx="80" cy="145" rx="45" ry="5" fill="#9784B8" opacity=".19" filter="url(#blur)"/>
+  <g transform="rotate(-13 80 82)">
+    <rect x="25" y="49" width="88" height="87" rx="15" fill="url(#back)"/>
+    <path d="M31 61v59Q31 129 41 130" stroke="#FFFCFF" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+    <rect x="40" y="34" width="94" height="92" rx="15" fill="url(#frame)"/>
+    <rect x="48" y="42" width="78" height="74" rx="10" fill="url(#sky)"/>
+    <path d="M51 47h49" stroke="#F8F1FF" stroke-width="3" stroke-linecap="round" opacity=".65"/>
+    <path d="m50 103 20-25Q73 74 77 79l18 22 10-11Q108 87 112 92l12 15v1Q124 116 116 116H57Q49 116 50 108Z" fill="url(#mountain)"/>
+    <path d="m73 79 12 14H64Z" fill="#CDB3F2"/>
+    <path d="m90 110 15-18 13 18Z" fill="#AA86E0"/>
+    <circle cx="112" cy="63" r="11" fill="#B79DCD" opacity=".16"/>
+    <circle cx="112" cy="60" r="10" fill="url(#sun)"/>
+    <path d="M106 58q1-5 6-5" stroke="#FFE4B9" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>

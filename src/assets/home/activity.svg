@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none">
+  <defs>
+    <linearGradient id="edge" x1="35" y1="38" x2="106" y2="135" gradientUnits="userSpaceOnUse"><stop stop-color="#FFEAE6"/><stop offset="1" stop-color="#D89C9F"/></linearGradient>
+    <linearGradient id="paper" x1="40" y1="61" x2="115" y2="133" gradientUnits="userSpaceOnUse"><stop stop-color="#FFFDFB"/><stop offset="1" stop-color="#FFE9E5"/></linearGradient>
+    <linearGradient id="top" x1="40" y1="33" x2="96" y2="71" gradientUnits="userSpaceOnUse"><stop stop-color="#FFC0BB"/><stop offset="1" stop-color="#F68F98"/></linearGradient>
+    <linearGradient id="ring" x1="40" y1="25" x2="52" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="#FFE9DF"/><stop offset="1" stop-color="#E77987"/></linearGradient>
+    <linearGradient id="clock" x1="99" y1="96" x2="136" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#FFB7AA"/><stop offset="1" stop-color="#E97987"/></linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="3"/></filter>
+  </defs>
+  <ellipse cx="82" cy="146" rx="46" ry="5" fill="#B58E9D" opacity=".17" filter="url(#blur)"/>
+  <g transform="rotate(-7 76 80)">
+    <rect x="25" y="40" width="88" height="96" rx="15" fill="url(#edge)"/>
+    <rect x="31" y="35" width="89" height="96" rx="13" fill="url(#paper)"/>
+    <path d="M31 48Q31 35 44 35H107Q120 35 120 48V65H31Z" fill="url(#top)"/>
+    <path d="M35 61H116" stroke="#FFD7CE" stroke-width="2"/>
+    <rect x="45" y="24" width="9" height="26" rx="4.5" fill="url(#ring)"/>
+    <rect x="95" y="24" width="9" height="26" rx="4.5" fill="url(#ring)"/>
+    <path d="M48 28V42M98 28V42" stroke="#FFF2EA" stroke-width="2" stroke-linecap="round"/>
+    <g fill="#EAC1C1"><rect x="45" y="76" width="13" height="12" rx="3"/><rect x="67" y="76" width="13" height="12" rx="3"/><rect x="89" y="76" width="13" height="12" rx="3"/><rect x="45" y="98" width="13" height="12" rx="3"/><rect x="67" y="98" width="13" height="12" rx="3"/></g>
+    <rect x="67" y="76" width="13" height="12" rx="3" fill="#F29198"/>
+  </g>
+  <circle cx="117" cy="116" r="26" fill="#D68791" opacity=".15"/>
+  <circle cx="119" cy="115" r="24" fill="url(#clock)"/>
+  <circle cx="118" cy="113" r="18" fill="#FFECE4"/>
+  <path d="M118 101v13l8 4" stroke="#DB7C85" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M99 109a21 21 0 0 1 20-17" stroke="#FFD7C9" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

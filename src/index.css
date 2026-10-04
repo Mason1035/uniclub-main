@@ -1,4 +1,4 @@
-/* Theme fonts are bundled in /fonts/fonts.css; avoid blocking on external CSS. */
+/* Self-hosted semantic font stacks are defined in tokens.css. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -20,68 +20,6 @@
 }
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 210 11% 15%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 210 11% 15%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 210 11% 15%;
-
-    --primary: 142 69% 58%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 210 11% 96%;
-    --secondary-foreground: 210 11% 15%;
-
-    --muted: 210 11% 96%;
-    --muted-foreground: 210 11% 46%;
-
-    --accent: 142 69% 58%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 142 69% 58%;
-
-    --radius: 0.75rem;
-  }
-
-  .dark {
-    --background: 220 100% 2%;
-    --foreground: 213 31% 91%;
-
-    --card: 220 100% 2%;
-    --card-foreground: 213 31% 91%;
-
-    --popover: 220 100% 2%;
-    --popover-foreground: 213 31% 91%;
-
-    --primary: 142 69% 58%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 220 100% 4%;
-    --secondary-foreground: 213 31% 91%;
-
-    --muted: 220 100% 4%;
-    --muted-foreground: 217 32% 65%;
-
-    --accent: 142 69% 58%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 213 31% 91%;
-
-    --border: 220 100% 4%;
-    --input: 220 100% 4%;
-    --ring: 142 69% 58%;
-  }
-
   * {
     @apply border-border;
   }
@@ -92,7 +30,7 @@
 
   body {
     @apply bg-background text-foreground font-inter;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100%;
@@ -136,7 +74,7 @@
 
 @layer utilities {
   .font-sf {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    font-family: var(--font-ui);
   }
   
   .card-shadow {

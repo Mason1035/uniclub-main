@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none">
+  <defs>
+    <linearGradient id="body" x1="24" y1="63" x2="95" y2="115" gradientUnits="userSpaceOnUse"><stop stop-color="#FFC6C3"/><stop offset=".5" stop-color="#FF9B99"/><stop offset="1" stop-color="#E57279"/></linearGradient>
+    <linearGradient id="bell" x1="74" y1="35" x2="112" y2="106" gradientUnits="userSpaceOnUse"><stop stop-color="#FFD5D0"/><stop offset=".45" stop-color="#FFA8A2"/><stop offset="1" stop-color="#EA7F88"/></linearGradient>
+    <linearGradient id="rim" x1="90" y1="37" x2="116" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF1EA"/><stop offset=".45" stop-color="#FFCBC4"/><stop offset="1" stop-color="#F6979B"/></linearGradient>
+    <linearGradient id="inside" x1="96" y1="52" x2="108" y2="94" gradientUnits="userSpaceOnUse"><stop stop-color="#D56575"/><stop offset="1" stop-color="#F0A0A2"/></linearGradient>
+    <linearGradient id="handle" x1="48" y1="91" x2="78" y2="138" gradientUnits="userSpaceOnUse"><stop stop-color="#FFC7BE"/><stop offset="1" stop-color="#DF747C"/></linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="3"/></filter>
+  </defs>
+  <ellipse cx="79" cy="143" rx="45" ry="6" fill="#BE7B88" opacity=".14" filter="url(#blur)"/>
+  <g transform="rotate(-15 80 80)">
+    <path d="M47 91 65 87 71 130Q72 137 65 138L56 138Q51 138 50 132Z" fill="url(#handle)"/>
+    <path d="M52 103 59 101 62 129" stroke="#FFE9DF" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+    <path d="M26 69Q21 69 21 75V94Q21 102 28 102H53V68Z" fill="url(#body)"/>
+    <path d="M29 73V97" stroke="#FFE5DD" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+    <path d="M48 68Q69 59 91 36V115Q69 98 48 103Z" fill="url(#bell)"/>
+    <path d="M51 72Q71 62 86 47" stroke="#FFEAE2" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+    <path d="M49 93Q70 91 88 104" stroke="#D87480" stroke-width="2" opacity=".2"/>
+    <ellipse cx="98" cy="75" rx="20" ry="42" fill="url(#rim)"/>
+    <ellipse cx="100" cy="75" rx="13" ry="33" fill="url(#inside)"/>
+    <path d="M91 51Q88 61 88 73" stroke="#FFF3ED" stroke-width="3" stroke-linecap="round" opacity=".85"/>
+    <path d="M93 68Q101 63 110 70V83Q101 88 94 81Z" fill="url(#body)"/>
+    <ellipse cx="110" cy="76" rx="4" ry="7" fill="#F9BAB2"/>
+  </g>
+  <path d="m125 39 10-9M132 59l13-3M129 79l12 5" stroke="#F398A1" stroke-width="6" stroke-linecap="round"/>
+  <path d="m125 38 10-9M133 58l12-3" stroke="#FFDAD4" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+</svg>

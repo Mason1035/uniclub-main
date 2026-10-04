@@ -19,7 +19,7 @@
 .pet-setting-toggle { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1.25rem 0; }
 .pet-setting-range { min-width: 0; padding: 1.25rem 0; }
 .pet-settings-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 2.5rem; }
-.pet-settings output { color: hsl(var(--ink-muted)); font-family: var(--font-mono); font-size: .875rem; }
+.pet-settings output { color: hsl(var(--ink-muted)); font-family: var(--font-ui); font-variant-numeric: tabular-nums; font-size: .875rem; }
 .pet-select { width: 100%; min-height: 44px; border: 1px solid hsl(var(--input)); border-radius: 3px; padding: .5rem .75rem; background: hsl(var(--paper-raised)); color: hsl(var(--ink)); font: inherit; }
 .pet-select:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
 .pet-select:disabled { opacity: .5; }

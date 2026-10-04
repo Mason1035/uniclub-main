@@ -1,0 +1,39 @@
+.terminal-text {
+  display: inline-grid;
+  vertical-align: baseline;
+  max-width: 100%;
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
+.terminal-text__measure,
+.terminal-text__visual {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: baseline;
+  justify-self: start;
+}
+
+.terminal-text__measure { visibility: hidden; }
+
+.terminal-text__cursor {
+  display: inline-block;
+  flex: none;
+  width: .38em;
+  height: .84em;
+  background: currentColor;
+  transform: translateY(.06em);
+}
+
+.terminal-text[data-phase='HOLDING'] .terminal-text__visual > .terminal-text__cursor {
+  animation: terminal-cursor-blink 900ms ease-in-out infinite;
+}
+
+@keyframes terminal-cursor-blink {
+  0%, 35%, 100% { opacity: 1; }
+  55%, 80% { opacity: .12; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .terminal-text .terminal-text__cursor { animation: none !important; }
+}

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1000" viewBox="0 0 1500 1000">
+  <title>Neutral detail study C. Photography placeholder, no actual student notes.</title>
+  <defs><linearGradient id="table" x2="1" y2="1"><stop stop-color="#a6a997"/><stop offset="1" stop-color="#c9c6b1"/></linearGradient></defs>
+  <path fill="url(#table)" d="M0 0h1500v1000H0z"/>
+  <path fill="#848c78" d="m0 0 403 0 920 1000H741z" opacity=".6"/>
+  <path fill="#9ba087" d="m691 0 96 0 713 674v122z"/>
+  <path fill="#828b75" d="m360 368 513-166 249 612-475 168z" opacity=".48"/>
+  <path fill="#e1dfcc" d="m333 352 513-166 249 612-475 168z"/>
+  <path fill="#f1eddb" d="m450 228 434-110 178 640-430 113z"/>
+  <path fill="#cecfb9" d="m756 151 128-33 41 149z"/>
+  <path fill="#bdc2a9" d="m450 228 41 143 425 4-32-257 178 640-430 113z" opacity=".32"/>
+  <path fill="#72816b" d="m972 364 23-5 129 420-23 7z"/>
+  <path fill="#d8d3bc" d="m1101 786 23-7-3 57z"/>
+  <path fill="#9a9f88" d="m584 0 42 0 874 885v47z" opacity=".7"/>
+</svg>

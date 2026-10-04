@@ -1,11 +1,4 @@
-/* Hallmark · genre: editorial · design-system: design.md · structure: functional-directory-and-submission-desk */
-/* Hallmark · pre-emit critique: P5 H5 E4 S5 R5 V4 */
 .quant-page { min-width: 0; }
-.function-directory { border-top: 3px double hsl(var(--line-strong)); }
-.function-entry { display: grid; grid-template-columns: 3rem minmax(0, 1fr); gap: var(--space-4); padding: var(--space-8) 0; border-bottom: 1px solid hsl(var(--line)); }
-.function-number { color: hsl(var(--action)); font: 700 1.5rem var(--font-mono); }
-.function-entry h2 { font: 800 clamp(1.4rem, 3vw, 2.1rem)/1.3 var(--font-display); margin: .4rem 0 .8rem; }
-.function-entry p:not(.eyebrow) { color: hsl(var(--ink-muted)); line-height: 1.8; max-width: 42rem; margin-bottom: var(--space-6); }
 .quant-pending { display: inline-flex; align-items: center; gap: .6rem; color: hsl(var(--ink-muted)); min-height: 44px; }
 .quant-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: var(--space-4); margin-bottom: var(--space-6); }
 .quant-toolbar label { display: grid; gap: .5rem; min-width: 0; flex: 1 1 15rem; }
@@ -13,7 +6,7 @@
 .quant-workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-8); }
 .quant-instructions { border-top: 3px double hsl(var(--line-strong)); padding-top: var(--space-6); min-width: 0; }
 .quant-instructions h2, .quant-desk h2 { font: 800 1.25rem/1.5 var(--font-display); margin: 0 0 1rem; overflow-wrap: anywhere; }
-.quant-description { white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--font-reading); line-height: 1.85; margin-bottom: var(--space-6); }
+.quant-description { white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--font-body); line-height: 1.85; margin-bottom: var(--space-6); }
 .quant-facts { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: .8rem 1rem; font-size: .875rem; line-height: 1.65; }
 .quant-facts dt { color: hsl(var(--ink-muted)); }
 .quant-facts dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
@@ -37,7 +30,7 @@
 .quant-progress progress::-webkit-progress-bar { background: hsl(var(--paper-deep)); }
 .quant-progress progress::-webkit-progress-value { background: hsl(var(--action)); }
 .quant-progress progress::-moz-progress-bar { background: hsl(var(--action)); }
-.quant-progress-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; font: .8125rem/1.6 var(--font-mono); margin-top: .75rem; }
+.quant-progress-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; font: .8125rem/1.6 var(--font-ui); font-variant-numeric: tabular-nums; margin-top: .75rem; }
 .quant-success { color: hsl(var(--success)); font-size: .875rem; line-height: 1.7; margin-top: 1rem; }
 .quant-download-dialog { max-height: 85dvh; overflow-y: auto; }
 .quant-download-list { list-style: none; padding: 0; margin: 1rem 0; display: grid; gap: .75rem; }
@@ -52,5 +45,5 @@
 .quant-check { width: 20px; height: 20px; accent-color: hsl(var(--action)); }
 .quant-check-label { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
 @media (hover: hover) and (pointer: fine) { .quant-drop:not(:disabled):hover { background: hsl(var(--paper-deep)); } }
-@media (min-width: 48rem) { .quant-workspace { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); } .function-entry { grid-template-columns: 5rem minmax(0, 1fr); } .function-number { font-size: 2rem; } }
+@media (min-width: 48rem) { .quant-workspace { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); } }
 @media (prefers-reduced-motion: reduce) { .quant-drop { transition: none; } }

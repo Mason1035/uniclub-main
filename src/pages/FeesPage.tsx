@@ -1,3 +1,5 @@
+import PageShell from '../components/PageShell';
+import EmptyState from '../components/EmptyState';
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -10,7 +12,7 @@ import FeeProofDialog from '../components/fees/FeeProofDialog';
 import { useUser } from '../context/userContextState';
 import { feesApi } from '../lib/feesApi';
 import { errorMessage } from './admin/adminApi';
-import { AdminButton, Badge, EmptyState, ErrorState, Field, LoadingState, TextArea } from './admin/components';
+import { AdminButton, Badge, ErrorState, Field, LoadingState, TextArea } from './admin/components';
 import { formatDate } from './admin/formatting';
 import '../styles/fees.css';
 
@@ -53,7 +55,7 @@ export default function FeesPage() {
     } finally { busy.current = false; setSaving(false); }
   };
 
-  return <div className="fee-page">
+  return <PageShell className="fee-page">
     <Link className="inline-flex items-center gap-2 text-primary mb-5 text-sm" to="/functions"><ArrowLeft size={16} aria-hidden="true"/>返回功能</Link>
     <PageHeading title="交班费" description="请完成付款后上传支付成功截图。"/>
     <div className="fee-workspace">
@@ -62,7 +64,7 @@ export default function FeesPage() {
         {settings.isPending ? <LoadingState/> : settings.isError ? <ErrorState message={errorMessage(settings.error)} onRetry={() => void settings.refetch()}/> : settings.data?.hasPaymentQr ? <>
           <FeeImage path="/api/fees/payment-qr" version={settings.data.updatedAt} sessionKey={user.id} alt="班费付款二维码" className="fee-qr-image"/>
           <p className="fee-hint mt-4">请使用微信扫码完成付款，再提交支付成功截图。</p>
-        </> : <EmptyState title="管理员尚未设置付款二维码" description="请等待管理员设置付款码，或联系班委。"/>}
+        </> : <EmptyState illustration="activity" title="管理员尚未设置付款二维码" description="请等待管理员设置付款码，或联系班委。"/>}
       </section>
       <section className="fee-submission-desk" aria-labelledby="fee-submit-title">
         <h2 id="fee-submit-title">我的缴费凭证</h2>
@@ -83,5 +85,5 @@ export default function FeesPage() {
       </section>
     </div>
     <FeeProofDialog submission={viewProof && submission ? submission : null} sessionKey={user.id} onClose={() => setViewProof(false)}/>
-  </div>;
+  </PageShell>;
 }

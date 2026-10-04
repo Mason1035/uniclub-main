@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1400" viewBox="0 0 1000 1400">
+  <title>Neutral space study B. Photography placeholder.</title>
+  <defs><linearGradient id="space" x2=".8" y2="1"><stop stop-color="#dedbd0"/><stop offset="1" stop-color="#a7aca0"/></linearGradient><linearGradient id="step" x2="0" y2="1"><stop stop-color="#c9c9bb"/><stop offset="1" stop-color="#929b8b"/></linearGradient></defs>
+  <path fill="url(#space)" d="M0 0h1000v1400H0z"/>
+  <path fill="#7f8b79" d="M0 0h222v1400H0z"/>
+  <path fill="#b6bdac" d="M222 0h17v1400h-17z"/>
+  <path fill="#ede8d6" d="m584 0 416 0v1040L239 558V423z"/>
+  <path fill="#a9b29d" d="m239 558 761 482v9L239 568z"/>
+  <path fill="#65735f" d="M0 941 518 715l482 203v482H0z"/>
+  <path fill="url(#step)" d="M0 1114 516 857l484 212v58L0 1199z"/>
+  <path fill="#d1d0bf" d="M0 1086 516 820l484 221v28L516 857 0 1114z"/>
+  <path fill="#7b8972" d="M0 1199 516 945l484 182v71L0 1289z"/>
+  <path fill="#c5c8b5" d="M0 1167 516 911l484 185v31L516 945 0 1199z"/>
+  <path fill="#8f9b80" d="M0 1290 517 1031l483 167v99L0 1400z"/>
+  <path fill="#bfc4ad" d="M0 1262 517 1001l483 168v29l-483-167L0 1290z"/>
+  <path fill="#eeead4" d="m423 823 93-40 484 221v33L516 820l-33 17z" opacity=".72"/>
+  <path fill="#ede8d0" d="m599 955 401 157v60L681 1040z" opacity=".4"/>
+</svg>

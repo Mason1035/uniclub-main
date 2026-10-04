@@ -1,0 +1,151 @@
+/* Member-facing design primitives, extracted from the accepted homepage. */
+.page-shell { min-width: 0; }
+.illustration { display: block; object-fit: contain; height: auto; flex-shrink: 0; user-select: none; }
+.illustration--small { width: 4.5rem; }
+.illustration--medium { width: 7.5rem; }
+.illustration--large { width: 10rem; }
+.content-card,
+.page-shell :is(.announcement-entry, .news-entry, .schedule-entry, .resource-entry, .archive-entry, .social-entry),
+.page-shell > .content-state:not(.empty-state) {
+  padding: var(--card-padding);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+.content-card { min-width: 0; }
+.page-shell :is(.announcement-list, .article-list, .schedule-list, .resource-list, .resource-grid, .archive-strip, .saved-list, .notification-list) { gap: var(--card-gap); }
+.page-shell .article-list, .page-shell .saved-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.page-shell .schedule-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.page-shell .resource-grid { gap: var(--card-gap); }
+.page-shell :is(.announcement-list, .resource-list, .notification-list) { display: grid; grid-template-columns: minmax(0, 1fr); }
+.page-shell .archive-strip { align-items: start; }
+.entry-illustration { display: none; }
+.page-shell .entry-illustration { display: block; }
+.empty-state { display: flex; align-items: center; gap: clamp(1.25rem, 3vw, 2.5rem); min-height: 15rem; padding: clamp(1.5rem, 4vw, 3rem); }
+.empty-state h3 { font-family: var(--font-ui); font-weight: 650; font-size: var(--text-h3); }
+.empty-state p { max-width: 36rem; font-size: .9375rem; }
+.empty-state .illustration { width: clamp(5.5rem, 10vw, 8.5rem); }
+.page-shell .content-state:not(.empty-state) { border-block: 0; }
+.loading-line { border-radius: 999px; }
+
+/* Each content type keeps its own hierarchy within the shared surface. */
+.page-shell .announcement-entry { grid-template-columns: 3.75rem minmax(0, 1fr) auto; gap: 1.25rem; align-items: start; }
+.page-shell .announcement-entry .entry-illustration { width: 3.75rem; }
+.page-shell .announcement-entry h3 { font-size: clamp(1.125rem, 1.3vw, 1.375rem); line-height: 1.5; }
+.page-shell .announcement-entry p { max-width: 65ch; font-size: .9375rem; line-height: 1.85; }
+.page-shell .announcement-entry time { padding-top: .4rem; white-space: nowrap; }
+.page-shell .news-entry { height: 100%; }
+.page-shell .news-entry-top { gap: 1rem; }
+.page-shell .news-entry h3 { font-size: clamp(1.2rem, 1.5vw, 1.5rem); }
+.page-shell .news-entry .entry-image { width: 7rem; height: 6rem; border-radius: var(--radius-control); }
+.page-shell .news-entry .entry-illustration { width: 4.5rem; }
+.page-shell .news-entry .entry-description { max-width: 65ch; }
+.page-shell .schedule-entry { grid-template-columns: 4.75rem minmax(0, 1fr); gap: 1.25rem; }
+.page-shell .schedule-date { padding-right: .75rem; }
+.page-shell .schedule-date strong { font-size: 1.5rem; white-space: nowrap; }
+.page-shell .schedule-entry h3 { font-size: 1.25rem; font-weight: 700; }
+.page-shell .schedule-image { border-radius: var(--radius-control); }
+.page-shell .resource-entry { grid-template-columns: 4.5rem minmax(0, 1fr); gap: 1.25rem; }
+.page-shell .resource-entry .entry-illustration { grid-column: 1; grid-row: 1; }
+.page-shell .resource-entry > svg { grid-column: 1; grid-row: 1; align-self: start; justify-self: end; margin-top: 3.25rem; padding: .2rem; width: 1.4rem; height: 1.4rem; background: var(--surface-solid); border-radius: 5px; }
+.page-shell .resource-entry > div { grid-column: 2; grid-row: 1; }
+.page-shell .resource-entry h3 { font-size: 1.25rem; }
+.page-shell .archive-entry img { border-radius: var(--radius-control); }
+.page-shell .archive-entry > a > div { border-radius: var(--radius-control); }
+.page-shell .social-feed { display: grid; gap: var(--card-gap); }
+.page-shell .social-entry p { line-height: 1.85; }
+.interaction { border-radius: var(--radius-control); }
+.interaction:hover { border-color: transparent; background: hsl(var(--action) / .06); }
+.status-label { border-color: hsl(var(--line)); background: hsl(var(--paper-deep) / .4); }
+.status-label.important { background: hsl(var(--action) / .07); border-color: transparent; }
+.status-label.urgent { background: hsl(var(--error) / .07); border-color: transparent; }
+.feature-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--card-gap); }
+.feature-card { display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; padding: clamp(1.5rem, 3vw, 2.5rem); }
+.feature-card .illustration { width: 7.5rem; }
+.feature-card h2 { font-size: var(--text-h2); font-weight: 700; }
+.feature-card p { margin-top: .75rem; color: hsl(var(--ink-muted)); font-size: .9375rem; line-height: 1.85; max-width: 42ch; }
+.feature-card .ed-button { margin-top: auto; }
+
+/* One continuous reading surface, rather than a stack of cards. */
+.reading-page { padding: clamp(1.25rem, 4vw, 3rem); border: 1px solid var(--border-subtle); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow-card); }
+.reading-page .page-heading { margin-bottom: 1rem; }
+.reading-page .content-state { padding-inline: 0; background: transparent; border: 0; box-shadow: none; }
+.reading-page .detail-meta { border-top: 0; gap: .5rem 1.25rem; }
+.detail-image, .gallery-grid img, .reading-page video, .reading-page iframe { border-radius: var(--radius-control); }
+.reading-body :is(pre, table) { max-width: 100%; overflow-x: auto; }
+.reading-body pre { white-space: pre; }
+.reading-body a { overflow-wrap: anywhere; }
+.reading-page :is(ul, ol) { padding-left: 1.5rem; }
+.calendar-header { margin-bottom: 1.5rem; }
+.calendar-grid { border-radius: var(--radius-control); overflow: hidden; }
+.calendar-day { border-radius: 8px; }
+.events-page section[aria-label='活动月历'] { background: var(--surface); padding: var(--card-padding); border: 1px solid var(--border-subtle); border-radius: var(--radius-card); box-shadow: var(--shadow-card); }
+
+/* Settings and submission desks retain their existing forms and state. */
+.settings-workspace { max-width: none; }
+.settings-workspace .page-heading { max-width: none; }
+.account-settings-nav { max-width: 50rem; border: 0; padding: .75rem; background: var(--surface); border-radius: var(--radius-card); box-shadow: var(--shadow-card); margin-block: 1.25rem 1.5rem; }
+.account-settings-nav a { border-radius: var(--radius-control); padding-inline: .75rem; }
+.account-settings-nav a:hover { background: hsl(var(--action) / .05); }
+.settings-workspace :is(.account-section, .pet-settings) { max-width: 50rem; padding: var(--card-padding); background: var(--surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-card); box-shadow: var(--shadow-card); margin-bottom: var(--card-gap); }
+.settings-workspace .account-section-heading { border-color: hsl(var(--line)); }
+:is(.site-shell, .auth-layout, .dialog-panel) :is(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']), textarea, select), .pet-select { border-radius: var(--radius-control); }
+:is(.site-shell, .auth-layout, .dialog-panel) :is(input[type='checkbox'], input[type='radio']) { accent-color: hsl(var(--action)); }
+:is(.site-shell, .auth-layout, .dialog-panel) :is(input, select, textarea):not([type='range']):not([type='file']):not([type='checkbox']):not([type='radio']) { font-size: max(1rem, var(--text-ui)); }
+.quant-page :is(.quant-instructions, .quant-desk), .fee-page :is(.fee-qr-desk, .fee-submission-desk) { background: var(--surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: var(--card-padding); }
+.quant-drop, .fee-file-control, .fee-selected-image, .quant-note, .fee-notice { border-radius: var(--radius-control); }
+.quant-toolbar select { border-radius: var(--radius-control); }
+.auth-illustration { margin-top: 2rem; width: 9rem; }
+.auth-form { align-self: center; }
+.debug-page .debug-workspace { max-width: none; }
+.debug-page pre { background: hsl(var(--paper-deep) / .35); border-radius: var(--radius-control); }
+.dialog-panel [cmdk-item], .mobile-menu a { border-radius: var(--radius-control); }
+.dialog-panel h2 { line-height: 1.4; padding-right: 1.5rem; }
+.dialog-panel > p { margin-top: .5rem; }
+.mobile-menu a { border-bottom: 0; background: hsl(var(--paper-deep) / .35); }
+.pet-bubble, .pet-menu { border-radius: var(--radius-control); border-color: hsl(var(--line)); background: var(--surface-solid); }
+
+/* Keep the accepted home card contents and CTA shape unchanged. */
+.home-card .entry-illustration { display: none; }
+.home-card .resource-entry > div { grid-column: auto; grid-row: auto; }
+.home-card .social-entry { padding-block: 1.5rem; border-bottom: 1px solid hsl(var(--line)); }
+.home-page .hero .ed-button { border-radius: .1875rem; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .page-shell :is(.announcement-entry, .news-entry, .schedule-entry, .resource-entry, .archive-entry, .social-entry, .feature-card) { transition: border-color var(--motion-fast), box-shadow var(--motion-fast); }
+  .page-shell :is(.announcement-entry, .news-entry, .schedule-entry, .resource-entry, .archive-entry, .social-entry, .feature-card):hover { border-color: hsl(var(--line)); box-shadow: var(--shadow-card-hover); }
+}
+@media (max-width: 1023px) {
+  .page-shell .article-list, .page-shell .schedule-list, .page-shell .saved-list { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 767px) {
+  .feature-grid { grid-template-columns: minmax(0, 1fr); }
+  .empty-state { min-height: 13rem; gap: 1rem; }
+  .page-shell .archive-strip { grid-template-columns: minmax(0, 1fr); }
+  .page-shell .announcement-entry { grid-template-columns: 3rem minmax(0, 1fr); gap: .75rem; }
+  .page-shell .announcement-entry .entry-illustration { width: 3rem; grid-row: 1 / 3; }
+  .page-shell .announcement-entry > div { grid-column: 2; grid-row: 2; }
+  .page-shell .announcement-entry time { grid-column: 2; grid-row: 1; order: initial; padding: 0; }
+  .page-shell .resource-entry { grid-template-columns: 3.5rem minmax(0, 1fr); gap: .75rem; }
+  .page-shell .resource-entry .entry-illustration { width: 3.5rem; }
+  .page-shell .resource-entry > svg { margin-top: 2.25rem; }
+  .page-shell .schedule-entry { gap: .85rem; }
+  .page-shell .news-entry .entry-image { width: 5rem; height: 5rem; }
+  .reading-page { padding: 1.25rem; }
+  .events-page section[aria-label='活动月历'] { padding: .85rem; }
+  .calendar-weekday { font-size: .75rem; }
+  .filter-bar { gap: .5rem; }
+  .filter-option { padding-inline: .8rem; }
+  .auth-illustration { display: none; }
+  .auth-form { margin-top: 1.5rem; }
+}
+@media (max-width: 479px) {
+  .empty-state { flex-direction: column; align-items: flex-start; padding: 1.5rem; gap: .75rem; }
+  .empty-state .illustration { width: 6rem; }
+  .page-shell .news-entry .entry-illustration { width: 3.5rem; }
+  .page-shell .resource-entry .interactions { margin-left: -4.25rem; }
+  .debug-page .grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+.fee-page button.rounded-sm { border-radius: var(--radius-control); }
+.fee-qr-desk .empty-state { background: transparent; box-shadow: none; border: 0; padding: 0; min-height: 12rem; flex-direction: column; align-items: flex-start; gap: .75rem; }

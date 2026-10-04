@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none">
+  <defs>
+    <linearGradient id="back" x1="30" y1="41" x2="115" y2="134" gradientUnits="userSpaceOnUse"><stop stop-color="#E4E9FF"/><stop offset="1" stop-color="#B1BCE4"/></linearGradient>
+    <linearGradient id="sheet" x1="46" y1="26" x2="109" y2="140" gradientUnits="userSpaceOnUse"><stop stop-color="#B5C4FF"/><stop offset=".45" stop-color="#8DA6F8"/><stop offset="1" stop-color="#748BCF"/></linearGradient>
+    <linearGradient id="side" x1="36" y1="36" x2="46" y2="132" gradientUnits="userSpaceOnUse"><stop stop-color="#D2DDFF"/><stop offset="1" stop-color="#9BAADE"/></linearGradient>
+    <linearGradient id="ink" x1="61" y1="47" x2="103" y2="116" gradientUnits="userSpaceOnUse"><stop stop-color="#F3F6FF"/><stop offset="1" stop-color="#D1DBFB"/></linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="3"/></filter>
+  </defs>
+  <ellipse cx="81" cy="146" rx="39" ry="5" fill="#7E89AD" opacity=".18" filter="url(#blur)"/>
+  <g transform="rotate(-8 80 80)">
+    <rect x="29" y="43" width="83" height="94" rx="14" fill="url(#back)"/>
+    <path d="M38 41Q38 26 50 26H112Q124 26 124 39V121Q124 136 110 136H51Q39 136 38 124Z" fill="url(#side)"/>
+    <rect x="45" y="26" width="79" height="105" rx="13" fill="url(#sheet)"/>
+    <path d="M51 37Q52 31 61 31H105" stroke="#D2DEFF" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+    <rect x="61" y="48" width="41" height="9" rx="4.5" fill="url(#ink)"/>
+    <rect x="61" y="71" width="48" height="6" rx="3" fill="url(#ink)"/>
+    <rect x="61" y="86" width="48" height="6" rx="3" fill="url(#ink)"/>
+    <rect x="61" y="101" width="31" height="6" rx="3" fill="url(#ink)"/>
+    <path d="M35 63v59Q35 130 43 132" stroke="#F5F7FF" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+  </g>
+</svg>

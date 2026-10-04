@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useState, type ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useUser } from '../context/userContextState';
 import { usePopup } from '../context/popupContextState';
@@ -13,6 +13,13 @@ export default function Layout({ children }: { children: ReactNode }) {
   const { showUserProfile, openUserProfile, closeUserProfile } = usePopup();
   const { pathname } = useLocation();
   const [searchOpen, setSearchOpen] = useState(false);
+  // Keep the accepted home presentation; shared neutral tokens serve all routes.
+  useLayoutEffect(() => {
+    if (pathname !== '/') return;
+    const root = document.documentElement;
+    root.setAttribute('data-classhub-page', 'home');
+    return () => root.removeAttribute('data-classhub-page');
+  }, [pathname]);
   useEffect(() => { const handle = (event: KeyboardEvent) => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k' && isAuthenticated) { event.preventDefault(); setSearchOpen(open => !open); } }; window.addEventListener('keydown', handle); return () => window.removeEventListener('keydown', handle); }, [isAuthenticated]);
   if (pathname === '/auth') return <>{children}</>;
   if (isLoading) return <div className="site-container py-12"><ContentState loading/></div>;

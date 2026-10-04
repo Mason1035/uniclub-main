@@ -1,0 +1,38 @@
+[
+  {
+    "beats": 9,
+    "clientWidth": 1425,
+    "columns": "12",
+    "imagesComplete": true,
+    "outside": [],
+    "scrollWidth": 1425,
+    "viewport": 1440
+  },
+  {
+    "beats": 9,
+    "clientWidth": 1265,
+    "columns": "12",
+    "imagesComplete": true,
+    "outside": [],
+    "scrollWidth": 1265,
+    "viewport": 1280
+  },
+  {
+    "beats": 9,
+    "clientWidth": 753,
+    "columns": "8",
+    "imagesComplete": true,
+    "outside": [],
+    "scrollWidth": 753,
+    "viewport": 768
+  },
+  {
+    "beats": 9,
+    "clientWidth": 375,
+    "columns": "4",
+    "imagesComplete": true,
+    "outside": [],
+    "scrollWidth": 375,
+    "viewport": 390
+  }
+]

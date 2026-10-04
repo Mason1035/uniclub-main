@@ -1,0 +1,56 @@
+{
+  "note": "Page subsets of the same cached fonts selected by Typography Lab. No downloaded fonts or production font changes.",
+  "totalBytes": 319940,
+  "files": [
+    {
+      "file": "serif.woff2",
+      "family": "Concept Han Serif",
+      "bytes": 151984,
+      "glyphs": 455,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 250.0,
+          "max": 900.0
+        }
+      ],
+      "missingChinese": []
+    },
+    {
+      "file": "sans.woff2",
+      "family": "Concept Han Sans",
+      "bytes": 119596,
+      "glyphs": 455,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 250.0,
+          "max": 900.0
+        }
+      ],
+      "missingChinese": []
+    },
+    {
+      "file": "smiley.woff2",
+      "family": "Concept Smiley",
+      "bytes": 1804,
+      "glyphs": 11,
+      "axes": [],
+      "missingChinese": []
+    },
+    {
+      "file": "latin.woff2",
+      "family": "Concept Grotesk",
+      "bytes": 46556,
+      "glyphs": 208,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 400.0,
+          "max": 900.0
+        }
+      ],
+      "missingChinese": []
+    }
+  ]
+}

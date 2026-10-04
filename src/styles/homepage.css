@@ -1,0 +1,124 @@
+/* Preserve the accepted home presentation when a member chooses dark mode. */
+:root[data-classhub-page='home'] {
+  color-scheme: light;
+  --page-bg: #E9E9E9;
+  --surface: rgb(255 255 255 / .84); --surface-solid: #FCFCFC;
+  --border-subtle: rgb(255 255 255 / .82);
+  --paper: 0 0% 91.372549%;
+  --paper-raised: 0 0% 99%;
+  --paper-deep: 220 7% 88%;
+  --ink: 0 0% 11.372549%;
+  --ink-muted: 220 5% 39%;
+  --line: 220 8% 83%;
+  --line-strong: 220 6% 66%;
+  --action: 210 80% 39%;
+  --action-hover: 210 80% 31%;
+  --on-action: 0 0% 100%;
+  --error: 2 74% 34%;
+  --success: 165 66% 24%;
+}
+
+.home-page { --home-card-radius: var(--radius-card); --home-card-gap: var(--card-gap); }
+.home-card-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: var(--home-card-gap); }
+.home-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: clamp(5.5rem, 8vw, 7.5rem) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(.75rem, 1.5vw, 1.4rem);
+  min-height: 12rem;
+  padding: clamp(1.25rem, 2vw, 1.75rem);
+  margin: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--home-card-radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.home-card--wide { grid-column: 1 / -1; min-height: 12.5rem; }
+.home-card__art { align-self: start; display: grid; place-items: center; padding-top: .1rem; }
+.home-card__art img { width: 100%; height: auto; user-select: none; }
+.home-card__content { min-width: 0; }
+.home-card__heading {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .25rem .75rem;
+  padding-bottom: .6rem;
+  margin-bottom: .6rem;
+  border-bottom: 1px solid hsl(var(--line) / .85);
+}
+.home-card__heading h2 { font-size: clamp(1.25rem, 1.3vw + .3rem, 1.625rem); line-height: 1.4; letter-spacing: -.015em; }
+.home-card__heading .editorial-heading { font-weight: 650; letter-spacing: 0; }
+.home-card__heading .signature-heading { font-weight: 400; font-size: clamp(1.5rem, 1.7vw, 1.75rem); }
+.home-card__link { font-family: var(--font-ui); font-size: .8125rem; font-weight: 550; gap: .15rem; margin-left: auto; }
+.home-card__link span { display: inline-block; transition: transform 160ms ease; }
+.home-card__link:hover span { transform: translateX(2px); }
+.home-card__body { font-size: .9375rem; }
+.home-card .content-state { padding: .3rem 0 .45rem; border: 0; }
+.home-card .content-state h3 { font-family: var(--font-ui); font-size: .9375rem; font-weight: 550; margin-bottom: .35rem; }
+.home-card .content-state p { font-size: .875rem; line-height: 1.75; }
+.home-card .loading-line { border-radius: 3px; }
+.home-featured { grid-column: 1 / -1; padding: .25rem 1.5rem; }
+.home-featured:empty { display: none; }
+.home-featured > div { border-bottom: 0; }
+
+/* Keep existing content components and their interactions; fit their dense
+   states into the new cards without altering the standalone list pages. */
+.home-card .announcement-entry { padding-block: .8rem; }
+.home-card .announcement-entry h3 { font-size: 1.125rem; }
+.home-card .announcement-entry p { max-width: 48rem; font-size: .9375rem; line-height: 1.8; }
+.home-card .schedule-entry { grid-template-columns: 4.75rem minmax(0, 1fr); gap: .85rem; padding-block: 1rem; }
+.home-card .schedule-date { padding-right: .7rem; }
+.home-card .schedule-date strong { font-size: 1.375rem; white-space: nowrap; }
+.home-card .schedule-entry h3 { font-size: 1.0625rem; font-weight: 650; }
+.home-card .news-entry { padding-block: 1rem; }
+.home-card .news-entry h3 { font-size: 1.125rem; }
+.home-card .news-entry-top { gap: .75rem; }
+.home-card .news-entry .entry-image { width: 72px; height: 64px; border-radius: 8px; }
+.home-card .resource-entry { gap: .65rem; grid-template-columns: 1.3rem minmax(0, 1fr); padding-block: 1rem; }
+.home-card .resource-entry > svg { width: 18px; height: 18px; }
+.home-card .resource-entry h3 { font-size: 1.0625rem; }
+.home-card .entry-meta { gap: .35rem .65rem; font-size: .75rem; }
+.home-card .entry-description { font-size: .875rem; }
+.home-card .interactions { gap: .1rem; }
+.home-card .interaction { padding-inline: .4rem; font-size: .75rem; }
+.home-card .home-social-entry { border-bottom: 1px solid hsl(var(--line)); padding-block: 1rem; }
+.home-card :is(.schedule-entry, .news-entry, .resource-entry, .home-social-entry):last-child { border-bottom: 0; padding-bottom: .25rem; }
+.home-card .archive-strip { gap: 1.5rem; padding-top: .5rem; }
+.home-card .archive-entry img { border-radius: 10px; }
+.home-card .archive-entry h3 { font-size: 1.125rem; }
+.home-card :is(h3, p, a) { overflow-wrap: anywhere; }
+.home-card .home-card__link { overflow-wrap: normal; }
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .home-card:hover { border-color: rgb(255 255 255); box-shadow: 0 2px 3px rgb(28 34 48 / .03), 0 8px 20px rgb(28 34 48 / .045); }
+}
+
+@media (max-width: 900px) {
+  .home-card-grid { grid-template-columns: minmax(0, 1fr); }
+  .home-card { grid-template-columns: 7rem minmax(0, 1fr); min-height: 11rem; }
+  .home-card__heading h2 { font-size: 1.5rem; }
+}
+
+@media (max-width: 767px) {
+}
+
+@media (max-width: 599px) {
+  .home-card { grid-template-columns: 4.25rem minmax(0, 1fr); align-items: center; gap: .5rem .75rem; padding: 1.1rem; border-radius: 20px; min-height: auto; }
+  .home-card__content { display: contents; }
+  .home-card__heading { grid-column: 2; flex-direction: column; align-items: flex-start; gap: 0; border-bottom: 0; padding: 0; margin: 0; }
+  .home-card__heading h2 { font-size: 1.25rem; }
+  .home-card__heading .signature-heading { font-size: 1.5rem; }
+  .home-card__link { margin-left: 0; min-height: 36px; }
+  .home-card__body { grid-column: 1 / -1; border-top: 1px solid hsl(var(--line)); padding-top: .85rem; }
+  .home-card .content-state { padding-block: .1rem .25rem; }
+  .home-card .announcement-entry { grid-template-columns: minmax(0, 1fr); }
+  .home-card .announcement-entry time { order: -1; }
+  .home-card .archive-strip { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+  .home-featured { padding-inline: .5rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-card, .home-card__link span { transition: none; }
+  .home-card__link:hover span { transform: none; }
+}

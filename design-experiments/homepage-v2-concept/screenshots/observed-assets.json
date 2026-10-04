@@ -1,0 +1,79 @@
+{
+  "fonts": [
+    {
+      "id": "aa0beaa684ab72a6",
+      "kind": "font",
+      "name": "serif.woff2",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "link"
+        },
+        {
+          "kind": "attribute",
+          "nodeId": 1436,
+          "property": "href"
+        }
+      ],
+      "url": "http://127.0.0.1:5177/fonts/serif.woff2"
+    },
+    {
+      "id": "5fff0666512103fa",
+      "kind": "font",
+      "name": "sans.woff2",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "link"
+        },
+        {
+          "kind": "attribute",
+          "nodeId": 1437,
+          "property": "href"
+        }
+      ],
+      "url": "http://127.0.0.1:5177/fonts/sans.woff2"
+    },
+    {
+      "id": "78c4971a40238c19",
+      "kind": "font",
+      "name": "latin.woff2",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "link"
+        },
+        {
+          "kind": "attribute",
+          "nodeId": 1438,
+          "property": "href"
+        }
+      ],
+      "url": "http://127.0.0.1:5177/fonts/latin.woff2"
+    },
+    {
+      "id": "01be9f258521540b",
+      "kind": "font",
+      "name": "smiley.woff2",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "css"
+        }
+      ],
+      "url": "http://127.0.0.1:5177/fonts/smiley.woff2"
+    }
+  ],
+  "summary": {
+    "byKind": {
+      "font": 4,
+      "image": 3,
+      "other": 0,
+      "script": 8,
+      "stylesheet": 3,
+      "video": 0
+    },
+    "inlineSvgCount": 7,
+    "totalCount": 18
+  }
+}

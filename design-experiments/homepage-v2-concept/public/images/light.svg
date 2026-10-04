@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1350" viewBox="0 0 2400 1350">
+  <title>Neutral light study A. Photography placeholder, not a real classroom.</title>
+  <defs><linearGradient id="wall" x2=".7" y2="1"><stop stop-color="#b0b8a7"/><stop offset="1" stop-color="#d2d0bd"/></linearGradient><linearGradient id="floor" x2=".1" y2="1"><stop stop-color="#929d8c"/><stop offset="1" stop-color="#c9c6b2"/></linearGradient><linearGradient id="light" x2="1" y2=".7"><stop stop-color="#f8f0d4"/><stop offset="1" stop-color="#ebe6cf"/></linearGradient></defs>
+  <path fill="url(#wall)" d="M0 0h2400v1350H0z"/>
+  <path fill="#778574" d="M0 0h174v930H0z"/>
+  <path fill="#909d87" d="M174 0h486v930H174z"/>
+  <path fill="#697965" d="M183 0h24v930h-24zm436 0h30v930h-30z"/>
+  <path fill="#8c9880" d="M207 191h413v23H207zm0 377h413v27H207z"/>
+  <path fill="url(#floor)" d="M0 930h2400v420H0z"/>
+  <path fill="url(#light)" d="M735 0h538l536 930h-596z"/>
+  <path fill="#f3ecd2" d="m1273 0 536 930 591 420H870l-391-120 734-300L735 0z" opacity=".66"/>
+  <path fill="#6f7b68" d="M660 0h71l479 930-44 18z" opacity=".7"/>
+  <path fill="#c0c3a9" d="m731 385 178-14 74 23-170 23 387 510-34 21z"/>
+  <path fill="#697963" d="m173 930 34 0 787 420h-85zm446 0h30l1212 420h-128z" opacity=".65"/>
+  <path fill="#858f77" d="m206 1036 414-159 128 104-402 160 842 209h-134z" opacity=".48"/>
+  <path fill="#e8e3cd" d="M1809 930h591v6h-587z" opacity=".9"/>
+</svg>
