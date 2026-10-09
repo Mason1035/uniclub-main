@@ -11,7 +11,7 @@ const publicUpload = (u) => u ? ({ id: idOf(u), originalFilename: u.originalFile
 class QuantificationService {
   constructor({ repository = new Repository(), storage, settings, storageFactory = createStorageAdapter, now = () => new Date() } = {}) {
     this.repo = repository;
-    this.settings = settings || (storage ? null : new StorageSettings());
+    this.settings = settings || (storage ? null : StorageSettings.sharedStorageSettings);
     this.fixedStorage = Boolean(storage);
     this.storageFactory = storageFactory;
     this.storage = storage || storageFactory(this.settings.environment());

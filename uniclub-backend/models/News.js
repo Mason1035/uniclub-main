@@ -17,6 +17,17 @@ const NewsSchema = new mongoose.Schema({
   originalAuthor: { type: String }, // Author name from news source
   originalUrl: { type: String }, // Source URL for deduplication
   sourceHash: { type: String, unique: true }, // Hash for duplicate detection
+  origin: { type: String, enum: ['manual', 'ai_daily'], default: 'manual' },
+  automationDate: { type: String },
+  generationBatchId: { type: String },
+  automationIndex: { type: Number },
+  generatedAt: { type: Date },
+  automationCommittedAt: { type: Date },
+  automationArchivedAt: { type: Date },
+  singlePrimarySource: { type: Boolean },
+  sourceReferences: [{
+    title: String, publisher: String, url: String, publishedAt: Date,
+  }],
   
   // Content management
   status: { 
@@ -28,7 +39,7 @@ const NewsSchema = new mongoose.Schema({
   // Categories matching your frontend and newsConstants.js
   categories: [{
     type: String,
-    enum: ['AI/ML', 'Startups', 'Tech Industry', 'Cybersecurity', 'Software Development', 'Gaming', 'Gadgets', 'IoT', 'Mobile Tech', 'Hardware']
+    enum: ['AI/ML', 'Startups', 'Tech Industry', 'Cybersecurity', 'Software Development', 'Gaming', 'Gadgets', 'IoT', 'Mobile Tech', 'Hardware', 'Science', 'Education']
   }],
   
   // Media
@@ -70,5 +81,10 @@ NewsSchema.index({ publishedAt: -1 });
 NewsSchema.index({ status: 1 });
 NewsSchema.index({ categories: 1 });
 NewsSchema.index({ originalUrl: 1 });
+NewsSchema.index({ origin: 1, generationBatchId: 1, publishedAt: -1 });
+NewsSchema.index({ generationBatchId: 1, automationIndex: 1 }, {
+  name: 'daily_news_batch_article_unique', unique: true,
+  partialFilterExpression: { origin: 'ai_daily' },
+});
 
-module.exports = mongoose.model('News', NewsSchema); 
+module.exports = mongoose.model('News', NewsSchema);

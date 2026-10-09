@@ -67,4 +67,36 @@
 .search-panel .search-result h3 { line-height: 1.5; }
 .search-panel .search-result p { margin-top: .25rem; line-height: 1.65; }
 .search-status { padding: 1rem .75rem; color: hsl(var(--ink-muted)); font-size: .875rem; line-height: 1.6; }
+
+@media (max-width: 767px) {
+  .dialog-panel.search-panel {
+    --search-mobile-inset: clamp(max(4rem, env(safe-area-inset-top, 0px)), calc(var(--search-viewport-height, 100dvh) * .2), 9rem);
+    --search-mobile-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+    --search-mobile-duration: 400ms;
+    --search-mobile-ease: cubic-bezier(.45, 0, .25, 1);
+    top: calc(var(--search-viewport-top, 0px) + var(--search-mobile-inset));
+    transform: translateX(-50%);
+    max-height: calc(var(--search-viewport-height, 100dvh) - var(--search-mobile-inset) - var(--search-mobile-bottom));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: top var(--search-mobile-duration) var(--search-mobile-ease);
+  }
+  .search-panel .search-title, .search-panel .search-field { flex-shrink: 0; }
+  .search-panel [cmdk-root] { display: flex; flex-direction: column; min-height: 0; }
+  .search-panel .search-results { min-height: 0; max-height: none; }
+  .dialog-panel.ui-motion-centered.search-panel[data-state='open'] {
+    animation: search-mobile-in var(--search-mobile-duration) var(--search-mobile-ease);
+  }
+  /* The original mobile anchor must not inherit the centered dialog exit. */
+  .dialog-panel.ui-motion-centered.search-panel[data-state='closed'] { animation: none; }
+}
+@keyframes search-mobile-in {
+  from { opacity: 0; transform: translate(-50%, 28px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
 @media (prefers-reduced-motion: reduce) { .search-field { transition: none; } }
+@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+  .dialog-panel.search-panel { transition: none; }
+  .dialog-panel.ui-motion-centered.search-panel[data-state='open'] { animation: none; }
+}

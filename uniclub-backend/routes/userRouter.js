@@ -9,10 +9,24 @@ const multer = require('multer');
 const { resolveUserSettings, validateSettingsPatch } = require('../utils/petSettingsPolicy');
 const { validateProfilePatch, validateEmail, selfProfile, selfSecurity, selfUser } = require('../utils/accountSettingsPolicy');
 const { prepareAvatar } = require('../utils/avatarImage');
+const { createRandomCallMembersService } = require('../services/RandomCallMembersService');
+const randomCallMembers = createRandomCallMembersService();
 const SETTINGS_FIELDS = 'name uniqueId displayName profile.bio profile.avatar.contentType profile.avatar.uploadedAt email emailVerified lastLoginAt settings';
 const ownQuery = (req, res, next) => Object.keys(req.query).length
   ? res.status(400).json({ error: '只能管理当前账号，不能指定其他用户。' }) : next();
 const bundle = user => ({ success: true, settings: resolveUserSettings(user.settings), profile: selfProfile(user), security: selfSecurity(user) });
+
+router.get('/random-call-members', authenticateToken, async (req, res) => {
+  res.set('Cache-Control', 'private, no-store');
+  try {
+    const members = await randomCallMembers(req.user.userId);
+    res.json({ success: true, members });
+  } catch (failure) {
+    res.status(failure.status === 403 ? 403 : 503).json({
+      error: failure.status === 403 ? failure.message : '暂时无法获取班级名单，请重新加载。',
+    });
+  }
+});
 
 router.get('/me/settings', authenticateToken, ownQuery, async (req, res) => {
   res.set('Cache-Control', 'private, no-store');

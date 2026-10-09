@@ -1,4 +1,17 @@
 const mongoose = require('mongoose');
+const activityMeta = require('../../shared/activity-v2.json');
+const registrationSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, required: true },
+  name: { type: String, required: true, maxlength: 200 },
+  status: { type: String, enum: activityMeta.registrationStatuses, required: true },
+  version: { type: Number, default: 1 },
+  createdAt: { type: Date, required: true }, updatedAt: { type: Date, required: true },
+  reviewedBy: { type: mongoose.Schema.Types.ObjectId, default: null },
+  reviewedAt: { type: Date, default: null }, reviewNote: { type: String, maxlength: 500, default: '' },
+  legacyStatus: { type: String, default: null },
+  checkedInAt: { type: Date, default: null },
+  history: [{ status: { type: String, required: true }, actorId: mongoose.Schema.Types.ObjectId, at: Date, note: String }],
+}, { _id: true });
 
 const eventSchema = new mongoose.Schema({
   title: {
@@ -43,10 +56,11 @@ const eventSchema = new mongoose.Schema({
   // Event details
   eventType: {
     type: String,
-    enum: ['Workshop', 'Masterclass', 'Tutorial', 'Meetup', 'Hackathon', 'Seminar', 'Social'],
+    enum: [...activityMeta.types, ...activityMeta.legacyTypes].map(item => item.value),
     required: true
   },
   
+  legacyEventType: { type: String, default: null },
   category: [{
     type: String,
     enum: ['AI/ML', 'Web Development', 'Mobile Apps', 'Data Science', 'Cybersecurity', 
@@ -112,16 +126,33 @@ const eventSchema = new mongoose.Schema({
   // Event status
   status: {
     type: String,
-    enum: ['draft', 'published', 'cancelled', 'completed'],
+    enum: activityMeta.statuses,
     default: 'draft'
   },
   
+  // V2 state lives in this document so standalone MongoDB can atomically
+  // review a registration and enforce the approved capacity. Legacy RSVP rows
+  // remain untouched. Hidden by default to protect unrelated serializers.
+  registrations: { type: [registrationSchema], default: [], select: false },
+  registrationVersion: { type: Number, default: 0, select: false },
+  registrationSchemaVersion: { type: Number, default: 0, select: false },
+  activityV2MigrationBackup: { type: mongoose.Schema.Types.Mixed, select: false },
+  summary: { type: String, default: '', maxlength: 10000 },
+  coverMediaId: { type: mongoose.Schema.Types.ObjectId, default: null },
+  mediaVersion: { type: Number, default: 0 },
+  mediaRefs: { type: [{ mediaId: { type: mongoose.Schema.Types.ObjectId, ref: 'ActivityMedia', required: true }, mediaType: { type: String, enum: ['COVER', 'PHOTO'], required: true }, sortOrder: { type: Number, default: 0 } }], default: [], select: false },
+  mediaTombstones: { type: [mongoose.Schema.Types.ObjectId], default: [], select: false },
+  legacyCoverHidden: { type: Boolean, default: false },
+  deletedAt: { type: Date, default: null },
+  deletedBy: { type: mongoose.Schema.Types.ObjectId, default: null },
+  archivedAt: { type: Date, default: null },
   // Engagement tracking (direct fields like Resources)
   likes: { type: Number, default: 0 },
   shares: { type: Number, default: 0 },
   saves: { type: Number, default: 0 },
   comments: { type: Number, default: 0 },
   rsvpCount: { type: Number, default: 0 },
+  approvedCount: { type: Number, default: 0 },
   attendedCount: { type: Number, default: 0 },
   
   // Settings
@@ -145,6 +176,8 @@ const eventSchema = new mongoose.Schema({
 });
 
 // Indexes for performance
+eventSchema.index({ deletedAt: 1, status: 1, endDate: -1 });
+eventSchema.index({ 'registrations.userId': 1, endDate: -1 });
 eventSchema.index({ startDate: 1, status: 1 }); // Upcoming events
 eventSchema.index({ organizer: 1, createdAt: -1 }); // Organizer's events
 eventSchema.index({ eventType: 1, startDate: 1 }); // Events by type

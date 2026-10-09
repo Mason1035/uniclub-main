@@ -1,0 +1,28 @@
+{
+  "origin": "https://csrg3b.top",
+  "name": "ClassHub",
+  "repository": "https://github.com/Mason1035/uniclub-main",
+  "publicPages": [
+    {
+      "path": "/",
+      "file": "index.html",
+      "module": "src/pages/Homepage.tsx",
+      "title": "ClassHub · 软件工程班级信息平台",
+      "description": "ClassHub 是软件工程班级信息平台，集中管理班级公告、新闻、活动、学习资源与日常分享。公开首页介绍功能，班级内容需成员登录后访问。"
+    },
+    {
+      "path": "/privacy",
+      "file": "privacy.html",
+      "module": "src/pages/PrivacyPage.tsx",
+      "title": "隐私与网站存储 · ClassHub",
+      "description": "了解 ClassHub 的账号存储、可选偏好与资源使用统计、第三方服务，以及成员内容和后台的访问权限。"
+    },
+    {
+      "path": "/about",
+      "file": "about.html",
+      "module": "src/pages/AboutPage.tsx",
+      "title": "项目介绍与使用说明 · ClassHub",
+      "description": "了解 ClassHub 解决的班级信息管理问题、已经实现的功能、适用场景、成员与管理员的使用方式，以及项目 GitHub 仓库。"
+    }
+  ]
+}

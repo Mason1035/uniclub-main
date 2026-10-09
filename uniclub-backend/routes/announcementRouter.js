@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
       publishedAt: { $lte: new Date() },
       $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
     })
-      .sort({ pinned: -1, publishedAt: -1 })
+      .sort(req.query.sort === 'latest' ? { publishedAt: -1, _id: -1 } : { pinned: -1, publishedAt: -1 })
       .limit(limit)
       .lean();
 

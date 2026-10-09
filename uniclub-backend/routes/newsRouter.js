@@ -13,15 +13,20 @@ const { JSDOM } = require('jsdom');
 const axios = require('axios');
 const mongoose = require('mongoose');
 const crypto = require('crypto');
+const { runtime, publicNewsFilter, articleVisible } = require('../utils/dailyNewsVisibility');
 
 // GET /api/news - Get all approved news (public)
 router.get('/', async (req, res) => {
   try {
     const { category, page = 1, limit = 10 } = req.query;
     
-    const filter = { 
-      status: 'approved',
-      publishedAt: { $lte: new Date() }
+    const state = await runtime();
+    let filter = publicNewsFilter(state.activeBatchId);
+    // The homepage prefers the latest successful Daily batch; ordinary news
+    // lists still include manual articles alongside the active Daily batch.
+    if (req.query.view === 'home' && state.activeBatchId) filter = {
+      status: 'approved', publishedAt: { $lte: new Date() },
+      origin: 'ai_daily', generationBatchId: state.activeBatchId,
     };
     
     if (category && category !== 'All') {
@@ -30,7 +35,7 @@ router.get('/', async (req, res) => {
     
     const news = await News.find(filter)
       .populate('author', 'name uniqueId')
-      .sort({ 
+      .sort(req.query.sort === 'latest' ? { publishedAt: -1, _id: -1 } : {
         isTrending: -1,     // Trending first
         isFeatured: -1,     // Then featured
         publishedAt: -1     // Then by publish date (newest first)
@@ -78,7 +83,10 @@ router.get('/', async (req, res) => {
         shares: article.shares || 0,
         comments: commentCountMap[article._id.toString()] || 0
       },
-      summary: article.summary
+      summary: article.summary,
+      origin: article.origin || 'manual',
+      automationDate: article.automationDate,
+      sourceReferences: article.sourceReferences || []
     }));
     
     res.json(transformedNews);
@@ -102,7 +110,7 @@ router.get('/:id', async (req, res) => {
     }
     
     console.log('📰 Article status:', news.status);
-    if (news.status !== 'approved') {
+    if (!(await articleVisible(news))) {
       console.log('❌ Article not approved');
       return res.status(404).json({ error: 'News article not available' });
     }
@@ -286,48 +294,10 @@ router.put('/:id/save', authenticateToken, async (req, res) => {
 // POST /api/news/trigger-curation - Manually trigger news curation (admin only)
 // Uses the shared requireAdmin middleware so the rule lives in exactly one place.
 router.post('/trigger-curation', requireAdmin, curationLimit, async (req, res) => {
-  try {
-    // Option 1: Use separate process to avoid nodemon interference
-    const { spawn } = require('child_process');
-    const path = require('path');
-    
-    console.log('🚀 Spawning independent curation process...');
-    const curationProcess = spawn('node', ['manual-curation.js'], {
-      cwd: path.join(__dirname, '..'),
-      detached: true,
-      stdio: ['ignore', 'pipe', 'pipe']
-    });
-    
-    // Log process output
-    curationProcess.stdout.on('data', (data) => {
-      console.log(`[CURATION] ${data.toString().trim()}`);
-    });
-    
-    curationProcess.stderr.on('data', (data) => {
-      console.error(`[CURATION ERROR] ${data.toString().trim()}`);
-    });
-    
-    curationProcess.on('close', (code) => {
-      if (code === 0) {
-        console.log('✅ Manual curation process completed successfully');
-      } else {
-        console.error(`❌ Manual curation process failed with exit code ${code}`);
-      }
-    });
-    
-    // Don't wait for the process - let it run independently
-    curationProcess.unref();
-    
-    res.json({ 
-      success: true,
-      message: 'News curation triggered successfully in independent process',
-      processId: curationProcess.pid,
-      note: 'Curation is running independently and will not be affected by server restarts'
-    });
-  } catch (error) {
-    console.error('❌ Error triggering curation:', error);
-    res.status(500).json({ error: 'Failed to trigger news curation' });
-  }
+  // Retire the old Gemini importer: it had broad createdAt-based deletion.
+  // Paid generation now requires the explicit confirmation in the shared admin
+  // Daily News API, which also handles same-day regeneration safely.
+  res.status(410).json({ error: '旧新闻采集入口已停用，请使用后台 AI 每日新闻。', code: 'CURATION_RETIRED', use: '/api/admin/ai/daily-news/run' });
 });
 
 // GET /api/news/:id/summary - Get AI summary of the article
@@ -337,6 +307,7 @@ router.get('/:id/summary', async (req, res) => {
     if (!news) {
       return res.status(404).json({ error: 'News article not found' });
     }
+    if (!(await articleVisible(news))) return res.status(404).json({ error: 'News article not available' });
     if (!news.originalUrl) {
       return res.status(400).json({ error: 'No original URL for this article' });
     }
@@ -499,4 +470,4 @@ function parseStructuredSummary(summary) {
   return sections;
 }
 
-module.exports = router; 
+module.exports = router;

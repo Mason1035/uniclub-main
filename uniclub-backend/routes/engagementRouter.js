@@ -1,8 +1,12 @@
 const express = require('express');
 const router = express.Router();
+router.use(require('../middleware/activityReadAccess').createActivityReadAccess().content);
 const EngagementService = require('../services/EngagementService');
 const authenticateToken = require('../middleware/auth');
 const mongoose = require('mongoose');
+const Comment = require('../models/Comment');
+const { getCommentFilter } = require('../utils/commentFilter');
+const commentTypes = { News: 'news', Event: 'event', Resource: 'resource', SocialPost: 'social' };
 
 // POST /api/engagement/like/:contentType/:contentId - toggle like
 router.post('/like/:contentType/:contentId', authenticateToken, async (req, res) => {
@@ -11,7 +15,6 @@ router.post('/like/:contentType/:contentId', authenticateToken, async (req, res)
       contentType: req.params.contentType,
       contentId: req.params.contentId,
       user: req.user,
-      headers: req.headers.authorization
     });
     
     const { contentType, contentId } = req.params;
@@ -315,11 +318,22 @@ router.get('/stats/:contentType/:contentId', async (req, res) => {
       return res.status(400).json({ error: 'Invalid content ID' });
     }
     
-    const stats = await EngagementService.getContentEngagementStats(contentType, contentId);
+    const commentType = Object.hasOwn(commentTypes, contentType) ? commentTypes[contentType] : undefined;
+    const [stats, totalComments] = await Promise.all([
+      EngagementService.getContentEngagementStats(contentType, contentId),
+      commentType
+        ? Comment.countDocuments(getCommentFilter(contentId, commentType, { topLevelOnly: true }))
+          .catch(error => {
+            console.error('Error getting comment count with engagement stats:', error.message);
+            // Existing clients can still show likes/saves if comment counting fails.
+            return undefined;
+          })
+        : undefined,
+    ]);
     
     res.json({
       success: true,
-      stats: stats
+      stats: { ...stats, ...(totalComments === undefined ? {} : { totalComments }) }
     });
   } catch (error) {
     console.error('Error getting engagement stats:', error);
@@ -353,4 +367,4 @@ router.post('/batch/:contentType', authenticateToken, async (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;

@@ -1,9 +1,7 @@
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Flip } from "gsap/Flip";
 import { useGSAP } from "@gsap/react";
 
-// Register once; components can import the animation tools from this module.
-gsap.registerPlugin(ScrollTrigger, useGSAP, Flip);
+// Shared chrome and the homepage only need GSAP core and its React lifecycle.
+gsap.registerPlugin(useGSAP);
 
-export { gsap, ScrollTrigger, useGSAP, Flip };
+export { gsap, useGSAP };

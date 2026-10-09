@@ -66,8 +66,9 @@ models.User = { findById(id) {
     lean() { return Promise.resolve(record ? project(record, fields) : null); },
     then(resolve, reject) { return Promise.resolve(record ? project(record, fields) : null).then(resolve, reject); } };
 } };
+models.Roster = { exists: async ({ uniqueId }) => uniqueId && records.User.some(row => row.uniqueId === uniqueId && row.isEnrolled) ? { _id: 'roster' } : null };
 for (const [name, exports] of Object.entries(models)) {
-  const id = require.resolve(`../models/${name}`);
+  const id = require.resolve(`../models/${name === 'Roster' ? 'EnrolledUser' : name}`);
   require.cache[id] = { id, filename: id, loaded: true, exports };
 }
 const { createSearchService, rankDocuments, adapters, normalizeSearchText } = require('../services/GlobalSearchService');
@@ -77,7 +78,7 @@ const row = (id, extra = {}) => ({ _id: id, createdAt: new Date('2026-10-01T00:0
 beforeEach(() => {
   reads = [];
   records = Object.fromEntries(Object.keys(models).map(name => [name, []]));
-  records.User = [row(member, { isEnrolled: true, tokenVersion: 0 }), row(other, { isEnrolled: false, tokenVersion: 0 })];
+  records.User = [row(member, { isEnrolled: true, uniqueId: member, tokenVersion: 0 }), row(other, { isEnrolled: false, uniqueId: other, tokenVersion: 0 })];
   records.Announcement = [row('a', { title, body: '周五下午进行软件工程实验。', isPublished: true, publishedAt: new Date('2026-10-01'), expiresAt: null })];
 });
 
@@ -206,4 +207,18 @@ test('authenticated route returns typed, minimal results; query validation and e
   reads = [];
   assert.equal((await (await request('', token())).json()).count, 0);
   assert.ok(reads.every(read => read.name === 'User'));
+});
+
+
+test('activities retain ended archives, exclude soft-hidden rows and use canonical Chinese type labels', async () => {
+  records.Event = [
+    row('archived', { title: '冬季活动档案', description: '回顾', status: 'archived', endDate: new Date('2025-12-01'), eventType: 'LEAGUE_ACTIVITY' }),
+    row('completed', { title: '结束活动', status: 'completed', endDate: new Date('2025-12-01') }),
+    row('hidden', { title: '不应显示档案', status: 'published', deletedAt: now }),
+    row('future-archive', { title: '不应显示档案', status: 'archived', endDate: new Date('2099-01-01') }),
+  ];
+  assert.equal((await search('团活动', context)).results[0]?.id, 'archived');
+  assert.equal((await search('结束活动', context)).results[0]?.id, 'completed');
+  assert.equal((await search('不应显示档案', context)).count, 0);
+  assert.equal((await search('冬季活动', { ...context, userId: other })).count, 0);
 });

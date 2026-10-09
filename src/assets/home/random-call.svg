@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none">
+  <defs>
+    <linearGradient id="sleeve" x1="28" y1="38" x2="107" y2="127" gradientUnits="userSpaceOnUse"><stop stop-color="#F9F8FC"/><stop offset="1" stop-color="#D8D9E8"/></linearGradient>
+    <linearGradient id="cover" x1="36" y1="47" x2="91" y2="105" gradientUnits="userSpaceOnUse"><stop stop-color="#B1B8FF"/><stop offset="1" stop-color="#7E87DB"/></linearGradient>
+    <radialGradient id="record"><stop stop-color="#42423F"/><stop offset="1" stop-color="#222220"/></radialGradient>
+    <filter id="shadow" x="8" y="23" width="145" height="129" filterUnits="userSpaceOnUse"><feDropShadow dy="5" stdDeviation="3" flood-color="#292C54" flood-opacity=".15"/></filter>
+  </defs>
+  <ellipse cx="82" cy="136" rx="47" ry="4" fill="#CBCDDC" opacity=".35"/>
+  <g filter="url(#shadow)" transform="rotate(-6 80 80)">
+    <circle cx="100" cy="83" r="44" fill="url(#record)" stroke="#4C4C48"/>
+    <g stroke="#FFFFFF" stroke-opacity=".07"><circle cx="100" cy="83" r="39"/><circle cx="100" cy="83" r="34"/><circle cx="100" cy="83" r="29"/><circle cx="100" cy="83" r="24"/></g>
+    <circle cx="100" cy="83" r="13" fill="#7D84CA"/><circle cx="100" cy="83" r="2" fill="#E8E8EF"/>
+    <rect x="24" y="32" width="82" height="100" rx="5" fill="url(#sleeve)" stroke="#FFFFFF" stroke-opacity=".8"/>
+    <rect x="31" y="39" width="68" height="68" rx="3" fill="url(#cover)"/>
+    <path d="M48 74h32M69 63l11 11-11 11" stroke="#F5F5FC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M33 117h35M33 122h22" stroke="#969BBF" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+</svg>

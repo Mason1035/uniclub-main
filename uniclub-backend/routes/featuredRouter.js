@@ -3,36 +3,30 @@ const router = express.Router();
 const News = require('../models/News');
 const Event = require('../models/Event');
 const Resource = require('../models/Resource');
+const { optional: activityReader } = require('../middleware/activityReadAccess').createActivityReadAccess();
+const { activityPreview } = require('../middleware/activityReadAccess');
+const { runtime, publicNewsFilter } = require('../utils/dailyNewsVisibility');
+
+async function findFeaturedNews() {
+  const state = await runtime();
+  if (state.activeBatchId) {
+    const daily = await News.findOne({ status: 'approved', publishedAt: { $lte: new Date() },
+      origin: 'ai_daily', generationBatchId: state.activeBatchId,
+    }).populate('author', 'name uniqueId').sort({ publishedAt: -1, automationIndex: 1 });
+    if (daily) return daily;
+  }
+  const filter = publicNewsFilter(state.activeBatchId);
+  return await News.findOne({ ...filter, isFeatured: true }).populate('author', 'name uniqueId').sort({ publishedAt: -1 }) ||
+    await News.findOne({ ...filter, isTrending: true }).populate('author', 'name uniqueId').sort({ publishedAt: -1 }) ||
+    await News.findOne(filter).populate('author', 'name uniqueId').sort({ publishedAt: -1 });
+}
 
 // GET /api/featured/news - Get single featured news article
 router.get('/news', async (req, res) => {
   try {
     console.log('📰 API: Fetching featured news...');
     
-    // Try to get a featured news article first, then fallback to top engagement
-    let featuredNews = await News.findOne({ 
-      isFeatured: true, 
-      status: 'approved' 
-    })
-    .populate('author', 'name uniqueId')
-    .sort({ publishedAt: -1 });
-    
-    // If no featured news, get the most recent trending news
-    if (!featuredNews) {
-      featuredNews = await News.findOne({ 
-        isTrending: true, 
-        status: 'approved' 
-      })
-      .populate('author', 'name uniqueId')
-      .sort({ publishedAt: -1 });
-    }
-    
-    // Final fallback: most recent approved news
-    if (!featuredNews) {
-      featuredNews = await News.findOne({ status: 'approved' })
-        .populate('author', 'name uniqueId')
-        .sort({ publishedAt: -1 });
-    }
+    const featuredNews = await findFeaturedNews();
     
     if (!featuredNews) {
       return res.json({
@@ -53,6 +47,8 @@ router.get('/news', async (req, res) => {
         summary: featuredNews.summary,
         source: featuredNews.source,
         originalAuthor: featuredNews.originalAuthor,
+        origin: featuredNews.origin || 'manual',
+        sourceReferences: featuredNews.sourceReferences || [],
         imageUrl: featuredNews.imageUrl,
         publisherLogo: featuredNews.publisherLogo,
         publishedAt: featuredNews.publishedAt,
@@ -74,8 +70,9 @@ router.get('/news', async (req, res) => {
 });
 
 // GET /api/featured/event - Get single featured upcoming event
-router.get('/event', async (req, res) => {
+router.get('/event', activityReader, async (req, res) => {
   try {
+    if (!req.canReadActivities) return res.status(401).json({ error: '请登录当前班级账号后查看活动。' });
     console.log('📅 API: Fetching featured event...');
     
     const now = new Date();
@@ -84,9 +81,10 @@ router.get('/event', async (req, res) => {
     let featuredEvent = await Event.findOne({
       isFeatured: true,
       status: 'published',
+      deletedAt: null,
       startDate: { $gte: now }
     })
-    .populate('organizer', 'name uniqueId')
+    .select('+mediaRefs').populate('organizer', 'name')
 
     .sort({ startDate: 1 });
     
@@ -94,17 +92,18 @@ router.get('/event', async (req, res) => {
     if (!featuredEvent) {
       featuredEvent = await Event.findOne({
         status: 'published',
+      deletedAt: null,
         startDate: { $gte: now }
       })
-      .populate('organizer', 'name uniqueId')
+      .select('+mediaRefs').populate('organizer', 'name')
   
       .sort({ startDate: 1 });
     }
     
     // Final fallback: most recent past event if no upcoming events
     if (!featuredEvent) {
-      featuredEvent = await Event.findOne({ status: 'published' })
-        .populate('organizer', 'name uniqueId')
+      featuredEvent = await Event.findOne({ status: 'published', deletedAt: null })
+        .select('+mediaRefs').populate('organizer', 'name')
     
         .sort({ startDate: -1 });
     }
@@ -121,26 +120,7 @@ router.get('/event', async (req, res) => {
     
     res.json({
       success: true,
-      event: {
-        _id: featuredEvent._id,
-        title: featuredEvent.title,
-        description: featuredEvent.description,
-        startDate: featuredEvent.startDate,
-        endDate: featuredEvent.endDate,
-        location: featuredEvent.location,
-        eventType: featuredEvent.eventType,
-        imageUrl: featuredEvent.imageUrl,
-        organizer: featuredEvent.organizer,
-        engagement: {
-          rsvpCount: featuredEvent.engagement?.rsvpCount || 0,
-          views: featuredEvent.engagement?.views || 0
-        },
-        maxAttendees: featuredEvent.maxAttendees,
-        isVirtual: featuredEvent.isVirtual,
-        meetingLink: featuredEvent.meetingLink,
-        isFeatured: featuredEvent.isFeatured,
-        tags: featuredEvent.tags
-      }
+      event: await activityPreview(featuredEvent, req.user.userId)
     });
     
   } catch (error) {
@@ -223,57 +203,44 @@ router.get('/resource', async (req, res) => {
 });
 
 // GET /api/featured/all - Get all featured content at once (for efficiency)
-router.get('/all', async (req, res) => {
+router.get('/all', activityReader, async (req, res) => {
   try {
     console.log('🌟 API: Fetching all featured content...');
     
     const [newsResponse, eventResponse, resourceResponse] = await Promise.allSettled([
       // Featured news
       (async () => {
-        let news = await News.findOne({ isFeatured: true, status: 'approved' })
-          .populate('author', 'name uniqueId')
-          .sort({ publishedAt: -1 });
-        
-        if (!news) {
-          news = await News.findOne({ isTrending: true, status: 'approved' })
-            .populate('author', 'name uniqueId')
-            .sort({ publishedAt: -1 });
-        }
-        
-        if (!news) {
-          news = await News.findOne({ status: 'approved' })
-            .populate('author', 'name uniqueId')
-            .sort({ publishedAt: -1 });
-        }
-        
-        return news;
+        return findFeaturedNews();
       })(),
       
       // Featured event
       (async () => {
+        if (!req.canReadActivities) return null;
         const now = new Date();
         let event = await Event.findOne({
           isFeatured: true,
           status: 'published',
+      deletedAt: null,
           startDate: { $gte: now }
         })
-        .populate('organizer', 'name uniqueId')
+        .select('+mediaRefs').populate('organizer', 'name')
     
         .sort({ startDate: 1 });
         
         if (!event) {
           event = await Event.findOne({
             status: 'published',
+      deletedAt: null,
             startDate: { $gte: now }
           })
-          .populate('organizer', 'name uniqueId')
+          .select('+mediaRefs').populate('organizer', 'name')
       
           .sort({ startDate: 1 });
         }
         
         if (!event) {
-          event = await Event.findOne({ status: 'published' })
-            .populate('organizer', 'name uniqueId')
+          event = await Event.findOne({ status: 'published', deletedAt: null })
+            .select('+mediaRefs').populate('organizer', 'name')
         
             .sort({ startDate: -1 });
         }
@@ -310,7 +277,7 @@ router.get('/all', async (req, res) => {
       success: true,
       data: {
         news: newsResponse.status === 'fulfilled' ? newsResponse.value : null,
-        event: eventResponse.status === 'fulfilled' ? eventResponse.value : null,
+        event: eventResponse.status === 'fulfilled' ? await activityPreview(eventResponse.value, req.user?.userId) : null,
         resource: resourceResponse.status === 'fulfilled' ? resourceResponse.value : null
       }
     };

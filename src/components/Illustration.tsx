@@ -5,8 +5,9 @@ import news from '../assets/home/news.svg';
 import pulse from '../assets/home/pulse.svg';
 import gallery from '../assets/home/gallery.svg';
 import fees from '../assets/home/fees.svg';
+import randomCall from '../assets/home/random-call.svg';
 
-const illustrations = { announcement, activity, resource, news, pulse, gallery, fees };
+const illustrations = { announcement, activity, resource, news, pulse, gallery, fees, randomCall };
 export type IllustrationKind = keyof typeof illustrations;
 
 /** One illustration family for the home, lists and empty states. */

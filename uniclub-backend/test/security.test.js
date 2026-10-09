@@ -88,12 +88,43 @@ stub('../services/ContentCurationService', {
 stub('../services/NewsCurationService', class {
   async runMidnightCuration() { calls.push({ model: 'AI', op: 'news' }); }
 });
+stub('../services/DailyAiNewsService', {
+  getDailyNewsService: () => ({
+    async tick() { calls.push({ model: 'AI', op: 'news' }); return { started: false }; },
+  }),
+});
+// Activity route guards use a small service fixture here. The separate
+// activityMongo.integration.js exercises the actual service/CAS/Mongoose rules.
+const activityPolicy = require('../utils/activityPolicy');
+const eventFixture = {
+  now: () => new Date(),
+  async create(body, organizer) {
+    const data = activityPolicy.validateInput(body);
+    const result = new Event({ ...data, organizer, status: data.status || 'draft' }); await result.save(); return result;
+  },
+  async update(id, body) { return Event.findByIdAndUpdate(id, { $set: body }); },
+  async readableEvent(id, userId) {
+    const event = events[id];
+    if (!event || (event.status !== 'published' && accounts[userId]?.isAdmin !== true)) throw activityPolicy.fail('Not found', 404, 'NOT_FOUND');
+    return event;
+  },
+  async account(userId) { return accounts[userId]; },
+  async list(userId, params) {
+    if (params.status && params.status !== 'published' && accounts[userId]?.isAdmin !== true) throw activityPolicy.fail('Admin required', 403, 'ADMIN_REQUIRED');
+    const rows = Object.values(events).filter(event => event.status === (params.status || 'published'));
+    const result = { events: rows, pagination: { total: rows.length }, years: [], types: [] };
+    Object.defineProperty(result, 'rawEvents', { value: rows }); return result;
+  },
+};
 const app = express();
 app.use(express.json());
 for (const [name, router] of [
   ['cron', 'cronRouter'], ['users', 'userRouter'], ['curation', 'curationRouter'], ['past-events', 'pastEventRouter'],
   ['resources', 'resourceRouter'], ['events', 'eventRouter'], ['news', 'newsRouter'], ['auth', 'authRouter'],
-]) app.use(`/api/${name}`, require(`../routes/${router}`));
+]) {
+  const loaded = require(`../routes/${router}`);
+  app.use(`/api/${name}`, name === 'events' ? loaded.createEventRouter({ service: eventFixture, mediaService: null, mediaRouter: express.Router() }) : loaded);
+}
 const auth = require('../middleware/auth');
 app.get('/protected', auth, (req, res) => res.json({ userId: req.user.userId }));
 let server, origin;
@@ -194,18 +225,18 @@ test('administrator can approve and revoke resource with consistent metadata', a
   assert.equal(resources[item].isApproved, false); assert.equal(resources[item].approvedBy, undefined);
   assert.equal(resources[item].isFeatured, false);
 });
-const eventBody = { title: 'Class meeting', description: 'Details', startDate: '2026-10-01', endDate: '2026-10-02' };
+const eventBody = { title: 'Class meeting', description: 'Details', startDate: '2026-10-01', endDate: '2026-10-02', eventType: 'CLASS_MEETING', location: { type: 'physical', address: 'Classroom' } };
 for (const method of ['POST', 'PUT']) test(`member cannot publish event with ${method}`, async () => {
   assert.equal((await request(method, '/api/events' + (method === 'PUT' ? '/' + item : ''), member, { ...eventBody, status: 'published' })).status, 403);
   assert.equal(calls.length, 0);
 });
-test('member creates draft event, owner and counters cannot be forged', async () => {
-  assert.equal((await request('POST', '/api/events', member, { ...eventBody, organizer: admin, likes: 999 })).status, 201);
-  assert.equal(calls[0].data.status, 'draft'); assert.equal(calls[0].data.organizer, member); assert.equal(calls[0].data.likes, undefined);
+test('member cannot create a draft activity or forge ownership/counters', async () => {
+  assert.equal((await request('POST', '/api/events', member, { ...eventBody, organizer: admin, likes: 999 })).status, 403);
+  assert.equal(calls.length, 0);
 });
-test('editing published event as owner requires review again', async () => {
-  assert.equal((await request('PUT', '/api/events/' + item, member, { title: 'Changed', organizer: admin, isFeatured: true })).status, 200);
-  assert.equal(events[item].status, 'draft'); assert.equal(events[item].organizer, member); assert.equal(events[item].isFeatured, undefined);
+test('legacy event ownership does not grant activity editing privileges', async () => {
+  assert.equal((await request('PUT', '/api/events/' + item, member, { title: 'Changed', organizer: admin, isFeatured: true })).status, 403);
+  assert.equal(events[item].status, 'published'); assert.equal(events[item].organizer, member); assert.equal(calls.length, 0);
 });
 test('another member cannot update event', async () => {
   assert.equal((await request('PUT', '/api/events/' + item, stranger, { title: 'Changed' })).status, 403);
@@ -274,9 +305,9 @@ for (const [path, store, status] of [
   ['/api/resources', () => resources, 'pending'], ['/api/events', () => events, 'draft'],
 ]) {
   for (const [id, expected] of [[undefined, 404], [stranger, 404], [member, 200], [admin, 200]]) {
-    test(`non-public detail ${path}: ${id || 'anonymous'} -> ${expected}`, async () => {
+    test(`non-public detail ${path}: ${id || 'anonymous'} -> ${path === '/api/events' ? (id === undefined ? 401 : id === admin ? 200 : 404) : expected}`, async () => {
       store()[item].status = status;
-      assert.equal((await request('GET', path + '/' + item, id)).status, expected);
+      assert.equal((await request('GET', path + '/' + item, id)).status, path === '/api/events' ? (id === undefined ? 401 : id === admin ? 200 : 404) : expected);
     });
   }
   for (const [id, expected] of [[undefined, 401], [member, 403], [admin, 200]]) {
@@ -285,8 +316,9 @@ for (const [path, store, status] of [
       assert.equal((await request('GET', path + '?status=' + status, id)).status, expected);
     });
   }
-  test(`public detail remains readable ${path}`, async () => {
-    assert.equal((await request('GET', path + '/' + item)).status, 200);
+  test(`published detail obeys the content access rule ${path}`, async () => {
+    assert.equal((await request('GET', path + '/' + item)).status, path === '/api/events' ? 401 : 200);
+    if (path === '/api/events') assert.equal((await request('GET', path + '/' + item, member)).status, 200);
   });
 }
 test('cron without a configured secret fails closed', async () => {
@@ -312,6 +344,10 @@ test('news curation alias shares the administrator quota', async () => {
   for (let i = 0; i < 3; i++) assert.equal((await request('POST', '/api/curation/run', admin, {})).status, 200);
   assert.equal((await request('POST', '/api/news/trigger-curation', admin, {})).status, 429);
   assert.equal(calls.length, 3);
+});
+test('news curation alias is retired even for an administrator and cannot run the old importer', async () => {
+  assert.equal((await request('POST', '/api/news/trigger-curation', admin, {})).status, 410);
+  assert.equal(calls.length, 0);
 });
 test('administrator claims in a JWT cannot override the database role', async () => {
   assert.equal((await request('POST', '/api/curation/run', undefined, {}, token(member, { isAdmin: true }))).status, 403);

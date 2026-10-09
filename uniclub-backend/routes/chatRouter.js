@@ -1,133 +1,84 @@
 const express = require('express');
-const router = express.Router();
+const mongoose = require('mongoose');
 const Chat = require('../models/Chat');
 const News = require('../models/News');
 const authenticateToken = require('../middleware/auth');
-const { generateText } = require('../utils/geminiClient');
-const mongoose = require('mongoose');
+const { DeepSeekAssistant } = require('../services/DeepSeekAssistant');
+const { AiError } = require('../utils/aiSecret');
+const { NEWS_LIMITS, clip, validateQuestion, buildNewsContext, safeSources } = require('../utils/newsAiContext');
+const { createAiRateLimiter, sendAiError, aiRequest } = require('../utils/aiHttp');
+const { articleVisible } = require('../utils/dailyNewsVisibility');
 
-// Remove router-level CORS - let global CORS handle everything
+function newsError(error) {
+  const code = error instanceof AiError ? error.code : 'AI_UNAVAILABLE';
+  const input = {
+    INVALID_ARTICLE_ID: ['新闻地址无效。', 400], ARTICLE_NOT_FOUND: ['这篇新闻不存在或暂未公开。', 404],
+    EMPTY_ARTICLE: ['这篇新闻暂无正文，暂时无法问答。', 400], INVALID_QUESTION: ['请输入你想问的问题。', 400],
+    QUESTION_TOO_LONG: ['问题最多 1000 字，请缩短后再发送。', 400],
+  };
+  if (Object.hasOwn(input, code)) return new AiError(code, ...input[code]);
+  if (code === 'CANCELLED') return new AiError(code, '请求已取消。', 499);
+  if (code === 'PROVIDER_RATE_LIMIT') return new AiError(code, 'AI 请求较多，请稍后再试。', 429);
+  if (code === 'PROVIDER_TIMEOUT') return new AiError(code, 'AI 回答超时，请稍后再试。', 504);
+  if (['INCOMPLETE_STREAM', 'INVALID_PROVIDER_STREAM', 'EMPTY_OUTPUT', 'OUTPUT_TOO_LONG'].includes(code)) return new AiError(code, 'AI 回答未完整接收，请稍后重试。', 502);
+  return new AiError('AI_UNAVAILABLE', 'AI 暂时无法回答，请稍后再试。', 503);
+}
 
-// Get chat history for an article
-router.get('/:articleId', authenticateToken, async (req, res) => {
-  try {
-    console.log('💬 Getting chat history for article:', req.params.articleId);
-    
-    if (!mongoose.Types.ObjectId.isValid(req.params.articleId)) {
-      return res.status(400).json({ error: 'Invalid article ID' });
-    }
-    
-    const chat = await Chat.findOne({
-      articleId: req.params.articleId,
-      userId: req.user.userId
-    }).sort({ 'messages.timestamp': 1 });
-    
-    console.log('💬 Found chat messages:', chat?.messages?.length || 0);
-    res.json(chat?.messages || []);
-  } catch (error) {
-    console.error('❌ Error fetching chat history:', error);
-    res.status(500).json({ error: 'Failed to fetch chat history', details: error.message });
-  }
-});
+function displayMessages(messages) {
+  return (Array.isArray(messages) ? messages : []).filter(message => ['user', 'assistant'].includes(message?.role) && typeof message.content === 'string')
+    .slice(-NEWS_LIMITS.displayMessages).map(message => ({
+      role: message.role, content: clip(message.content, 64000), timestamp: message.timestamp,
+      ...(message.role === 'assistant' && { sources: safeSources(message.sources), warning: typeof message.warning === 'string' ? clip(message.warning, 2000) : null, reasoning: message.reasoning === true }),
+    }));
+}
 
-// Send a message and get AI response
-router.post('/:articleId', authenticateToken, async (req, res) => {
-  try {
-    console.log('💬 Sending message to article:', req.params.articleId, 'Content:', req.body.content);
-    
-    if (!mongoose.Types.ObjectId.isValid(req.params.articleId)) {
-      return res.status(400).json({ error: 'Invalid article ID' });
-    }
-    
-    const { content } = req.body;
-    if (!content?.trim()) {
-      return res.status(400).json({ error: 'Message content is required' });
-    }
-    
-    const articleId = req.params.articleId;
-    const userId = req.user.userId;
-    
-    // Get the article
-    const article = await News.findById(articleId);
-    if (!article) {
-      return res.status(404).json({ error: 'Article not found' });
-    }
-    
-    // Get or create chat
-    let chat = await Chat.findOne({ articleId, userId });
-    if (!chat) {
-      chat = new Chat({ articleId, userId, messages: [] });
-    }
-    
-    // Add user message
-    const userMessage = {
-      role: 'user',
-      content,
-      timestamp: new Date()
-    };
-    
-    // Enforce message limit
-    if (chat.messages.length >= 100) {
-      chat.messages = chat.messages.slice(-98);
-    }
-    
-    chat.messages.push(userMessage);
-    
-    // Generate AI response
-    console.log('🤖 Generating AI response with Gemini...');
-    
-    const articleContext = `Article: "${article.title}"
-
-Content: ${article.summary?.raw || article.content}
-
-Why it matters: ${article.summary?.whyItMatters || 'This is a significant tech development.'}`;
-
-    const previousMessages = chat.messages.slice(0, -1);
-    let conversationHistory = '';
-    if (previousMessages.length > 0) {
-      conversationHistory = '\n\nPrevious conversation:\n' + 
-        previousMessages.map(msg => `${msg.role}: ${msg.content}`).join('\n');
-    }
-
-    const chatPrompt = `${articleContext}${conversationHistory}
-
-User: ${content}
-
-Respond like a friendly, knowledgeable person having a casual conversation about this tech article. Be:
-- Conversational and natural (like texting a friend)
-- Brief and to the point (2-3 sentences max)
-- Ask follow-up questions when appropriate
-- Avoid dumping information - let the conversation flow naturally
-- Show genuine interest in what they're asking about
-
-Don't immediately explain everything about the article - respond specifically to what they asked and keep it engaging!`;
-
-    const aiResponse = await generateText(chatPrompt, {
-      maxTokens: 1024,
-      temperature: 0.7,
-    });
-    if (!aiResponse) {
-      throw new Error('Failed to generate AI response');
-    }
-    
-    const assistantMessage = {
-      role: 'assistant',
-      content: aiResponse,
-      timestamp: new Date()
-    };
-    
-    chat.messages.push(assistantMessage);
+function createChatRouter({ assistant = new DeepSeekAssistant(), newsModel = News, chatModel = Chat, requestTimeoutMs = 240000, requestLimit = 20 } = {}) {
+  const router = express.Router();
+  router.use(authenticateToken);
+  router.use((_req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next(); });
+  const articleFor = async id => {
+    if (!mongoose.Types.ObjectId.isValid(id)) throw new AiError('INVALID_ARTICLE_ID', '新闻地址无效。');
+    const article = await newsModel.findById(id)
+      .select('title excerpt content summary source publishedAt author originalAuthor originalUrl status origin generationBatchId automationCommittedAt sourceReferences')
+      .populate('author', 'name').lean();
+    if (!(await articleVisible(article))) throw new AiError('ARTICLE_NOT_FOUND', '这篇新闻不存在或暂未公开。', 404);
+    return article;
+  };
+  router.get('/:articleId', async (req, res) => {
+    try {
+      // Recheck visibility even for a conversation about a subsequently archived item.
+      await articleFor(req.params.articleId);
+      const chat = await chatModel.findOne({ articleId: req.params.articleId, userId: req.user.userId });
+      res.json(displayMessages(chat?.messages));
+    } catch (error) { sendAiError(res, error, false, newsError); }
+  });
+  router.post('/:articleId', createAiRateLimiter(requestLimit), aiRequest(async (req, options) => {
+    const question = validateQuestion(req.body?.content), articleId = req.params.articleId, userId = req.user.userId;
+    // Context, visibility and history come from the database, never client article/history.
+    const article = await articleFor(articleId);
+    buildNewsContext(article, question);
+    let chat = await chatModel.findOne({ articleId, userId });
+    const history = Array.isArray(chat?.messages) ? chat.messages : [];
+    const timestamp = new Date();
+    const result = await assistant.answerNews(article, question, history, options);
+    if (options.signal.aborted) throw new AiError('CANCELLED', '请求已取消。', 499);
+    if (typeof result.answer !== 'string' || !result.answer.trim() || result.answer.length > 16000) throw new AiError('EMPTY_OUTPUT', 'AI 回答未完整接收。', 502);
+    const sources = safeSources(result.sources), warning = typeof result.warning === 'string' ? clip(result.warning, 2000) : null;
+    const userMessage = { role: 'user', content: question, timestamp };
+    const assistantMessage = { role: 'assistant', content: result.answer, timestamp: new Date(), sources, warning, reasoning: result.reasoning === true };
+    if (!chat) chat = new chatModel({ articleId, userId, messages: [] });
+    // Failed/cancelled partial streams are never saved as completed answers.
+    chat.messages = [...history.slice(-(NEWS_LIMITS.savedMessages - 2)), userMessage, assistantMessage];
     chat.lastUpdated = new Date();
     await chat.save();
-    
-    console.log('✅ Chat response saved successfully');
-    res.json({
-      messages: [userMessage, assistantMessage]
-    });
-  } catch (error) {
-    console.error('❌ Error processing chat message:', error);
-    res.status(500).json({ error: 'Failed to process message', details: error.message });
-  }
-});
+    return {
+      answer: result.answer, messages: displayMessages(chat.messages), sources, warning,
+      reasoning: result.reasoning === true, usedWebSearch: result.usedWebSearch === true && sources.length > 0,
+      elapsedMs: result.elapsedMs,
+    };
+  }, { requestTimeoutMs, mapError: newsError }));
+  return router;
+}
 
-module.exports = router; 
+module.exports = createChatRouter();
+module.exports.createChatRouter = createChatRouter;

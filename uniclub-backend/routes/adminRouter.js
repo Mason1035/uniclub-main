@@ -27,6 +27,7 @@ router.use('/fees', require('./feesRouter').adminRouter);
 // 其余管理员模块拆到 routes/admin/ 下，挂载点仍是 /api/admin/*
 router.use('/announcements', require('./admin/announcements'));
 router.use('/past-events', require('./admin/gallery'));
+router.use('/ai/daily-news', require('./admin/dailyNews'));
 router.use('/ai', require('./admin/ai'));
 
 /* ------------------------------------------------------------------ */
@@ -162,49 +163,14 @@ router.patch('/users/:id/admin', async (req, res) => {
 /* ------------------------------------------------------------------ */
 router.get('/events', async (req, res) => {
   try {
-    const { page, limit, skip } = paginationOf(req.query);
-    const { search, status } = req.query;
-
-    const filter = {};
-    if (status && status !== 'all') filter.status = status;
-    if (search) {
-      const rx = new RegExp(escapeRegex(search), 'i');
-      filter.$or = [{ title: rx }, { description: rx }];
-    }
-
-    const [events, total] = await Promise.all([
-      Event.find(filter)
-        .populate('organizer', 'name email uniqueId')
-        .sort({ startDate: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Event.countDocuments(filter),
-    ]);
-
-    res.json({
-      success: true,
-      events: events.map((event) => ({
-        _id: event._id,
-        title: event.title,
-        description: event.description,
-        startDate: event.startDate,
-        endDate: event.endDate,
-        location: event.location,
-        eventType: event.eventType,
-        category: event.category || [],
-        status: event.status,
-        imageUrl: event.imageUrl || null,
-        maxCapacity: event.maxCapacity,
-        rsvpCount: event.rsvpCount || 0,
-        organizer: event.organizer,
-        createdAt: event.createdAt,
-      })),
-      pagination: paged(page, limit, total),
-    });
+    const { activityService } = require('../services/ActivityService');
+    const data = await activityService.list(req.user.userId, req.query, { admin: true });
+    const { activityMediaService } = require('../services/ActivityMediaService');
+    data.events = await Promise.all(data.events.map(async (dto, index) => activityMediaService.decorateEvent(dto,
+      data.rawEvents[index], req.user.userId, { thumbnail: true })));
+    res.json(data);
   } catch (error) {
-    console.error('❌ Admin events error:', error);
-    res.status(500).json({ error: 'Failed to load events' });
+    res.status(error.status || 503).json({ success: false, error: error.status ? error.message : '活动列表暂时无法读取。', code: error.code || 'ACTIVITY_UNAVAILABLE' });
   }
 });
 
@@ -240,6 +206,9 @@ router.get('/news', async (req, res) => {
         title: article.title,
         excerpt: article.excerpt,
         source: article.source,
+        origin: article.origin || 'manual',
+        automationDate: article.automationDate,
+        automationArchivedAt: article.automationArchivedAt || null,
         categories: article.categories || [],
         status: article.status,
         imageUrl: article.imageUrl || null,

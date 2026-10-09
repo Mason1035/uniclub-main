@@ -136,6 +136,17 @@ test('reject stale writes, arbitrary env changes, unsafe prefixes and SSRF URLs'
   }
   assert.equal(settings.environment().COS_BUCKET, baseEnv.COS_BUCKET);
 });
+test('quantification storage rejects the activity namespace without replacing saved settings', async () => {
+  await save(); const bytes = await fs.readFile(settings.filename);
+  for (const directoryPrefix of ['activity', 'activity/', ' activity/photos ', 'activity/photos/']) {
+    const result = await request('PUT', 'admin/quantification/storage', ids.admin, { ...input(), directoryPrefix });
+    assert.equal(result.status, 400);
+    assert.deepEqual(await fs.readFile(settings.filename), bytes);
+  }
+  assert.equal(settings.environment().COS_UPLOAD_DIRECTORY, 'quantification/');
+  assert.equal(cloudCalls.length, 0);
+  assert.equal(settings.validate({ ...input(), directoryPrefix: 'activity-archive/' }, settings.view()).COS_UPLOAD_DIRECTORY, 'activity-archive/');
+});
 test('configuration failures do not destroy the last saved file', async () => {
   await save(); const bytes = await fs.readFile(settings.filename);
   await fs.writeFile(`${settings.filename}.lock`, 'isolated-lock');

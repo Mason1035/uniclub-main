@@ -1,0 +1,30 @@
+/* Interaction feedback uses the established surfaces, type and action palette. */
+:is(.ed-button, .icon-control, .interaction, .filter-option, .calendar-day, .masthead-login) {
+  transition: color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-out),
+    opacity var(--motion-fast) var(--ease-standard);
+  -webkit-tap-highlight-color: transparent;
+}
+:is(.ed-button, .icon-control, .interaction, .filter-option, .calendar-day):active:not(:disabled):not([aria-disabled='true']) {
+  transform: scale(.98);
+}
+:is(.ed-button, .icon-control, .interaction, .filter-option, .calendar-day):disabled,
+:is(.ed-button, .icon-control, .interaction, .filter-option, .calendar-day)[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: .55;
+}
+:is(.ed-button, .icon-control, .interaction)[aria-busy='true'] { cursor: progress; }
+:is(.site-shell, .auth-layout, .dialog-panel, .admin-workspace)
+  :is(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']), textarea, select) {
+  transition: border-color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard);
+}
+:is(.site-shell, .auth-layout, .dialog-panel, .admin-workspace) :is(input, textarea, select)[aria-invalid='true'] {
+  border-color: hsl(var(--error));
+}
+.form-error { overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) {
+  :is(.ed-button, .icon-control, .interaction, .filter-option, .calendar-day):active { transform: none; }
+}

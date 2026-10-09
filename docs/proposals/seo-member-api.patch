@@ -1,0 +1,118 @@
+diff --git a/uniclub-backend/middleware/memberApiReadAccess.js b/uniclub-backend/middleware/memberApiReadAccess.js
+new file mode 100644
+--- /dev/null
++++ b/uniclub-backend/middleware/memberApiReadAccess.js
+@@ -0,0 +1,26 @@
++const authenticateToken = require('./auth');
++
++// Proposed change: signed-in pages should not expose their JSON to guests.
++// Mutations keep their existing route-level authentication/authorization.
++const memberPrefixes = [
++  '/news', '/events', '/resources', '/announcements', '/past-events',
++  '/social', '/comments', '/featured', '/curation', '/engagement', '/users',
++];
++
++function memberApiReadAccess(req, res, next) {
++  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
++  // Existing <img> URLs have no bearer token. This is a transport compatibility
++  // exception, NOT complete private-media access control. Keep this limitation
++  // explicit until authenticated image delivery is implemented separately.
++  if (/^\/past-events\/[^/]+\/(?:poster|gallery\/\d+)\/?$/i.test(req.path) ||
++      /^\/users\/avatar\/[^/]+\/?$/i.test(req.path)) return next();
++  // Express routes are case-insensitive by default; match their semantics.
++  const normalizedPath = req.path.toLowerCase();
++  const memberRead = memberPrefixes.some(prefix =>
++    normalizedPath === prefix || normalizedPath.startsWith(prefix + '/'));
++  return memberRead ? authenticateToken(req, res, next) : next();
++}
++
++module.exports = memberApiReadAccess;
++module.exports.memberPrefixes = memberPrefixes;
++
+diff --git a/uniclub-backend/index.js b/uniclub-backend/index.js
+--- a/uniclub-backend/index.js
++++ b/uniclub-backend/index.js
+@@ -16,2 +16,3 @@
+ app.use('/api', privateResponseHeaders);
++app.use('/api', require('./middleware/memberApiReadAccess'));
+ app.use('/uploads', privateResponseHeaders);
+diff --git a/uniclub-backend/test/memberApiReadAccess.test.js b/uniclub-backend/test/memberApiReadAccess.test.js
+new file mode 100644
+--- /dev/null
++++ b/uniclub-backend/test/memberApiReadAccess.test.js
+@@ -0,0 +1,75 @@
++const { test, before, after, beforeEach } = require('node:test');
++const assert = require('node:assert/strict');
++const express = require('express');
++const jwt = require('jsonwebtoken');
++process.env.JWT_SECRET = 'proposed-member-read-test-only';
++const member = '111111111111111111111111';
++const admin = '222222222222222222222222';
++let reads;
++const userModel = { findById(id) { return { select() { return this; },
++  then(resolve, reject) { return Promise.resolve(
++    [member, admin].includes(id) ? { tokenVersion: 0 } : null
++  ).then(resolve, reject); } }; } };
++const id = require.resolve('../models/User');
++require.cache[id] = { id, filename: id, loaded: true, exports: userModel };
++const guard = require('../middleware/memberApiReadAccess');
++const app = express();
++app.use('/api', require('../middleware/privateResponseHeaders'), guard);
++app.use((req, res) => {
++  reads++;
++  res.json({ ok: true, currentUser: req.user?.userId || null });
++});
++let server, origin;
++before(async () => {
++  server = await new Promise((resolve, reject) => {
++    const started = app.listen(0, '127.0.0.1', error => error ? reject(error) : resolve(started));
++    started.on('error', reject);
++  });
++  origin = `http://127.0.0.1:${server.address().port}`;
++});
++after(async () => { if (server) await new Promise(resolve => server.close(resolve)); });
++beforeEach(() => { reads = 0; });
++const request = (path, userId, method = 'GET') => fetch(origin + path, {
++  method, headers: userId ? { Authorization: `Bearer ${jwt.sign({ userId, tokenVersion: 0 }, process.env.JWT_SECRET)}` } : {},
++});
++for (const path of [
++  '/api/news', '/api/news/aaaaaaaaaaaaaaaaaaaaaaaa/summary', '/api/events', '/api/resources',
++  '/api/announcements', '/api/past-events', '/api/social/posts', '/api/social/posts/aaaaaaaaaaaaaaaaaaaaaaaa/comments',
++  '/api/comments/social/aaaaaaaaaaaaaaaaaaaaaaaa', '/api/comments/aaaaaaaaaaaaaaaaaaaaaaaa/replies',
++  '/api/featured/all', '/api/curation/homepage', '/api/engagement/stats/news/aaaaaaaaaaaaaaaaaaaaaaaa', '/api/users',
++  '/api/NEWS', '/api/SOCIAL/Posts',
++]) {
++  test(`anonymous JSON read is rejected before its handler: ${path}`, async () => {
++    const response = await request(path);
++    assert.equal(response.status, 401); assert.equal(reads, 0);
++    assert.match(response.headers.get('x-robots-tag'), /noindex/);
++    assert.equal(response.headers.get('cache-control'), 'private, no-store');
++  });
++  for (const userId of [member, admin]) test(`verified account reaches existing handler: ${path} (${userId})`, async () => {
++    const response = await request(path, userId);
++    assert.equal(response.status, 200); assert.equal(reads, 1);
++    assert.equal((await response.json()).currentUser, userId);
++  });
++}
++test('HEAD cannot bypass the member guard', async () => {
++  assert.equal((await request('/api/news', undefined, 'HEAD')).status, 401);
++  assert.equal(reads, 0);
++});
++for (const path of [
++  '/api/auth/login', '/api/health', '/api/cron/daily-news',
++  '/api/users/avatar/aaaaaaaaaaaaaaaaaaaaaaaa',
++  '/api/past-events/aaaaaaaaaaaaaaaaaaaaaaaa/poster',
++  '/api/past-events/aaaaaaaaaaaaaaaaaaaaaaaa/gallery/0',
++  '/api/USERS/AVATAR/aaaaaaaaaaaaaaaaaaaaaaaa', '/api/PAST-EVENTS/aaaaaaaaaaaaaaaaaaaaaaaa/POSTER',
++]) test(`existing public transport/handler is not intercepted: ${path}`, async () => {
++  assert.equal((await request(path)).status, 200); assert.equal(reads, 1);
++});
++test('mutations and CORS preflight retain existing route-level authorization', async () => {
++  assert.equal((await request('/api/news', undefined, 'POST')).status, 200);
++  assert.equal((await request('/api/news', undefined, 'OPTIONS')).status, 200);
++  assert.equal(reads, 2);
++});
++test('namespace matching cannot block unrelated prefixes', async () => {
++  assert.equal((await request('/api/newsletter')).status, 200);
++});
++

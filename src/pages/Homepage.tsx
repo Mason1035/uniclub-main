@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { gsap, useGSAP } from '@/lib/gsap';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -9,12 +9,6 @@ import { type MongoEvent,transformToEventCard } from '../utils/eventTransform';
 import { listFrom,formatDate,formatBytes } from '../lib/contentFormat';
 import { useHomeScrollReveal } from '../hooks/useHomeScrollReveal';
 import ContentState from '../components/ContentState';
-import FeaturedContent from '../components/FeaturedContent';
-import NewsCard from '../components/cards/NewsCard';
-import EventCard from '../components/cards/EventCard';
-import ResourceCard from '../components/cards/ResourceCard';
-import PastEventCard from '../components/cards/PastEventCard';
-import AnnouncementCard from '../components/cards/AnnouncementCard';
 import AnimatedTerminalText from '../components/AnimatedTerminalText';
 import HomeSectionCard from '../components/home/HomeSectionCard';
 import IOSInstallCard from '../components/home/IOSInstallCard';
@@ -23,6 +17,13 @@ import { useUser } from '../context/userContextState';
 import './home-hero.css';
 
 const heroPhrases = ['learning from it.', 'imagining beyond it.', 'connecting through it.'] as const;
+const HOME_LIMITS = { announcement: 1, news: 1, activity: 1, resource: 1, pulse: 2, gallery: 2 } as const;
+const loadMemberCards = () => import('../components/home/MemberHomeCards');
+const AnnouncementCard = lazy(() => loadMemberCards().then(module => ({ default: module.AnnouncementCard })));
+const NewsCard = lazy(() => loadMemberCards().then(module => ({ default: module.NewsCard })));
+const EventCard = lazy(() => loadMemberCards().then(module => ({ default: module.EventCard })));
+const ResourceCard = lazy(() => loadMemberCards().then(module => ({ default: module.ResourceCard })));
+const PastEventCard = lazy(() => loadMemberCards().then(module => ({ default: module.PastEventCard })));
 function GuestHomeState({ title, description, to }: { title: string; description: string; to: string }) {
   return <div className="home-guest-state"><h3>{title}</h3><p>{description}</p><Link className="text-link" to="/auth" state={{ from: to }}>登录后查看 →</Link></div>;
 }
@@ -34,6 +35,16 @@ export default function Homepage() {
   const account = member ? auth.user?.id || user.uniqueId : 'guest';
   const hero = useRef<HTMLElement>(null);
   const page = useRef<HTMLDivElement>(null);
+  const [memberCardsReady, setMemberCardsReady] = useState(false);
+  useEffect(() => {
+    if (!member) return;
+    let active = true;
+    // Fetch the member-only presentation in parallel with its data. Revisit
+    // reveal targets when the chunk finishes, even if queries were cached.
+    void loadMemberCards().then(() => { if (active) setMemberCardsReady(true); })
+      .catch(error => { if (active) console.error('Member homepage presentation failed to load:', error); });
+    return () => { active = false; };
+  }, [member]);
   useGSAP(() => {
     const media = gsap.matchMedia();
     media.add({
@@ -46,9 +57,9 @@ export default function Homepage() {
       const intro = gsap.timeline({
         defaults: { ease: 'power2.out', clearProps: 'transform,opacity,visibility' },
       });
-      intro.from(select('h1 > span'), { autoAlpha: 0, y: 24, duration: 0.42, stagger: 0.11 })
-        .from(select('.hero-copy'), { autoAlpha: 0, y: 16, duration: 0.28 })
-        .from(select('.hero-actions > *'), { autoAlpha: 0, y: 12, duration: 0.26, stagger: 0.06 });
+      // Core copy is readable on the first paint. Only the small action group
+      // enters; the terminal text keeps its independent typing animation.
+      intro.from(select('.hero-actions > *'), { autoAlpha: 0, y: 12, duration: 0.26, stagger: 0.06 });
       // A keyboard user can act immediately, even during the entrance.
       const finish = () => { intro.progress(1); };
       const element = hero.current;
@@ -57,13 +68,13 @@ export default function Homepage() {
     }, hero);
     return () => media.revert();
   }, { scope: hero });
-  const news=useQuery({queryKey:['news','home',account],enabled:member,queryFn:async()=>listFrom<ApiNews>((await api.get('/api/news?limit=4')).data,'news','articles')});
-  const announcements=useQuery({queryKey:['announcements','home',account],enabled:member,queryFn:async()=>listFrom<Announcement>((await api.get('/api/announcements?limit=3')).data,'announcements')});
-  const events=useQuery({queryKey:['events','home',account],enabled:member,queryFn:async()=>listFrom<MongoEvent>((await api.get('/api/events?status=published&limit=3')).data,'events')});
-  const resources=useQuery({queryKey:['resources','home',account],enabled:member,queryFn:async()=>listFrom<ApiResource>((await api.get('/api/resources?status=approved&limit=3')).data,'resources')});
-  const posts=useQuery({queryKey:['social','home',account],enabled:member,queryFn:async()=>listFrom<ApiSocialPost>((await api.get('/api/social/posts?limit=3')).data,'posts')});
-  const past=useQuery({queryKey:['past-events','home',account],enabled:member,queryFn:async()=>listFrom<ApiPastEvent>((await api.get('/api/past-events')).data,'data','events')});
-  useHomeScrollReveal(page, [news, announcements, events, resources, posts, past].map(query => `${query.status}:${query.dataUpdatedAt}`).join('|'));
+  const news=useQuery({queryKey:['news','home',account,'latest',HOME_LIMITS.news],enabled:member,queryFn:async()=>listFrom<ApiNews>((await api.get(`/api/news?view=home&sort=latest&limit=${HOME_LIMITS.news}`)).data,'news','articles')});
+  const announcements=useQuery({queryKey:['announcements','home',account,'latest',HOME_LIMITS.announcement],enabled:member,queryFn:async()=>listFrom<Announcement>((await api.get(`/api/announcements?sort=latest&limit=${HOME_LIMITS.announcement}`)).data,'announcements')});
+  const events=useQuery({queryKey:['events','home',account,'latest',HOME_LIMITS.activity],enabled:member,queryFn:async()=>listFrom<MongoEvent>((await api.get(`/api/events?status=published&sort=latest&limit=${HOME_LIMITS.activity}`)).data,'events')});
+  const resources=useQuery({queryKey:['resources','home',account,'newest',HOME_LIMITS.resource],enabled:member,queryFn:async()=>listFrom<ApiResource>((await api.get(`/api/resources?status=approved&sortBy=newest&limit=${HOME_LIMITS.resource}`)).data,'resources')});
+  const posts=useQuery({queryKey:['social','home',account,HOME_LIMITS.pulse],enabled:member,queryFn:async()=>listFrom<ApiSocialPost>((await api.get(`/api/social/posts?limit=${HOME_LIMITS.pulse}`)).data,'posts')});
+  const past=useQuery({queryKey:['past-events','home',account,HOME_LIMITS.gallery],enabled:member,queryFn:async()=>listFrom<ApiPastEvent>((await api.get(`/api/past-events?limit=${HOME_LIMITS.gallery}`)).data,'data','events')});
+  useHomeScrollReveal(page, `${memberCardsReady}|${[news, announcements, events, resources, posts, past].map(query => `${query.status}:${query.dataUpdatedAt}`).join('|')}`);
   return (
     <div ref={page} className="home-page">
       <section ref={hero} className="hero">
@@ -82,29 +93,28 @@ export default function Homepage() {
 
       <div className="home-card-grid">
         <HomeSectionCard kind="announcement" title="近期公告" to="/announcements" linkLabel="全部公告" wide>
-          {member ? <ContentState loading={announcements.isLoading} error={announcements.error} empty={!announcements.data?.length} emptyTitle="暂无新公告" onRetry={()=>void announcements.refetch()}>
-            {announcements.data?.map(item=><AnnouncementCard key={item._id} announcement={item} clampBody/>)}
-          </ContentState> : <GuestHomeState title="班级重要消息，集中在这里" description="课程提醒、班级通知与最新安排，登录后查看。" to="/announcements"/>}
+          {member ? <Suspense fallback={<ContentState loading/>}><ContentState loading={announcements.isLoading} error={announcements.error} empty={!announcements.data?.length} emptyTitle="暂无新公告" onRetry={()=>void announcements.refetch()}>
+            {announcements.data?.slice(0,HOME_LIMITS.announcement).map(item=><AnnouncementCard key={item._id} announcement={item} clampBody/>)}
+          </ContentState></Suspense> : <GuestHomeState title="班级重要消息，集中在这里" description="课程提醒、班级通知与最新安排，登录后查看。" to="/announcements"/>}
         </HomeSectionCard>
-        {member && <div className="home-featured"><FeaturedContent/></div>}
         <HomeSectionCard kind="activity" title="接下来，一起参与" titleTone="editorial" to="/events" linkLabel="活动日程">
-          {member ? <ContentState loading={events.isLoading} error={events.error} empty={!events.data?.length} emptyTitle="暂无近期活动" onRetry={()=>void events.refetch()}>
-            <div className="schedule-list">{events.data?.map(item=><EventCard key={item._id||item.id} {...transformToEventCard(item)} isCompact/>)}</div>
-          </ContentState> : <GuestHomeState title="一起安排下一次相聚" description="查看班级活动、时间与参与方式。" to="/events"/>}
+          {member ? <Suspense fallback={<ContentState loading/>}><ContentState loading={events.isLoading} error={events.error} empty={!events.data?.length} emptyTitle="暂无近期活动" onRetry={()=>void events.refetch()}>
+            <div className="schedule-list">{events.data?.slice(0,HOME_LIMITS.activity).map(item=><EventCard key={item._id||item.id} {...transformToEventCard(item)} isCompact/>)}</div>
+          </ContentState></Suspense> : <GuestHomeState title="一起安排下一次相聚" description="查看班级活动、时间与参与方式。" to="/events"/>}
         </HomeSectionCard>
         <HomeSectionCard kind="resource" title="共享资源" to="/resources" linkLabel="资源目录">
-          {member ? <ContentState loading={resources.isLoading} error={resources.error} empty={!resources.data?.length} emptyTitle="暂无共享资源" onRetry={()=>void resources.refetch()}>
-            {resources.data?.map(item=><ResourceCard key={item._id} {...item} id={item._id} updatedAt={item.updatedAt||item.createdAt} fileSize={formatBytes(item.file?.size)||item.fileSize} author={item.uploadedBy?.name} isCompact/>)}
-          </ContentState> : <GuestHomeState title="资料有去处，查找更方便" description="班级共享的学习资料与文件，仅向登录成员开放。" to="/resources"/>}
+          {member ? <Suspense fallback={<ContentState loading/>}><ContentState loading={resources.isLoading} error={resources.error} empty={!resources.data?.length} emptyTitle="暂无共享资源" onRetry={()=>void resources.refetch()}>
+            {resources.data?.slice(0,HOME_LIMITS.resource).map(item=><ResourceCard key={item._id} {...item} id={item._id} updatedAt={item.updatedAt||item.createdAt} fileSize={formatBytes(item.file?.size)||item.fileSize} author={item.uploadedBy?.name} isCompact/>)}
+          </ContentState></Suspense> : <GuestHomeState title="资料有去处，查找更方便" description="班级共享的学习资料与文件，仅向登录成员开放。" to="/resources"/>}
         </HomeSectionCard>
         <HomeSectionCard kind="news" title="正在发生" titleTone="editorial" to="/news" linkLabel="全部新闻">
-          {member ? <ContentState loading={news.isLoading} error={news.error} empty={!news.data?.length} emptyTitle="暂无新消息" onRetry={()=>void news.refetch()}>
-            {news.data?.map(item=><NewsCard key={item._id} {...item}/>)}
-          </ContentState> : <GuestHomeState title="记录班级的新消息" description="阅读新闻、分享见闻，关注身边正在发生的事。" to="/news"/>}
+          {member ? <Suspense fallback={<ContentState loading/>}><ContentState loading={news.isLoading} error={news.error} empty={!news.data?.length} emptyTitle="暂无新消息" onRetry={()=>void news.refetch()}>
+            {news.data?.slice(0,HOME_LIMITS.news).map(item=><NewsCard key={item._id} {...item}/>)}
+          </ContentState></Suspense> : <GuestHomeState title="记录班级的新消息" description="阅读新闻、分享见闻，关注身边正在发生的事。" to="/news"/>}
         </HomeSectionCard>
         <HomeSectionCard kind="pulse" title="班级动态" titleTone="editorial" to="/social" linkLabel="去聊聊">
           {member ? <ContentState loading={posts.isLoading} error={posts.error} empty={!posts.data?.length} emptyTitle="还没有新动态" onRetry={()=>void posts.refetch()}>
-            {posts.data?.map(item=><article className="home-social-entry" key={item._id}>
+            {posts.data?.slice(0,HOME_LIMITS.pulse).map(item=><article className="home-social-entry" key={item._id}>
               <p className="font-semibold">{item.author?.name||'班级成员'}</p>
               <time className="entry-meta">{formatDate(item.createdAt)}</time>
               <p className="entry-description line-clamp-3">{item.content}</p>
@@ -113,9 +123,9 @@ export default function Homepage() {
           </ContentState> : <GuestHomeState title="日常分享，只给班级伙伴" description="成员的动态与讨论保留在班级空间里。" to="/social"/>}
         </HomeSectionCard>
         <HomeSectionCard kind="gallery" title="相聚的记忆" titleTone="editorial" to="/events" linkLabel="往期活动" wide>
-          {member ? <ContentState loading={past.isLoading} error={past.error} empty={!past.data?.length} emptyTitle="暂无活动相册" onRetry={()=>void past.refetch()}>
-            <div className="archive-strip">{past.data?.slice(0,2).map(item=><PastEventCard key={item._id} {...item} id={item._id}/>)}</div>
-          </ContentState> : <GuestHomeState title="让相聚留下记录" description="班级活动照片与往期回忆，登录后慢慢看。" to="/events"/>}
+          {member ? <Suspense fallback={<ContentState loading/>}><ContentState loading={past.isLoading} error={past.error} empty={!past.data?.length} emptyTitle="暂无活动相册" onRetry={()=>void past.refetch()}>
+            <div className="archive-strip">{past.data?.slice(0,HOME_LIMITS.gallery).map(item=><PastEventCard key={item._id} {...item} id={item._id}/>)}</div>
+          </ContentState></Suspense> : <GuestHomeState title="让相聚留下记录" description="班级活动照片与往期回忆，登录后慢慢看。" to="/events"/>}
         </HomeSectionCard>
       </div>
       <IOSInstallCard/>

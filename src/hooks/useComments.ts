@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/authContextState';
 import { useUser } from '../context/userContextState';
 import api from '../lib/axios';
+import { useQueryClient } from '@tanstack/react-query';
+import { invalidateCommentCounters } from '../lib/commentCounters';
 
 export interface Comment {
   _id: string;
@@ -70,6 +72,7 @@ export const useComments = (
     autoFetch?: boolean;
   } = {}
 ): UseCommentsReturn => {
+  const client = useQueryClient();
   const { user: authUser, getAuthHeaders } = useAuth();
   const { user: userProfile } = useUser();
   
@@ -126,6 +129,7 @@ export const useComments = (
       setCurrentPage(data.pagination.currentPage);
       setTotalPages(data.pagination.totalPages);
       setTotalComments(data.pagination.totalComments);
+      setCommentCount(data.pagination.totalComments);
       setHasMore(data.pagination.hasMore);
 
     } catch (err) {
@@ -135,21 +139,6 @@ export const useComments = (
       setLoading(false);
     }
   }, [contentType, contentId, limit, sort]);
-
-  // Fetch comment count separately for faster loading
-  const fetchCommentCount = useCallback(async () => {
-    if (!contentType || !contentId) return;
-
-    try {
-      const response = await fetch(`/api/comments/${contentType}/${contentId}/count`);
-      if (response.ok) {
-        const data = await response.json();
-        setCommentCount(data.count || 0);
-      }
-    } catch (err) {
-      console.error('❌ Error fetching comment count:', err);
-    }
-  }, [contentType, contentId]);
 
   // Add a new comment
   const addComment = async (content: string, parentId?: string) => {
@@ -199,6 +188,7 @@ export const useComments = (
       // Update counters
       setCommentCount(prev => prev + 1);
       setTotalComments(prev => prev + 1);
+      invalidateCommentCounters(client, contentType, contentId);
 
     } catch (err) {
       console.error('❌ Error adding comment:', err);
@@ -357,6 +347,7 @@ export const useComments = (
       // Update counters
       setCommentCount(prev => Math.max(0, prev - 1));
       setTotalComments(prev => Math.max(0, prev - 1));
+      invalidateCommentCounters(client, contentType, contentId);
 
     } catch (err) {
       console.error('❌ Error deleting comment:', err);
@@ -375,7 +366,6 @@ export const useComments = (
   const refetch = async () => {
     setCurrentPage(1);
     await fetchComments(1, false);
-    await fetchCommentCount();
   };
 
   // Auto-fetch on mount and when dependencies change
@@ -383,9 +373,8 @@ export const useComments = (
     if (autoFetch && contentType && contentId) {
       void 0;
       fetchComments(1, false);
-      fetchCommentCount();
     }
-  }, [contentType, contentId, sort, autoFetch, fetchComments, fetchCommentCount]);
+  }, [contentType, contentId, sort, autoFetch, fetchComments]);
 
   return {
     comments,

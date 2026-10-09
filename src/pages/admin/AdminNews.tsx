@@ -1,16 +1,16 @@
 /**
- * 新闻管理 - list / create / edit / delete articles + trigger AI curation.
+ * 新闻管理 - list / create / edit / delete articles.
  * Reuses: POST /api/news, PUT /api/news/:id, DELETE /api/news/:id,
- *         GET /api/admin/news, POST /api/news/trigger-curation.
+ *         GET /api/admin/news. Daily automation shares the AI Assistant settings.
  */
 import React, { useCallback, useEffect, useState } from 'react';
-import { Pencil, Plus, Search, Sparkles, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import {
   createNews,
   deleteNews,
   errorMessage,
   getNews,
-  triggerCuration,
   updateNews,
   type AdminNews,
   type Paged,
@@ -89,8 +89,6 @@ const AdminNewsPage: React.FC = () => {
   const [formError, setFormError] = useState('');
   const [deleting, setDeleting] = useState<AdminNews | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
-  const [curating, setCurating] = useState(false);
-  const [curationNote, setCurationNote] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -190,19 +188,6 @@ const AdminNewsPage: React.FC = () => {
     }
   };
 
-  const handleCuration = async () => {
-    setCurating(true);
-    setCurationNote('');
-    try {
-      const result = await triggerCuration();
-      setCurationNote(result?.message || 'AI 策展已触发，稍后刷新即可看到新文章。');
-    } catch (err) {
-      setCurationNote(errorMessage(err));
-    } finally {
-      setCurating(false);
-    }
-  };
-
   return (
     <>
       <PageHeader
@@ -213,10 +198,7 @@ const AdminNewsPage: React.FC = () => {
             <AdminButton variant="secondary" onClick={() => void load()} loading={loading}>
               刷新
             </AdminButton>
-            <AdminButton variant="secondary" loading={curating} onClick={() => void handleCuration()}>
-              <Sparkles className="h-4 w-4" />
-              触发 AI 策展
-            </AdminButton>
+            <Link className="inline-flex min-h-11 items-center rounded-sm border border-border bg-card px-3.5 py-2 text-sm font-medium hover:bg-accent/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" to="/admin/ai#daily-news">AI 每日新闻</Link>
             <AdminButton onClick={openCreate}>
               <Plus className="h-4 w-4" />
               发布新闻
@@ -224,12 +206,6 @@ const AdminNewsPage: React.FC = () => {
           </>
         }
       />
-
-      {curationNote && (
-        <p className="mb-4 rounded-sm border border-border bg-card px-4 py-3 text-xs text-muted-foreground">
-          {curationNote}
-        </p>
-      )}
 
       <Panel padded={false}>
         <div className="flex flex-col gap-3 border-b border-border px-5 py-4 sm:flex-row sm:items-center">
@@ -271,7 +247,7 @@ const AdminNewsPage: React.FC = () => {
         ) : !data || data.items.length === 0 ? (
           <EmptyState
             title="还没有新闻"
-            description="手动发布一篇，或触发 AI 策展自动抓取行业资讯。"
+            description="手动发布一篇，或前往 AI 助手设置每日新闻。"
             action={<AdminButton onClick={openCreate}>发布新闻</AdminButton>}
           />
         ) : (
@@ -292,6 +268,7 @@ const AdminNewsPage: React.FC = () => {
                   <Td>
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span className="font-medium">{article.title}</span>
+                      {article.origin === 'ai_daily' && <Badge>AI 每日精选</Badge>}
                       {article.isFeatured && <Badge tone="info">精选</Badge>}
                       {article.isTrending && <Badge tone="warning">热门</Badge>}
                     </div>
@@ -314,7 +291,7 @@ const AdminNewsPage: React.FC = () => {
                         <Pencil className="h-3.5 w-3.5" />
                         编辑
                       </AdminButton>
-                      <AdminButton variant="ghost" onClick={() => setDeleting(article)}>
+                      <AdminButton variant="danger-outline" onClick={() => setDeleting(article)}>
                         <Trash2 className="h-3.5 w-3.5" />
                         删除
                       </AdminButton>

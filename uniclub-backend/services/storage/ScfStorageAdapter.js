@@ -13,6 +13,9 @@ class ScfStorageAdapter extends CosStorageAdapter {
     this.tokenEndpoint = functionEndpoint(env.SCF_TOKEN_ENDPOINT);
     this.functionUrl = functionEndpoint(env.SCF_FUNCTION_URL);
     this.http = dependencies.http || axios;
+    // New server-only auth leaves existing quantification integrations intact.
+    // Activity media requires the secured contract and never permits fallback.
+    this.serviceSecret = env.CLASSHUB_SCF_AUTH_SECRET || '';
     this.readUrls = new Map();
     this.retainObjects = true;
   }
@@ -23,7 +26,7 @@ class ScfStorageAdapter extends CosStorageAdapter {
   async request(url, params) {
     if (!this.describe().configured) fail(503, '云函数存储尚未配置，请联系管理员。', 'STORAGE_UNCONFIGURED');
     try {
-      const { data } = await this.http.get(url, { params, timeout: 15000, maxRedirects: 0, maxContentLength: 2 * 1024 * 1024 });
+      const { data } = await this.http.get(url, { params, ...(this.serviceSecret ? { headers: { 'X-ClassHub-Service-Auth': this.serviceSecret } } : {}), timeout: 15000, maxRedirects: 0, maxContentLength: 2 * 1024 * 1024 });
       if (data?.success !== true) fail(502, '云函数响应无效，请检查函数地址和接口配置。', 'SCF_CONTRACT');
       return data;
     } catch (error) {

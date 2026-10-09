@@ -3,6 +3,7 @@ const Submission = require('../models/QuantificationSubmission');
 const Upload = require('../models/QuantificationUpload');
 const User = require('../models/User');
 const Roster = require('../models/EnrolledUser');
+const ActivityMedia = require('../models/ActivityMedia');
 
 const cleanupFilter = now => ({ cleanedAt: null, $and: [
   { $or: [{ state: { $in: ['confirmed', 'aborted', 'expired'] }, cleanupAfter: { $lte: now } }, { state: { $in: ['pending', 'confirming'] }, expiresAt: { $lt: now }, confirmLeaseUntil: { $not: { $gt: now } } }] },
@@ -11,7 +12,7 @@ const cleanupFilter = now => ({ cleanedAt: null, $and: [
 ] });
 
 class QuantificationRepository {
-  async hasStorageRecords() { return Boolean(await Submission.exists({}) || await Upload.exists({ cleanedAt: null })); }
+  async hasStorageRecords() { return Boolean(await Submission.exists({}) || await Upload.exists({ cleanedAt: null }) || await ActivityMedia.exists({})); }
   listCollections(admin) { return Collection.find(admin ? {} : { status: { $ne: 'draft' } }).sort({ createdAt: -1 }).lean(); }
   getCollection(id) { return Collection.findById(id).lean(); }
   createCollection(data) { return Collection.create(data); }

@@ -179,14 +179,21 @@ class EngagementService {
       
       // Get the appropriate model and fetch the actual content
       const Model = this.getContentModel(contentType);
-      let query = Model.find({ _id: { $in: contentIds } });
+      let contentFilter = { _id: { $in: contentIds } };
+      if (contentType === 'Event') {
+        await require('./ActivityService').activityService.account(userId);
+        contentFilter = { ...contentFilter, ...require('../utils/activityPolicy').publicFilter() };
+      }
+      let query = Model.find(contentFilter);
+      if (contentType === 'Event') query = query.select('+mediaRefs').populate('organizer', 'name');
       
       // Populate author for SocialPost
       if (contentType === 'SocialPost') {
         query = query.populate('author', 'name profile');
       }
       
-      const content = await query;
+      let content = await query;
+      if (contentType === 'Event') content = await Promise.all(content.map(row => require('../middleware/activityReadAccess').activityPreview(row, userId)));
       
       // Sort content by the order of liked dates
       const contentMap = {};
@@ -226,7 +233,13 @@ class EngagementService {
       
       // Get the appropriate model and fetch the actual content
       const Model = this.getContentModel(contentType);
-      let query = Model.find({ _id: { $in: contentIds } });
+      let contentFilter = { _id: { $in: contentIds } };
+      if (contentType === 'Event') {
+        await require('./ActivityService').activityService.account(userId);
+        contentFilter = { ...contentFilter, ...require('../utils/activityPolicy').publicFilter() };
+      }
+      let query = Model.find(contentFilter);
+      if (contentType === 'Event') query = query.select('+mediaRefs').populate('organizer', 'name');
       
       // Populate author for SocialPost
       if (contentType === 'SocialPost') {
@@ -238,7 +251,8 @@ class EngagementService {
         query = query.populate('uploadedBy', 'name profile');
       }
       
-      const content = await query;
+      let content = await query;
+      if (contentType === 'Event') content = await Promise.all(content.map(row => require('../middleware/activityReadAccess').activityPreview(row, userId)));
       
       // Sort content by the order of saved dates
       const contentMap = {};

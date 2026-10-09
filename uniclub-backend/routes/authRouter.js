@@ -224,6 +224,7 @@ authRouter.get('/validate', authenticateToken, async (req, res) => {
 // Get current user profile
 // GET /api/auth/me
 authRouter.get('/me', authenticateToken, async (req, res) => {
+  res.set('Cache-Control', 'private, no-store');
   try {
     const user = await User.findById(req.user.userId);
     if (!user) {
@@ -238,6 +239,12 @@ authRouter.get('/me', authenticateToken, async (req, res) => {
         displayName: user.displayName || null,
         uniqueId: user.uniqueId,
         avatar: user.profile?.avatar || null,
+        profile: {
+          bio: user.profile?.bio || '',
+          location: user.profile?.location || '',
+          website: user.profile?.website || '',
+          interests: user.profile?.interests || []
+        },
         isAdmin: user.isAdmin === true
       }
     });

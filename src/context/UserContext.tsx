@@ -1,7 +1,8 @@
 import { clearSession, readToken } from '../lib/session';
 import { UserContext, type User, type AuthUser } from './userContextState';
-import React, { createContext, useContext, useState, ReactNode, useEffect, useSyncExternalStore } from 'react';
+import { useState, type ReactNode, useEffect, useSyncExternalStore } from 'react';
 import { hasConsent, subscribeConsent } from '../lib/privacy/consent';
+import { loadCurrentUser } from '../lib/currentUser';
 
 const defaultUser: User = {
   id: '',
@@ -68,38 +69,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     return () => window.removeEventListener('auth:expired', reset);
   }, []);
 
-  // Validate token by making a request to backend
-  const validateToken = async (token: string) => {
-    try {
-      const response = await fetch('/api/auth/validate', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        return data.valid;
-      }
-      return false;
-    } catch (error) {
-      console.error('Token validation failed:', error);
-      return false;
-    }
-  };
-
   // Check for existing authentication on app load
   useEffect(() => {
-    void 0;
+    let active = true;
+    let request = 0;
     
     const checkAuth = async () => {
+      const current = ++request;
       const token = readToken();
       const savedAuthUser = readSavedAuthUser();
-      
-      void 0;
-      void 0;
       
       // No session -> stay signed out.
       // The old "portfolio demo" fallback that auto-signed visitors in as a
@@ -113,6 +91,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
+      setIsLoading(true);
       try {
         const parsedAuthUser = JSON.parse(savedAuthUser);
         
@@ -137,98 +116,41 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           memberId: parsedAuthUser.uniqueId,
         }));
         
-        // Fetch complete user profile including avatar from backend
-        await fetchUserProfile(token);
+        try {
+          const verifiedUser = await loadCurrentUser(token);
+          if (!active || current !== request || readToken() !== token) return;
+          setAuthUser({ name: verifiedUser.name, displayName: verifiedUser.displayName,
+            email: verifiedUser.email || '', uniqueId: verifiedUser.uniqueId });
+          setUser(prev => ({
+            ...prev,
+            id: verifiedUser.id,
+            name: verifiedUser.name,
+            displayName: verifiedUser.displayName || null,
+            email: verifiedUser.email || '',
+            uniqueId: verifiedUser.uniqueId,
+            memberId: verifiedUser.uniqueId,
+            profile: verifiedUser.profile || defaultUser.profile,
+            profileImage: verifiedUser.avatar?.data || null,
+          }));
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+        }
         
       } catch (error) {
         console.error('❌ Error parsing saved auth user:', error);
         logout();
       }
       
-      setIsLoading(false);
+      if (active && current === request) setIsLoading(false);
     };
 
     void checkAuth();
     window.addEventListener('auth:changed', checkAuth);
-    return () => window.removeEventListener('auth:changed', checkAuth);
+    return () => {
+      active = false;
+      window.removeEventListener('auth:changed', checkAuth);
+    };
   }, []);
-
-  // Fetch user profile data including avatar from backend
-  const fetchUserProfile = async (token?: string) => {
-    try {
-      const authToken = token || readToken();
-      if (!authToken) {
-        void 0;
-        return;
-      }
-
-      void 0;
-
-      const response = await fetch('/api/users/me', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (readToken() !== authToken) return;
-        if (data.success && data.user) {
-          void 0;
-          
-          // Extract avatar data properly - check multiple possible locations
-          let avatarData = null;
-          void 0;
-          void 0;
-          void 0;
-          
-          if (data.user.avatar?.data) {
-            avatarData = data.user.avatar.data;
-            void 0;
-          } else if (data.user.profile?.avatar?.data) {
-            avatarData = data.user.profile.avatar.data;
-            void 0;
-          }
-          
-          if (avatarData) {
-            void 0;
-          } else {
-            void 0;
-          }
-          
-          // Update user state with complete profile data
-          setUser(prev => {
-            const updatedUser = {
-              ...prev,
-              id: data.user.id,
-              name: data.user.name,
-              displayName: data.user.displayName || null,
-              email: data.user.email || '',
-              uniqueId: data.user.uniqueId,
-              memberId: data.user.uniqueId,
-              profile: data.user.profile || {
-                bio: '',
-                location: '',
-                website: '',
-                interests: []
-              },
-              profileImage: avatarData
-            };
-            
-            void 0;
-            return updatedUser;
-          });
-
-        }
-      } else {
-        console.error('Failed to fetch user profile:', response.statusText, '- keeping existing user data');
-      }
-    } catch (error) {
-      console.error('Error fetching user profile:', error, '- keeping existing user data');
-    }
-  };
 
   const login = (token: string, newAuthUser: AuthUser) => {
     void 0;

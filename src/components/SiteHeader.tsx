@@ -3,6 +3,8 @@ import { useHeaderMorph } from '../hooks/useHeaderMorph';
 import { useLocation, Link } from 'react-router-dom';
 import { Search, Bell, UserRound } from 'lucide-react';
 import { sectionFor } from '../lib/navigationState';
+import BrandLogo from './BrandLogo';
+import './navigation.css';
 
 export default function SiteHeader({ onSearch, onProfile, name, isAuthenticated }: {
   onSearch: () => void;
@@ -21,33 +23,37 @@ export default function SiteHeader({ onSearch, onProfile, name, isAuthenticated 
         <div className="site-container">
           <div className="masthead-inner">
             <Link className="masthead-brand" to="/" aria-label="ClassHub 首页">
-              <img
+              <BrandLogo
                 className="masthead-logo"
-                src="/branding/classhub-logo-v2.png"
                 alt="ClassHub 软件工程班级信息平台"
-                width={2172}
-                height={724}
+                sizes="(max-width: 767px) 184px, (max-width: 1090px) 240px, (max-width: 1309px) 22vw, 288px"
+                fetchPriority="high"
+                decoding="async"
               />
             </Link>
             <div className="masthead-actions">
               {isAuthenticated ? <>
               <button
+                type="button"
                 className="icon-control"
                 onClick={onSearch}
+                aria-haspopup="dialog"
                 aria-label="搜索，快捷键 Ctrl 或 Command K"
                 aria-keyshortcuts="Control+K Meta+K"
               >
-                <Search />
+                <Search aria-hidden="true" />
               </button>
               <Link className="icon-control" to="/notifications" aria-label="通知">
-                <Bell />
+                <Bell aria-hidden="true" />
               </Link>
               <button
+                type="button"
                 className="icon-control"
                 onClick={onProfile}
+                aria-haspopup="dialog"
                 aria-label={`${name || '我的'}个人资料`}
               >
-                <UserRound />
+                <UserRound aria-hidden="true" />
               </button>
               </> : <Link className="masthead-login" to="/auth" state={{ from: pathname }}>登录</Link>}
             </div>

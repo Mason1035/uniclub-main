@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import api from '../lib/axios';
 import { isAxiosError } from 'axios';
 import EmojiPicker from './EmojiPicker';
+import UserAvatarImage from './UserAvatarImage';
 
 interface CreatePostDialogProps {
   isOpen: boolean;
@@ -375,13 +376,7 @@ const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
           {errorMessage && <p className="form-error" role="alert">{errorMessage}</p>}
           <div className="flex items-start space-x-3">
             <div className="w-10 h-10 rounded-full overflow-hidden bg-secondary dark:bg-card flex-shrink-0">
-              {user?.profileImage ? (
-                <img src={user.profileImage} alt="头像" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-muted-foreground dark:text-muted-foreground">
-                  {user?.name?.charAt(0) || 'U'}
-                </div>
-              )}
+              <UserAvatarImage src={user.profileImage} identity={user.id||user.uniqueId||user.name} alt="头像" className="w-full h-full object-cover"/>
             </div>
             
             <div className="flex-1 relative">

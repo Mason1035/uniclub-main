@@ -7,8 +7,20 @@ export interface ContentAuthor {
   profile?: { avatar?: { data: string; contentType?: string } };
 }
 
+export interface NewsSourceReference {
+  title: string;
+  publisher: string;
+  url: string;
+  publishedAt?: string | null;
+}
+
 export interface ApiNews {
   _id: string;
+  origin?: 'manual' | 'ai_daily';
+  automationDate?: string;
+  batchId?: string;
+  generatedAt?: string;
+  sourceReferences?: NewsSourceReference[];
   title: string;
   content?: string;
   originalUrl?: string;

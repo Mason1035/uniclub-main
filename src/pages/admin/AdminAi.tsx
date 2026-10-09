@@ -1,16 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, Copy, ImagePlus, RotateCcw, Send, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Toaster } from '@/components/ui/sonner';
 import { AdminButton, Field, Modal, PageHeader, Panel, TextArea, TextInput } from './components';
 import KeySettings from './ai/KeySettings';
+import DailyNewsSettings from './ai/DailyNewsSettings';
 import PublishEditor from './ai/PublishEditor';
 import Answer from './ai/Answer';
 import StreamingPreview from './ai/StreamingPreview';
 import { aiErrorMessage, generateAi, getAiStatus } from './ai/api';
 import { draftText, publicationErrors, publishDraft, toPublishDraft } from './ai/publication';
-import { PUBLICATION_LABELS, type AiGeneration, type AiScenario, type AiStatus, type HistoryMessage, type InputImage, type PublishDraft, type PublishedRecord, type Scenario } from './ai/types';
+import { PUBLICATION_LABELS, type AiGeneration, type AiScenario, type AiStatus, type HistoryMessage, type InputImage, type PublishDraft, type PublishedRecord, type PublishType, type Scenario } from './ai/types';
 import './ai/ai.css';
 
 const FALLBACK_SCENARIOS: AiScenario[] = [
@@ -27,6 +28,9 @@ const FALLBACK_SCENARIOS: AiScenario[] = [
   { key: 'free', label: '自由提问', description: '直接提问或讨论问题' },
   { key: 'vision', label: '图片理解', description: '识别海报、照片或截图' },
 ];
+const PUBLISH_PRIORITY: Record<PublishType, number> = { resource: 0, announcement: 1, news: 2, activity: 3 };
+const GLOW_SCENARIOS = new Set<Scenario>(['resource', 'announcement', 'news', 'activity']);
+const scenarioPriority = (item: AiScenario) => item.publishType ? PUBLISH_PRIORITY[item.publishType] ?? 4 : 5;
 const capHistory = (messages: HistoryMessage[]): HistoryMessage[] => {
   const recent = messages.slice(-10).map(m => ({ ...m, content: m.content.slice(0, 16000) }));
   while (recent.reduce((n, m) => n + m.content.length, 0) > 32000) recent.splice(0, 2);
@@ -44,7 +48,9 @@ export default function AdminAi() {
   const [lastRequest, setLastRequest] = useState<{ prompt: string; history: HistoryMessage[] } | null>(null);
   const requestRef = useRef<AbortController | null>(null), requestBusy = useRef(false), publishBusy = useRef(false), alive = useRef(true);
   const fileInput = useRef<HTMLInputElement>(null), previewUrls = useRef(new Map<string, string>());
-  const scenarios = status?.scenarios || FALLBACK_SCENARIOS;
+  // Order both server-provided and fallback scenes without mutating either list.
+  const scenarios = useMemo(() => [...(status?.scenarios || FALLBACK_SCENARIOS)]
+    .sort((a, b) => scenarioPriority(a) - scenarioPriority(b)), [status?.scenarios]);
   const active = scenarios.find(s => s.key === scenario);
   const unavailable = !status?.configured;
   const limit = status?.limits.prompt || 8000;
@@ -142,13 +148,14 @@ export default function AdminAi() {
     <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"><span className="font-semibold">DeepSeek V4.1 Flash</span><code className="text-xs text-muted-foreground">deepseek-flash</code><span className="text-xs text-muted-foreground" role="status">{status ? status.configured ? tested ? '● 服务可用' : '● 已配置 · 待测试' : '○ 未配置 API Key' : '正在检查配置…'}</span></div>
     {statusError && <div className="mb-4 flex flex-wrap items-center gap-3" role="alert"><p className="text-sm text-destructive">{statusError}</p><AdminButton variant="secondary" onClick={() => { setStatusError(''); void getAiStatus().then(setStatus).catch(e => setStatusError(aiErrorMessage(e))); }}>重新检查</AdminButton></div>}
     <KeySettings settings={status} disabled={running || publishing} onChange={settings => setStatus(current => current ? { ...current, ...settings } : null)} onTested={setTested} />
+    <DailyNewsSettings />
     <div className="ai-workspace">
       <Panel title="AI 输入工作区" description={active?.description}>
         <fieldset disabled={running || publishing} className="min-w-0 space-y-5">
-          <div><p className="mb-2 text-xs font-medium">选择场景</p><div className="ai-scenarios" role="group" aria-label="AI 场景">{scenarios.map(item => <button key={item.key} type="button" aria-pressed={scenario === item.key} onClick={() => { if (scenario !== item.key) { setScenario(item.key); clearResults(); } }}>{item.label}</button>)}</div></div>
+          <div><p className="mb-2 text-xs font-medium">选择场景</p><div className="ai-scenarios" role="group" aria-label="AI 场景">{scenarios.map(item => <button key={item.key} type="button" className={GLOW_SCENARIOS.has(item.key) ? 'ai-scenario-publish' : undefined} aria-pressed={scenario === item.key} onClick={() => { if (scenario !== item.key) { setScenario(item.key); clearResults(); } }}>{GLOW_SCENARIOS.has(item.key) && <span className="ai-scenario-edge" aria-hidden="true" />}<span className="ai-scenario-label">{item.label}</span></button>)}</div></div>
           <Field label="输入内容" hint="写明真实的时间、地点、来源和链接；未提供的信息会留空。"><TextArea value={prompt} onChange={e => setPrompt(e.target.value)} maxLength={limit} rows={8} placeholder={scenario === 'activity' ? '主题：班级技术分享会\n时间：请填写明确的开始与结束时间\n地点：请填写实际地点\n要点：实习经历分享、现场答疑' : '输入问题、已知事实或需要处理的内容…'} /><span className="mt-1 block text-right text-xs text-muted-foreground">{prompt.length} / {limit} 字</span></Field>
           <div><p className="mb-2 text-xs font-medium">图片（可选）</p><input ref={fileInput} className="sr-only" tabIndex={-1} type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple onChange={e => { addImages(e.target.files); e.target.value = ''; }} /><AdminButton type="button" variant="secondary" disabled={images.length >= 4} onClick={() => fileInput.current?.click()}><ImagePlus className="h-4 w-4" />上传图片</AdminButton><p className="mt-2 text-xs text-muted-foreground">JPEG / PNG / GIF / WebP · 最多 4 张 · 每张 2 MiB。图片仅用于本次对话，不保存为封面。</p></div>
-          {images.length > 0 && <div className="ai-images">{images.map(image => <figure key={image.id}><img src={image.preview} alt={image.file.name} /><figcaption>{image.file.name}</figcaption><AdminButton type="button" variant="ghost" aria-label={`移除图片 ${image.file.name}`} onClick={() => removeImage(image.id)}><X className="h-3.5 w-3.5" />移除</AdminButton></figure>)}</div>}
+          {images.length > 0 && <div className="ai-images">{images.map(image => <figure key={image.id}><img src={image.preview} alt={image.file.name} /><figcaption>{image.file.name}</figcaption><AdminButton type="button" variant="danger-outline" aria-label={`移除图片 ${image.file.name}`} onClick={() => removeImage(image.id)}><X className="h-3.5 w-3.5" />移除</AdminButton></figure>)}</div>}
         </fieldset>
         {error && <p className="mt-4 text-sm text-destructive" role="alert">{error}</p>}
         <div className="mt-5 flex flex-wrap gap-2"><AdminButton loading={running} disabled={unavailable || publishing || (!prompt.trim() && !images.length)} onClick={() => void run()}><Send className="h-4 w-4" />{running ? '正在生成' : '生成'}</AdminButton>{running && <AdminButton variant="secondary" onClick={() => requestRef.current?.abort()}>停止生成</AdminButton>}</div>

@@ -35,7 +35,10 @@
   --text-display: clamp(2.25rem, 1.4rem + 3vw, 4.25rem);
   --text-title: var(--text-h1);
   --text-hero: clamp(2rem, 4.1vw, 3.8rem);
-  --motion-fast: 160ms; --motion-panel: 240ms; --ease-out: cubic-bezier(.22, 1, .36, 1);
+  /* State changes share one timing vocabulary. JS reads these same values. */
+  --motion-fast: 140ms; --motion-panel: 220ms; --motion-structural: 320ms; --motion-exit: 160ms;
+  --motion-spin: 800ms; --motion-pulse: 1600ms;
+  --ease-out: cubic-bezier(.22, 1, .36, 1); --ease-standard: cubic-bezier(.4, 0, .2, 1);
   --z-header: 30; --z-pet: 35; --z-bottom: 40; --z-overlay: 50;
 }
 .dark {

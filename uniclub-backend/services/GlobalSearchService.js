@@ -6,6 +6,10 @@ const Resource = require('../models/Resource');
 const SocialPost = require('../models/SocialPost');
 const User = require('../models/User');
 const Follow = require('../models/Follow');
+const AiSettings = require('../models/AiSettings');
+const Roster = require('../models/EnrolledUser');
+const { publicFilter: activityFilter, typeLabel } = require('../utils/activityPolicy');
+const { visibilityFilter } = require('../utils/dailyNewsVisibility');
 
 const MAX_QUERY_LENGTH = 200;
 const MAX_RESULTS = 12;
@@ -93,7 +97,7 @@ const adapters = {
     keywords: [item.categories || [], item.summary?.keyPoints || [], item.summary?.quickSummary],
     date: item.publishedAt, url: `/news/${item._id}` }),
   event: item => document('event', item, { content: item.description,
-    keywords: [item.category || [], item.tags || [], item.location?.address, item.location?.room, item.eventType],
+    keywords: [item.category || [], item.tags || [], item.location?.address, item.location?.room, item.eventType, typeLabel(item.eventType)],
     date: item.createdAt, url: `/event/${item._id}` }),
   pastEvent: item => document('pastEvent', item, { summary: item.subtitle, content: item.body,
     keywords: [item.category, item.tags || []], date: item.date, url: `/past-events/${item._id}` }),
@@ -136,16 +140,22 @@ function createSearchService(models) {
     if (!userId) throw new Error('Authentication required');
     if (!parseQuery(value).full) return rankDocuments([], value, limit);
     const [account, follows] = await Promise.all([
-      models.User.findById(userId).select('isEnrolled').lean(),
+      models.User.findById(userId).select('isEnrolled uniqueId isAdmin').lean(),
       models.Follow.find({ followerId: userId, status: 'accepted' }).select('followingId').lean(),
     ]);
     if (!account) throw new Error('Account unavailable');
+    const newsFilter = await visibilityFilter(now, models.AiSettings || null);
+    // Activity visibility follows the live roster, including rostered admins.
+    const activityMember = models.Roster
+      ? account.isAdmin === true || account.isEnrolled === true && !!await models.Roster.exists({ uniqueId: account.uniqueId })
+      : account.isEnrolled === true; // Legacy dependency-injected search fixtures.
+    const eventFilter = activityMember ? activityFilter(now) : { _id: { $in: [] } };
     const sources = [
       ['announcement', models.Announcement, { isPublished: true, publishedAt: { $lte: now },
         $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }] }, 'title body publishedAt createdAt'],
-      ['news', models.News, { status: 'approved', publishedAt: { $lte: now } },
+      ['news', models.News, newsFilter,
         'title excerpt content categories summary.keyPoints summary.quickSummary publishedAt createdAt'],
-      ['event', models.Event, { status: 'published' }, 'title description category tags location.address location.room eventType createdAt'],
+      ['event', models.Event, eventFilter, 'title description category tags location.address location.room eventType createdAt'],
       ['pastEvent', models.PastEvent, {}, 'title subtitle body category tags date createdAt'],
       ['resource', models.Resource, { status: 'approved' }, 'title description file.originalName category tags type createdAt'],
       ['social', models.SocialPost, socialVisibility(userId, account.isEnrolled, follows.map(item => item.followingId)),
@@ -160,5 +170,5 @@ function createSearchService(models) {
   };
 }
 
-const searchContent = createSearchService({ Announcement, News, Event, PastEvent, Resource, SocialPost, User, Follow });
+const searchContent = createSearchService({ Announcement, News, Event, PastEvent, Resource, SocialPost, User, Follow, AiSettings, Roster });
 module.exports = { searchContent, createSearchService, normalizeSearchText, rankDocuments, adapters, socialVisibility, MAX_QUERY_LENGTH };

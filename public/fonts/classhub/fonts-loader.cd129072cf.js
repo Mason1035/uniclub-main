@@ -1,0 +1,1 @@
+(() => { const link = document.querySelector('link[data-classhub-fonts="extended"]'); if (!link) return; const apply = () => { link.media = 'all'; }; link.addEventListener('load', apply, { once: true }); if (link.sheet) apply(); })();

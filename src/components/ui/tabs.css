@@ -1,0 +1,55 @@
+.classhub-tabs-list {
+  position: relative;
+  isolation: isolate;
+  --tabs-active-background: hsl(var(--background));
+}
+
+.classhub-tabs-list::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: var(--tabs-indicator-width, 0px);
+  height: var(--tabs-indicator-height, 0px);
+  border-radius: var(--radius-control, 4px);
+  background: hsl(var(--background));
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(var(--tabs-indicator-x, 0px), var(--tabs-indicator-y, 0px));
+  transition: none;
+}
+
+.classhub-tabs-list[data-indicator-animated="true"]::before {
+  transition: transform var(--motion-panel, 220ms) var(--ease-out, cubic-bezier(.22, 1, .36, 1)), opacity var(--motion-fast, 140ms) var(--ease-standard, ease);
+}
+
+.classhub-tabs-list[data-indicator-ready="true"]::before {
+  opacity: 1;
+}
+
+.classhub-tabs-trigger {
+  position: relative;
+  z-index: 1;
+  transition-duration: var(--motion-fast, 140ms);
+  transition-timing-function: var(--ease-standard, ease);
+}
+
+.classhub-tabs-list[data-indicator-ready="true"] {
+  --tabs-active-background: transparent;
+}
+
+.classhub-tabs-trigger[data-state="active"] {
+  background-color: var(--tabs-active-background, hsl(var(--background)));
+}
+
+.classhub-tabs-list[data-orientation="vertical"] {
+  height: auto;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .classhub-tabs-list[data-indicator-animated="true"]::before,
+  .classhub-tabs-trigger {
+    transition: none;
+  }
+}

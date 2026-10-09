@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+router.use(require('../middleware/activityReadAccess').createActivityReadAccess().content);
 const Comment = require('../models/Comment');
 // REMOVED CommentLike - comment likes disabled
 const News = require('../models/News');
@@ -12,22 +13,7 @@ const { createUserNotification } = require('../utils/notificationPreferences');
 const NewsCurationService = require('../services/NewsCurationService');
 const jwt = require('jsonwebtoken');
 const authenticateToken = require('../middleware/auth');
-
-// Shared filter function for consistent comment querying
-const getCommentFilter = (contentId, contentType, options = {}) => {
-  const filter = {
-    contentId,
-    contentType,
-    status: 'active'
-  };
-  
-  // Add parent filter if specified (for top-level comments only)
-  if (options.topLevelOnly) {
-    filter.parentCommentId = null;
-  }
-  
-  return filter;
-};
+const { getCommentFilter } = require('../utils/commentFilter');
 
 // Get comments for an article
 router.get('/article/:articleId', async (req, res) => {
@@ -608,4 +594,4 @@ router.delete('/:commentId', authenticateToken, async (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;
