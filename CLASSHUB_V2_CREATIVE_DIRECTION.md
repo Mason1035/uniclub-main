@@ -73,7 +73,7 @@ ClassHub 是一个真实大学班级长期使用的数字空间。V2 应让人�
 | 动画 | [gsap.ts](/Users/alexmason/Desktop/uniclub-main/src/lib/gsap.ts)：GSAP、useGSAP、ScrollTrigger、Flip；桌宠使用 Web Animations API、定时器与按需 RAF | 不需要引入 Framer Motion、Three.js 或滚动接管库；避免两套引擎同时管理同一元素 |
 | 组织结构 | 页面与管理页面在 `src/pages`；组件在 `src/components`；桌宠与账号设置在 `src/features`；资产在 `public`；后端目录实际为 `uniclub-backend` | 不虚构根目录 components / pages / layouts，不把示例目录当真实架构 |
 | 移动环境 | [index.html](/Users/alexmason/Desktop/uniclub-main/index.html) 有 viewport-fit=cover；现有 safe area、visualViewport 处理与 Capacitor 7 相关代码 | 本轮是 Web 审计，未验证 Android / 原生通知与状态栏效果 |
-| PWA 相关 | [manifest.json](/Users/alexmason/Desktop/uniclub-main/public/manifest.json) 仍引用旧 App Logo；入口已移除 service worker | 不声称已具备完整离线缓存或离线提交能力 |
+| PWA 相关 | [manifest.json](/Users/alexmason/Desktop/uniclub-main/public/manifest.json) 使用当前带 `-v2` 后缀的 ClassHub 图标；入口已移除 service worker | 不声称已具备完整离线缓存或离线提交能力 |
 | 身份与主题 | AuthContext / UserContext 并存；ThemeContext 控制 `.dark` 与本地主题记录；请求使用现有 token 和过期处理 | 不合并或更换 Auth；不擅自把本地主题偏好改为服务端账号字段 |
 
 ### 2.2 真实路由与体验区域
@@ -131,10 +131,9 @@ ClassHub 是一个真实大学班级长期使用的数字空间。V2 应让人�
 
 | 资产 | 磁盘字节数 | 观察与风险 |
 | --- | ---: | --- |
-| `public/branding/classhub-logo.png` | 1,305,531 | 蓝紫发光轨道、书本/学位帽、ClassHub 与内嵌中文副标题；与暖纸面存在美术张力 |
-| `public/branding/classhub-favicon.png` | 1,550,614 | 小尺寸用途却有很大源文件，未来应生成合适衍生规格 |
-| `public/cursor workshop/IMG_3584.png` | 16,320,115 | 原图不适合直接作为首屏交付资源 |
-| `public/aws hackathon/IMG_7108.JPG` | 5,489,000 | 已查看：真实活动空间与参与者，但尚未确认与当前班级的关系 |
+| `public/branding/classhub-logo-v2.png` | 当前品牌 Logo | 现行 ClassHub 品牌图；旧版 Logo 已归档清理 |
+| `public/branding/classhub-favicon-v2.png` | 当前 favicon | 入口使用的现行 favicon；旧版 favicon 已归档清理 |
+| 历史活动照片 | 已从工作树清理 | 原始照片和导入脚本已移入 `docs/archive/legacy-uniclub/` 说明；数据库相册数据不由本次文件清理修改 |
 | `public/fonts/` | 10,754,758，总目录体积 | 有字体分片、CSS 与两份 OFL 文本；总目录大小不等于单页下载量 |
 | `public/pet-assets/` | 4,117,994，总目录体积 | 皮肤和声音差异很大，不能全部预载；部分第三方角色素材授权待确认 |
 

@@ -160,6 +160,7 @@ ECS 的具体目录、备份、回滚和运维流程见 [`deploy/ecs/README.md`]
 - [网页桌宠](docs/classhub-pet.md)
 - [ECS 部署说明](deploy/ecs/README.md)
 - [管理端 AI 助手说明](uniclub-backend/README.ai.md)
+- [UniClub 历史资料归档](docs/archive/legacy-uniclub/README.md)
 
 ## ClassHub 交互系统（2026-10-09）
 

@@ -104,7 +104,9 @@ Hero、Display、H1–H3、功能正文、阅读正文采用集中管理的 `cla
 - JavaScript 禁用时，`noscript` 内正常 stylesheet 保留完整字体覆盖；专项夹具观察到全部 199 face，以及生僻中文与扩展 Latin 的 tail 请求。动态姓名/正文在 extended CSS 完成注册前短暂使用现有系统 fallback，之后按 `swap` 替换；其他系统极生僻字仍受原源字体及系统 fallback 限制。
 - extended CSS、loader JS 和每个 WOFF2 均按内容 SHA-256 前 10 位命名，适合匹配内容哈希资源的长期 immutable 缓存。`fonts-core.css` 由 Vite 编入带 hash 的共享 CSS；其固定 public 路径不要单独设一年 immutable。
 
-旧 Noto / Geist 文件保留在原目录以保护既有资源与未提交文件，但正式加载入口不再引用；浏览器验证没有请求这些旧字体。没有增加字体切换动画或字体加载状态控件。
+旧 UniClub 字体已从 `public/fonts/` 根目录清理：`sans-0.woff2` 至 `sans-100.woff2`、`serif-101.woff2` 至 `serif-201.woff2`、`geist-mono-variable.woff2`、旧 `fonts.css` 及其三份旧 OFL 文本不再属于当前网站资源。独立设计原型使用自己的 `design-experiments/homepage-v2-concept/public/fonts/`，没有依赖这些根目录文件。正式字体全部保留在 `public/fonts/classhub/`，其 manifest 与相邻 CSS 继续作为唯一正式字体清单。
+
+没有增加字体切换动画或字体加载状态控件。
 
 ## 6. 重建
 
