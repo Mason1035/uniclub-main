@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     cacheDir: process.env.VITE_CACHE_DIR || "node_modules/.vite",
-    // Keep generated files separate from public/Assets on case-sensitive Linux.
+    // Keep generated files in a dedicated directory under dist.
     build: { assetsDir: 'static' },
     server: {
       host: '0.0.0.0',

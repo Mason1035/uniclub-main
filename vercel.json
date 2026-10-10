@@ -19,10 +19,6 @@
       "dest": "uniclub-backend/index.js"
     },
     {
-      "src": "/Assets/(.*)",
-      "dest": "/Assets/$1"
-    },
-    {
       "src": "/pet-assets/(.*)",
       "dest": "/pet-assets/$1"
     },
