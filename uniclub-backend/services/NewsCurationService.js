@@ -524,32 +524,10 @@ class NewsCurationService {
   }
 
   async clearOldArticles() {
-    try {
-      // Standardized cleanup: delete articles older than 48 hours based on database storage time
-      const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
-      
-      const result = await News.deleteMany({
-        createdAt: { $lt: fortyEightHoursAgo }, // Use createdAt for consistency
-        status: 'approved'
-      });
-      
-      console.log(`🗑️ Cleared ${result.deletedCount} approved articles (stored >48h ago)`);
-      
-      // Clean up draft/rejected articles older than 24 hours
-      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      const draftResult = await News.deleteMany({
-        createdAt: { $lt: oneDayAgo },
-        status: { $in: ['draft', 'rejected'] }
-      });
-      
-      if (draftResult.deletedCount > 0) {
-        console.log(`🗑️ Cleared ${draftResult.deletedCount} old draft/rejected articles`);
-      }
-      
-      console.log(`📊 Article cleanup completed - retention policy: 48h approved, 24h drafts`);
-    } catch (error) {
-      console.error('❌ Error clearing old articles:', error);
-    }
+    // Retired: historical rows without an explicit automation origin are
+    // manual. Only DailyNewsRepository may archive its own committed batches,
+    // after the replacement batch is durable. Never infer origin from dates.
+    console.log('Legacy news cleanup is disabled; manual news is preserved.');
   }
 
   async getOrCreateSystemUser() {
@@ -626,4 +604,4 @@ class NewsCurationService {
   }
 }
 
-module.exports = NewsCurationService; 
+module.exports = NewsCurationService;

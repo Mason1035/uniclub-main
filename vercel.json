@@ -16,7 +16,88 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "uniclub-backend/index.js"
+      "dest": "uniclub-backend/index.js",
+      "headers": {
+        "X-Robots-Tag": "noindex, nofollow, noarchive",
+        "Cache-Control": "private, no-store",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
+      }
+    },
+    {
+      "src": "/",
+      "dest": "/index.html",
+      "headers": {
+        "Cache-Control": "no-cache"
+      }
+    },
+    {
+      "src": "/privacy/?",
+      "dest": "/privacy.html",
+      "headers": {
+        "Cache-Control": "no-cache"
+      }
+    },
+    {
+      "src": "/about/?",
+      "dest": "/about.html",
+      "headers": {
+        "Cache-Control": "no-cache"
+      }
+    },
+    {
+      "src": "/index\\.html",
+      "status": 308,
+      "headers": {
+        "Location": "/"
+      }
+    },
+    {
+      "src": "/privacy\\.html",
+      "status": 308,
+      "headers": {
+        "Location": "/privacy"
+      }
+    },
+    {
+      "src": "/about\\.html",
+      "status": 308,
+      "headers": {
+        "Location": "/about"
+      }
+    },
+    {
+      "src": "/(?:app|404)\\.html",
+      "dest": "/404.html",
+      "status": 404,
+      "headers": {
+        "X-Robots-Tag": "noindex, nofollow, noarchive",
+        "Cache-Control": "private, no-store",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
+      }
+    },
+    {
+      "src": "/uploads/(.*)",
+      "dest": "/uploads/$1",
+      "headers": {
+        "X-Robots-Tag": "noindex, nofollow, noarchive"
+      }
+    },
+    {
+      "src": "/robots\\.txt",
+      "dest": "/robots.txt",
+      "headers": {
+        "Cache-Control": "public, max-age=3600"
+      }
+    },
+    {
+      "src": "/sitemap\\.xml",
+      "dest": "/sitemap.xml",
+      "headers": {
+        "Content-Type": "application/xml",
+        "Cache-Control": "public, max-age=3600"
+      }
     },
     {
       "src": "/pet-assets/(.*)",
@@ -27,8 +108,25 @@
       "dest": "/$1"
     },
     {
+      "src": "/(?:auth|settings|saved-posts|notifications|debug|news|announcements|events|social|functions(?:/random-call)?|quantification|fees|resources|admin(?:/(?:roster|members|events(?:/[a-fA-F0-9]{24})?|news|resources|gallery|notifications|ai|quantification|fees))?|(?:article|news|event|events|past-events|resource)/[a-fA-F0-9]{24}|comments/(?:news|event|resource|social)/[a-fA-F0-9]{24})/?",
+      "dest": "/app.html",
+      "headers": {
+        "X-Robots-Tag": "noindex, nofollow, noarchive",
+        "Cache-Control": "private, no-store",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
+      }
+    },
+    {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/404.html",
+      "status": 404,
+      "headers": {
+        "X-Robots-Tag": "noindex, nofollow, noarchive",
+        "Cache-Control": "private, no-store",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
+      }
     }
   ],
   "env": {
@@ -36,8 +134,8 @@
   },
   "crons": [
     {
-      "path": "/api/cron/news-curation",
-      "schedule": "0 5 * * *"
+      "path": "/api/cron/daily-news",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

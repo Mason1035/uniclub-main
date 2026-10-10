@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AuthContext, type User } from './authContextState';
 import { readToken, clearSession, authHeaders } from '../lib/session';
+import { loadCurrentUser } from '../lib/currentUser';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -12,7 +13,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let request = 0;
     const checkAuth = async () => {
       const current = ++request;
-      if (!readToken()) {
+      const token = readToken();
+      if (!token) {
         setUser(null);
         setLoading(false);
         return;
@@ -20,14 +22,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       setUser(null);
       try {
-        const response = await fetch('/api/auth/me', { headers: authHeaders() });
-        if (!active || current !== request) return;
-        if (response.ok) {
-          const data = await response.json();
-          if (active && current === request) setUser(data.user);
-        } else if (response.status === 401) {
-          clearSession();
-        }
+        const verifiedUser = await loadCurrentUser(token);
+        if (!active || current !== request || readToken() !== token) return;
+        setUser(verifiedUser);
       } catch (err) {
         console.error('Auth check failed:', err);
       } finally {

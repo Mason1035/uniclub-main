@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/axios';
 import { readToken } from '../lib/session';
 interface EngagementData { liked: boolean; saved: boolean; shared: boolean; viewed: boolean; }
-interface EngagementStats { totalLikes: number; totalSaves: number; totalShares: number; totalViews: number; }
+interface EngagementStats { totalLikes: number; totalSaves: number; totalShares: number; totalViews: number; totalComments?: number; }
 const initial: EngagementData = { liked:false,saved:false,shared:false,viewed:false };
 const initialStats: EngagementStats = { totalLikes:0,totalSaves:0,totalShares:0,totalViews:0 };
 export const useEngagement = (contentType: string, contentId: string) => {
@@ -29,8 +29,12 @@ export const useEngagement = (contentType: string, contentId: string) => {
       void client.invalidateQueries({queryKey:statsKey}); void client.invalidateQueries({queryKey:['savedContent']}); void client.invalidateQueries({queryKey:['savedPosts']}); void client.invalidateQueries({queryKey:[contentType.toLowerCase()]});
       return actual;
     } catch {
-      client.setQueryData(key,before); client.setQueryData(statsKey,beforeStats); setError('操作未成功，已恢复原状态，请重试。'); return;
+      client.setQueryData(key,before); client.setQueryData(statsKey,beforeStats);
+      // A comment may have changed while this mutation was pending. Refresh
+      // after rollback so the earlier snapshot cannot become a fresh counter.
+      void client.invalidateQueries({queryKey:statsKey});
+      setError('操作未成功，已恢复原状态，请重试。'); return;
     } finally { lock.current = false; setLoading(false); }
   };
-  return {engagement,stats,loading,error,ready:!!user.data && !!counters.data,toggleLike:() => mutate('like'),toggleSave:() => mutate('save'),recordShare:() => mutate('share'),refetch:() => { void user.refetch(); void counters.refetch(); }};
+  return {engagement,stats,loading,error,ready:!!user.data && !!counters.data,countersReady:!!counters.data,countersError:counters.isError,toggleLike:() => mutate('like'),toggleSave:() => mutate('save'),recordShare:() => mutate('share'),refetch:() => { void user.refetch(); void counters.refetch(); }};
 };

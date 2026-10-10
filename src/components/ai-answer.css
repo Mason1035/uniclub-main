@@ -1,0 +1,10 @@
+.ai-answer { overflow-wrap: anywhere; font-size: var(--text-body); line-height: 1.8; }
+.ai-answer-compact { font-size: var(--text-small); }
+.ai-answer > * + * { margin-top: var(--space-4); }
+.ai-answer h1, .ai-answer h2, .ai-answer h3 { font-family: var(--font-display); font-style: normal; font-weight: 700; line-height: 1.4; }
+.ai-answer h1 { font-size: 1.5rem; } .ai-answer h2 { font-size: 1.25rem; } .ai-answer h3 { font-size: 1.125rem; }
+.ai-answer ul { list-style: disc; padding-left: var(--space-6); } .ai-answer ol { list-style: decimal; padding-left: var(--space-6); }
+.ai-answer a { color: hsl(var(--primary)); text-decoration: underline; }
+.ai-answer pre { max-width: 100%; overflow: auto; padding: var(--space-4); background: hsl(var(--secondary)); border: 1px solid hsl(var(--border)); }
+.ai-answer code { font-family: var(--font-mono); font-size: var(--text-small); }
+.ai-answer blockquote { border-left: 2px solid hsl(var(--border)); padding-left: var(--space-4); color: hsl(var(--muted-foreground)); }

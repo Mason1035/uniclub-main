@@ -13,7 +13,11 @@ const messageSchema = new mongoose.Schema({
   timestamp: {
     type: Date,
     default: Date.now
-  }
+  },
+  // Optional metadata keeps existing conversations readable without migration.
+  sources: { type: [{ title: String, url: String, _id: false }], default: undefined },
+  warning: { type: String, default: undefined },
+  reasoning: { type: Boolean, default: undefined }
 });
 
 const chatSchema = new mongoose.Schema({
@@ -37,4 +41,4 @@ const chatSchema = new mongoose.Schema({
 // Compound index to efficiently query chats by article and user
 chatSchema.index({ articleId: 1, userId: 1 });
 
-module.exports = mongoose.model('Chat', chatSchema); 
+module.exports = mongoose.model('Chat', chatSchema);

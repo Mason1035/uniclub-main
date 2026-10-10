@@ -267,7 +267,7 @@ const AdminRoster: React.FC = () => {
                   </Td>
                   <Td className="text-right">
                     <AdminButton
-                      variant="ghost"
+                      variant="danger-outline"
                       onClick={() => setDeleting({ id: entry.id, name: entry.name })}
                     >
                       <Trash2 className="h-3.5 w-3.5" />

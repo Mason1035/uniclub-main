@@ -1,4 +1,3 @@
-import COS from 'cos-js-sdk-v5';
 import { quantificationApi } from './quantificationApi';
 import type { UploadSession, UploadCredentials } from '../types/quantification';
 
@@ -28,6 +27,9 @@ async function putChunk(session: UploadSession, credentials: UploadCredentials, 
     url = authorization.url; headers = authorization.headers;
     if (Object.keys(headers).some(name => !['content-type', 'x-cos-acl', 'x-cos-forbid-overwrite', 'x-cos-meta-classhub-upload'].includes(name.toLowerCase()))) throw new Error('云端上传授权格式无效。');
   } else {
+    // SCF signed uploads never need the COS signing SDK. The legacy credential
+    // path loads it only when a real upload needs a client-side signature.
+    const { default: COS } = await import('cos-js-sdk-v5');
     const legacy = credentials as Exclude<UploadCredentials, { mode: 'signed' }>;
     headers = { 'Content-Type': 'application/zip', 'x-cos-security-token': legacy.SecurityToken };
     headers.Authorization = COS.getAuthorization({ SecretId: legacy.TmpSecretId, SecretKey: legacy.TmpSecretKey, Bucket: bucket, Region: region, Key: key, Method: 'PUT', Query: query, Headers: headers, KeyTime: `${legacy.StartTime};${legacy.ExpiredTime}` });

@@ -69,7 +69,7 @@
 /* Keep existing content components and their interactions; fit their dense
    states into the new cards without altering the standalone list pages. */
 .home-card .announcement-entry { padding-block: .8rem; }
-.home-card .announcement-entry h3 { font-size: 1.125rem; }
+.home-card .announcement-entry h3 { font-family: var(--font-editorial); font-size: 1.125rem; }
 .home-card .announcement-entry p { max-width: 48rem; font-size: .9375rem; line-height: 1.8; }
 .home-card .announcement-preview { overflow: hidden; margin-top: .5rem; }
 .home-card .announcement-preview p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -93,7 +93,7 @@
 .home-card .news-entry .entry-image { width: 72px; height: 64px; border-radius: 8px; }
 .home-card .resource-entry { gap: .65rem; grid-template-columns: 1.3rem minmax(0, 1fr); padding-block: 1rem; }
 .home-card .resource-entry > svg { width: 18px; height: 18px; }
-.home-card .resource-entry h3 { font-size: 1.0625rem; }
+.home-card .resource-entry h3 { font-family: var(--font-editorial); font-size: 1.0625rem; }
 .home-card .entry-meta { gap: .35rem .65rem; font-size: .75rem; }
 .home-card .entry-description { font-size: .875rem; }
 .home-card .interactions { gap: .1rem; }

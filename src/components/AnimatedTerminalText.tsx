@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import './AnimatedTerminalText.css';
+import { PRELOADER_DONE } from '../lib/preloader';
 
 type Phase = 'TYPING' | 'HOLDING' | 'DELETING' | 'SHORT_PAUSE' | 'NEXT_WORD' | 'STATIC';
 type Frame = { wordIndex: number; characterCount: number; phase: Phase };
@@ -67,14 +68,17 @@ export default function AnimatedTerminalText({ phrases }: Props) {
       clearTimeout(timer);
       current = { wordIndex: 0, characterCount: words[0].length, phase: motion.matches ? 'STATIC' : 'HOLDING' };
       setFrame(current);
-      if (!motion.matches) schedule(delay(timing.holding));
+      // Preserve the readable first phrase until the entry layer has uncovered it.
+      if (!motion.matches && (!window.__classhubPreloader || window.__classhubPreloader.state === 'done')) schedule(delay(timing.holding));
     };
     restart();
     motion.addEventListener('change', restart);
+    window.addEventListener(PRELOADER_DONE, restart);
     return () => {
       active = false;
       clearTimeout(timer);
       motion.removeEventListener('change', restart);
+      window.removeEventListener(PRELOADER_DONE, restart);
     };
   }, [phrases]);
 

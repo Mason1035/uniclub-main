@@ -61,6 +61,21 @@ test('anonymous account operations are denied', async () => {
   for (const [method,path,body] of [['GET','/api/users/me/settings'],['PUT','/api/users/profile',{bio:'x'}],['PATCH','/api/users/me/email',{email:'a@example.test'}],['POST','/api/auth/change-password',{currentPassword:'x',newPassword:'abcdefgh',confirmPassword:'abcdefgh'}]]) assert.equal((await request(method,path,null,body)).status,401);
   assert.equal(writes.length,0);
 });
+test('shared identity includes only the signed-in profile and one avatar payload', async () => {
+  accounts[a].profile = { bio: '本人简介', location: '成都', website: 'https://example.test', interests: ['绘画'],
+    avatar: { data: 'data:image/webp;base64,avatar-bytes', contentType: 'image/webp' }, secret: 'never-return' };
+  const result = await request('GET', '/api/auth/me');
+  assert.equal(result.status, 200);
+  assert.equal(result.headers.get('cache-control'), 'private, no-store');
+  assert.equal(result.data.user.id, a);
+  assert.equal(result.data.user.isAdmin, false);
+  assert.deepEqual(result.data.user.profile, { bio: '本人简介', location: '成都', website: 'https://example.test', interests: ['绘画'] });
+  assert.equal(result.data.user.avatar.data, accounts[a].profile.avatar.data);
+  assert.equal(JSON.stringify(result.data).split('avatar-bytes').length - 1, 1);
+  noSecrets(result.data);
+  assert.equal((await request('GET', '/api/auth/me', null)).status, 401);
+  assert.equal(writes.length, 0);
+});
 test('legacy accounts get one safe bundle with nullable metadata and notification defaults', async () => {
   const result=await request('GET','/api/users/me/settings'); assert.equal(result.status,200);noSecrets(result.data);
   assert.equal(result.data.profile.name,accounts[a].name);assert.equal(result.data.profile.displayName,null);assert.equal(result.data.profile.bio,'');assert.equal(result.data.security.email,null);assert.equal(result.data.security.emailVerified,false);assert.equal(result.data.security.lastLoginAt,null);assert.deepEqual(result.data.settings.notifications,NOTIFICATION_DEFAULTS);assert.equal(result.headers.get('cache-control'),'private, no-store');assert.equal(writes.length,0);

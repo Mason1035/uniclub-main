@@ -1,0 +1,94 @@
+/* Shared interaction timings come from tokens.css. Radix retains focus, presence and dismissal. */
+.ui-button, .ui-field, .ui-menu-item, .ui-toast-action, .ui-toast-close {
+  transition: background-color var(--motion-fast, 140ms) var(--ease-standard, ease),
+    border-color var(--motion-fast, 140ms) var(--ease-standard, ease),
+    color var(--motion-fast, 140ms) var(--ease-standard, ease),
+    opacity var(--motion-fast, 140ms) var(--ease-standard, ease);
+}
+.ui-button { position: relative; transition-property: background-color, border-color, color, opacity, transform; }
+.ui-button:active:not(:disabled):not([aria-disabled='true']) { transform: scale(.98); }
+.ui-button-content { display: inline-grid; align-items: center; justify-items: center; }
+.ui-button-label, .ui-button-pending { grid-area: 1 / 1; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; }
+/* Both labels occupy one grid cell; optional loading text reserves its width before submission. */
+.ui-button-label { transition: opacity var(--motion-fast, 140ms); }
+.ui-button-pending { opacity: 0; pointer-events: none; }
+.ui-button[data-loading='true'] .ui-button-label { opacity: 0; }
+.ui-button[data-loading='true'] .ui-button-pending { opacity: 1; }
+.ui-button[data-loading='true'] { cursor: progress; }
+.ui-button[data-loading='true']:disabled { opacity: .8; }
+.ui-button[data-as-child='true'][aria-disabled='true'] { cursor: not-allowed; opacity: .58; }
+.ui-button-spinner { width: 1rem; height: 1rem; flex: 0 0 1rem; border: 1.5px solid currentColor; border-right-color: transparent; border-radius: 50%; }
+.ui-button[data-loading='true'] .ui-button-spinner { animation: ui-spinner-turn var(--motion-spin, 800ms) linear infinite; }
+.ui-field[aria-invalid='true'] { border-color: hsl(var(--error)); }
+.ui-field[aria-invalid='true']:focus-visible { --tw-ring-color: hsl(var(--error)); }
+.ui-field:disabled { cursor: not-allowed; }
+.ui-menu-item { transition: background-color var(--motion-fast, 140ms) var(--ease-standard, ease), color var(--motion-fast, 140ms) var(--ease-standard, ease); }
+
+/* Specific hooks override legacy animation utilities without changing any component geometry. */
+.ui-motion-overlay[data-state='open'], .dialog-overlay.ui-motion-overlay[data-state='open'] {
+  animation: ui-overlay-in var(--motion-panel, 220ms) var(--ease-out, ease-out) both;
+}
+.ui-motion-overlay[data-state='closed'], .dialog-overlay.ui-motion-overlay[data-state='closed'] {
+  animation: ui-overlay-out var(--motion-exit, 160ms) var(--ease-standard, ease) both;
+}
+.ui-motion-centered[data-state='open'], .dialog-panel.ui-motion-centered[data-state='open'] {
+  animation: ui-panel-in var(--motion-structural, 320ms) var(--ease-out, ease-out) both;
+}
+.ui-motion-centered[data-state='closed'], .dialog-panel.ui-motion-centered[data-state='closed'] {
+  animation: ui-panel-out var(--motion-exit, 160ms) var(--ease-standard, ease) both;
+}
+.ui-motion-floating { --ui-float-x: 0px; --ui-float-y: 4px; }
+.ui-motion-floating[data-side='bottom'] { --ui-float-y: -4px; }
+.ui-motion-floating[data-side='top'] { --ui-float-y: 4px; }
+.ui-motion-floating[data-side='right'] { --ui-float-x: -4px; --ui-float-y: 0px; }
+.ui-motion-floating[data-side='left'] { --ui-float-x: 4px; --ui-float-y: 0px; }
+.ui-motion-floating:is([data-state='open'], [data-state='delayed-open'], [data-state='instant-open']) {
+  animation: ui-floating-in var(--motion-panel, 220ms) var(--ease-out, ease-out) both;
+}
+.ui-motion-floating[data-state='closed'] { animation: ui-floating-out var(--motion-exit, 160ms) var(--ease-standard, ease) both; }
+.ui-motion-sheet { --ui-float-x: 0px; --ui-float-y: 0px; }
+.ui-motion-sheet[data-motion-side='top'] { --ui-float-y: -8px; }
+.ui-motion-sheet[data-motion-side='bottom'] { --ui-float-y: 8px; }
+.ui-motion-sheet[data-motion-side='left'] { --ui-float-x: -8px; }
+.ui-motion-sheet[data-motion-side='right'] { --ui-float-x: 8px; }
+.ui-motion-sheet[data-state='open'] { animation: ui-floating-in var(--motion-structural, 320ms) var(--ease-out, ease-out) both; }
+.ui-motion-sheet[data-state='closed'] { animation: ui-floating-out var(--motion-exit, 160ms) var(--ease-standard, ease) both; }
+
+.ui-motion-toast { --ui-toast-y: -6px; }
+.ui-motion-toast[data-state='open'] { animation: ui-toast-in var(--motion-panel, 220ms) var(--ease-out, ease-out) both; }
+.ui-motion-toast[data-state='closed'] { animation: ui-toast-out var(--motion-exit, 160ms) var(--ease-standard, ease) both; }
+.ui-motion-toast[data-state='open'][data-swipe='move'] { animation: none; transform: translateX(var(--radix-toast-swipe-move-x)); transition: none; }
+.ui-motion-toast[data-state='open'][data-swipe='cancel'] { animation: none; transform: translateX(0); transition: transform var(--motion-panel, 220ms) var(--ease-out, ease-out); }
+.ui-motion-toast[data-swipe='end'] { animation: ui-toast-swipe-out var(--motion-exit, 160ms) var(--ease-standard, ease) both; }
+@media (min-width: 640px) { .ui-motion-toast { --ui-toast-y: 6px; } }
+@media (hover: none) { .ui-toast-close { opacity: 1; } }
+
+.ui-skeleton { animation: ui-skeleton-breathe var(--motion-pulse, 1600ms) ease-in-out infinite; }
+@keyframes ui-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ui-overlay-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes ui-panel-in {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 6px)) scale(.985); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes ui-panel-out {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  to { opacity: 0; transform: translate(-50%, calc(-50% + 4px)) scale(.985); }
+}
+@keyframes ui-floating-in { from { opacity: 0; transform: translate3d(var(--ui-float-x), var(--ui-float-y), 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+@keyframes ui-floating-out { from { opacity: 1; transform: translate3d(0, 0, 0); } to { opacity: 0; transform: translate3d(var(--ui-float-x), var(--ui-float-y), 0); } }
+@keyframes ui-toast-in { from { opacity: 0; transform: translateY(var(--ui-toast-y)); } to { opacity: 1; transform: translateY(0); } }
+@keyframes ui-toast-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(var(--ui-toast-y)); } }
+@keyframes ui-toast-swipe-out { from { opacity: 1; transform: translateX(var(--radix-toast-swipe-end-x)); } to { opacity: 0; transform: translateX(calc(var(--radix-toast-swipe-end-x) + 2rem)); } }
+@keyframes ui-spinner-turn { to { transform: rotate(1turn); } }
+@keyframes ui-skeleton-breathe { 0%, 100% { opacity: .62; } 50% { opacity: .9; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-button, .ui-button-label, .ui-field, .ui-menu-item, .ui-toast-action, .ui-toast-close { transition: none; }
+  .ui-button:active { transform: none; }
+  .ui-motion-overlay[data-state], .dialog-overlay.ui-motion-overlay[data-state],
+  .ui-motion-centered[data-state], .dialog-panel.ui-motion-centered[data-state],
+  .ui-motion-floating[data-state], .ui-motion-sheet[data-state], .ui-motion-toast[data-state] { animation: none; }
+  .ui-motion-toast[data-swipe='cancel'] { transition: none; }
+  .ui-button[data-loading='true'] .ui-button-spinner, .ui-skeleton { animation: none; }
+  .ui-skeleton { opacity: .8; }
+}

@@ -1,0 +1,51 @@
+{
+  "logo": [
+    {
+      "src": "/branding/classhub-logo-192-fa3858e82f.webp",
+      "width": 192,
+      "bytes": 8690
+    },
+    {
+      "src": "/branding/classhub-logo-384-d01f9050a1.webp",
+      "width": 384,
+      "bytes": 20918
+    },
+    {
+      "src": "/branding/classhub-logo-576-07c8500bf5.webp",
+      "width": 576,
+      "bytes": 35616
+    },
+    {
+      "src": "/branding/classhub-logo-960-745d869330.webp",
+      "width": 960,
+      "bytes": 77696
+    }
+  ],
+  "logoFallback": {
+    "src": "/branding/classhub-logo-576-e5ecffa4ba.png",
+    "width": 576,
+    "bytes": 66371
+  },
+  "mark": [
+    {
+      "src": "/branding/classhub-mark-28-d77df8e69c.webp",
+      "width": 28,
+      "bytes": 1640
+    },
+    {
+      "src": "/branding/classhub-mark-56-b256b85dc7.webp",
+      "width": 56,
+      "bytes": 4000
+    },
+    {
+      "src": "/branding/classhub-mark-84-e27ac44b78.webp",
+      "width": 84,
+      "bytes": 6962
+    }
+  ],
+  "markFallback": {
+    "src": "/branding/classhub-mark-84-197d3db2a9.png",
+    "width": 84,
+    "bytes": 10962
+  }
+}

@@ -338,7 +338,7 @@ const AdminResources: React.FC = () => {
                         <Pencil className="h-3.5 w-3.5" />
                         编辑
                       </AdminButton>
-                      <AdminButton variant="ghost" onClick={() => setDeleting(resource)}>
+                      <AdminButton variant="danger-outline" onClick={() => setDeleting(resource)}>
                         <Trash2 className="h-3.5 w-3.5" />
                         删除
                       </AdminButton>

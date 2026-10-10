@@ -1,5 +1,6 @@
 import { useRef, type RefObject } from 'react';
-import { gsap, Flip, useGSAP } from '@/lib/gsap';
+import { gsap, useGSAP } from '@/lib/gsap';
+import { Flip } from '@/lib/gsapFlip';
 
 type LeavingItem = { id: string; node: HTMLElement; rect: DOMRect };
 

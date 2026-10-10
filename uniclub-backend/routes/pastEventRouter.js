@@ -46,13 +46,16 @@ const shapeDetail = (event) => ({
 router.get('/', async (req, res) => {
   try {
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 50));
+    const page = Math.min(10000, Math.max(1, parseInt(req.query.page, 10) || 1));
+    const total = await PastEvent.countDocuments({});
     const pastEvents = await PastEvent.find({})
       .select(LIST_EXCLUDE)
-      .sort({ date: -1 })
+      .sort({ date: -1, _id: -1 })
+      .skip((page - 1) * limit)
       .limit(limit)
       .lean();
 
-    res.json({ success: true, data: pastEvents.map(shapeListItem) });
+    res.json({ success: true, data: pastEvents.map(shapeListItem), pagination: { page, limit, total, pages: Math.max(1, Math.ceil(total / limit)) } });
   } catch (error) {
     console.error('Error fetching past events:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch past events' });

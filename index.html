@@ -4,11 +4,86 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="color-scheme" content="light" />
-    <title>ClassHub</title>
-    <meta name="description" content="ClassHub - 软件工程班级信息平台：班级成员、活动、新闻、资源与 AI 助手" />
-    <meta name="author" content="ClassHub" />
-    <link rel="preload" href="/fonts/classhub/latin.06f626d915.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/classhub/sans-core.addfeeae45.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- Critical entry styles live here so the brand layer paints before the app bundle. -->
+    <style>
+      .classhub-preloader { display: none; }
+      html[data-classhub-preloader] { overflow: hidden !important; scrollbar-gutter: stable; }
+      html[data-classhub-preloader] body { overflow: hidden !important; touch-action: none; }
+      html[data-classhub-preloader] .classhub-preloader {
+        display: grid; place-items: center; position: fixed; inset: 0;
+        height: 100%; height: 100dvh; z-index: 9999;
+        background: var(--page-bg, #E9E9E9); touch-action: none;
+      }
+      html.dark .classhub-preloader { background: var(--page-bg, #1C1D21); }
+      .classhub-preloader__logo {
+        display: block; width: 128px; height: auto; opacity: 0;
+        transform: translateY(4px) scale(.985); filter: blur(8px);
+      }
+      html[data-classhub-preloader='revealing'][data-classhub-preloader-logo-ready] .classhub-preloader__logo {
+        animation: classhub-brand-reveal 800ms cubic-bezier(.22, 1, .36, 1) both;
+        will-change: transform, opacity, filter;
+      }
+      html[data-classhub-preloader='waiting'] .classhub-preloader__logo,
+      html[data-classhub-preloader='exiting'] .classhub-preloader__logo {
+        animation: none; opacity: 1; transform: none; filter: none; will-change: auto;
+      }
+      @keyframes classhub-brand-reveal {
+        from { opacity: 0; transform: translateY(4px) scale(.985); filter: blur(8px); }
+        to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+      }
+      @keyframes classhub-brand-fade { from { opacity: 0; } to { opacity: 1; } }
+      @media (max-width: 767px) { .classhub-preloader__logo { width: 88px; } }
+      @media (prefers-reduced-motion: reduce) {
+        .classhub-preloader__logo { transform: none; filter: none; }
+        html[data-classhub-preloader='revealing'][data-classhub-preloader-logo-ready] .classhub-preloader__logo {
+          animation: classhub-brand-fade 200ms ease-out both; will-change: opacity;
+        }
+      }
+    </style>
+    <script>
+      (() => {
+        const root = document.documentElement;
+        let seen = false;
+        try { seen = sessionStorage.getItem('classhub-preloader-seen') === '1'; } catch { /* Storage can be unavailable in private mode. */ }
+        const boot = window.__classhubPreloader = {
+          startedAt: performance.now(), logoStartedAt: null,
+          minDisplayMs: 900, maxWaitMs: 4000, state: seen ? 'done' : 'revealing',
+          finish: () => {
+            if (boot.state === 'done') { document.getElementById('classhub-preloader')?.remove(); return; }
+            boot.state = 'done'; clearTimeout(safetyTimer);
+            root.removeAttribute('data-classhub-preloader');
+            root.removeAttribute('data-classhub-preloader-logo-ready');
+            document.getElementById('classhub-preloader')?.remove();
+            window.removeEventListener('keydown', skipForKeyboard, true);
+            document.removeEventListener('focusin', skipForFocus);
+            window.dispatchEvent(new Event('classhub:preloader-done'));
+          }
+        };
+        const skipForKeyboard = event => { if (event.key === 'Tab' || event.key === 'Escape') boot.finish(); };
+        const skipForFocus = event => { if (event.target.closest?.('#root')) boot.finish(); };
+        // This safety release also works if the application JS never loads.
+        const safetyTimer = seen ? null : setTimeout(boot.finish, boot.maxWaitMs + 2000);
+        if (seen) return;
+        root.dataset.classhubPreloader = boot.state;
+        // Claim at entry, outside React StrictMode, including refresh during the reveal.
+        try { sessionStorage.setItem('classhub-preloader-seen', '1'); } catch { /* Keep this document's in-memory session. */ }
+        window.addEventListener('keydown', skipForKeyboard, true);
+        document.addEventListener('focusin', skipForFocus);
+      })();
+    </script>
+    <title>成员空间 · ClassHub</title>
+    <!-- Build-time public HTML replaces these safe private-shell defaults. -->
+    <meta data-classhub-seo name="description" content="ClassHub 成员空间，需登录并通过权限校验后访问。" />
+    <meta data-classhub-seo name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+    <link rel="preload" href="/fonts/classhub/latin-core.87db008acf.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/classhub/sans-core.2b88dea1fa.woff2" as="font" type="font/woff2" crossorigin />
+
+    <!-- ClassHub extended fonts: generated by scripts/build-fonts.py -->
+    <link rel="preload" href="/fonts/classhub/fonts-extended.5b6e6f7943.css" as="style" fetchpriority="low" />
+    <link rel="stylesheet" href="/fonts/classhub/fonts-extended.5b6e6f7943.css" media="print" data-classhub-fonts="extended" />
+    <script src="/fonts/classhub/fonts-loader.cd129072cf.js" defer></script>
+    <noscript><link rel="stylesheet" href="/fonts/classhub/fonts-extended.5b6e6f7943.css" /></noscript>
+    <!-- End ClassHub extended fonts -->
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="64x64" href="/branding/classhub-favicon-v2.png">
@@ -22,21 +97,39 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="ClassHub">
 
-    <meta property="og:title" content="ClassHub · 软件工程班级信息平台" />
-    <meta name="og:description" content="ClassHub - 软件工程班级信息平台：班级成员、活动、新闻、资源与 AI 助手" />
-    <meta property="og:type" content="website" />
-
-    <meta name="twitter:card" content="summary_large_image" />
-
     
   </head>
 
   <body>
+    <!-- The approved responsive artwork also used by BrandLogo; no extra brand asset. -->
+    <div id="classhub-preloader" class="classhub-preloader" aria-hidden="true">
+      <picture>
+        <source type="image/webp" srcset="/branding/classhub-logo-192-fa3858e82f.webp 192w, /branding/classhub-logo-384-d01f9050a1.webp 384w, /branding/classhub-logo-576-07c8500bf5.webp 576w" sizes="(max-width: 767px) 88px, 128px" />
+        <img class="classhub-preloader__logo" src="/branding/classhub-logo-576-e5ecffa4ba.png" width="576" height="192" alt="" fetchpriority="high" decoding="async" />
+      </picture>
+    </div>
+    <noscript><style>.classhub-preloader { display: none !important; }</style></noscript>
+    <script>
+      (() => {
+        const boot = window.__classhubPreloader;
+        const layer = document.getElementById('classhub-preloader');
+        if (boot.state === 'done') { layer.remove(); return; }
+        const image = layer.querySelector('img');
+        const reveal = () => {
+          if (boot.state === 'done' || boot.logoStartedAt !== null) return;
+          boot.logoStartedAt = performance.now();
+          document.documentElement.setAttribute('data-classhub-preloader-logo-ready', '');
+          window.dispatchEvent(new Event('classhub:preloader-logo-ready'));
+        };
+        image.addEventListener('load', reveal, { once: true });
+        image.addEventListener('error', () => { image.style.visibility = 'hidden'; reveal(); }, { once: true });
+        if (image.complete) reveal();
+      })();
+    </script>
     <div id="root">
       <noscript>
         <main>
-          <h1 lang="en">The future isn't writing code. It's securing it.</h1>
-          <p>ClassHub · 班级信息平台：查公告、找资料、参与活动，和同学一起记录每一天。</p>
+          <h1>ClassHub 成员空间</h1>
           <p>请启用 JavaScript 后登录并使用 ClassHub。</p>
         </main>
       </noscript>

@@ -2,6 +2,7 @@ const AIRankingService = require('./AIRankingService');
 const News = require('../models/News');
 const Event = require('../models/Event');
 const SocialPost = require('../models/SocialPost');
+const { visibilityFilter } = require('../utils/dailyNewsVisibility');
 
 class ContentCurationService {
   constructor() {
@@ -41,9 +42,10 @@ class ContentCurationService {
     console.log('📥 Fetching all content from database...');
 
     const [news, events, socialPosts] = await Promise.all([
-      News.find({ status: 'approved' }).sort({ publishedAt: -1 }).limit(50),
+      News.find(await visibilityFilter()).sort({ publishedAt: -1 }).limit(50),
       Event.find({
         status: 'published',
+        deletedAt: null,
         startDate: { $gte: new Date() } // Only upcoming events for AI ranking
       }).sort({ startDate: -1 }).limit(50),
       SocialPost.find({}).sort({ createdAt: -1 }).limit(50)
@@ -181,17 +183,18 @@ class ContentCurationService {
   /**
    * Get curated content for homepage (top 3 per category)
    */
-  async getHomepageContent() {
+  async getHomepageContent({ includeActivities = true } = {}) {
     try {
       console.log('🏠 Fetching homepage content (top 3 per category)...');
 
       const [newsTop3, eventsTop3, socialTop3] = await Promise.all([
-        News.find({ isTop3: true, status: 'approved' }).sort({ publishedAt: -1 }).limit(3),
-        Event.find({
+        News.find({ ...(await visibilityFilter()), isTop3: true }).sort({ publishedAt: -1 }).limit(3),
+        includeActivities ? Event.find({
           isTop3: true,
           status: 'published',
+        deletedAt: null,
           startDate: { $gte: new Date() } // Only upcoming events
-        }).sort({ startDate: -1 }).limit(3),
+        }).select('+mediaRefs').sort({ startDate: -1 }).limit(3) : Promise.resolve([]),
         SocialPost.find({ isTop3: true }).sort({ createdAt: -1 }).limit(3)
       ]);
 
@@ -213,7 +216,7 @@ class ContentCurationService {
    * Get featured content for hero section (#2 per category based on engagement)
    * Updated to use engagement metrics instead of isFeatured flags
    */
-  async getFeaturedContent() {
+  async getFeaturedContent({ includeActivities = true } = {}) {
     try {
       console.log('🌟 Fetching featured content (#2 per category based on engagement)...');
 
@@ -222,7 +225,7 @@ class ContentCurationService {
       const [featuredNews, featuredEvents, featuredResources] = await Promise.all([
         // Featured news (top 2 highest likes)
         (async () => {
-          const news = await News.find({ status: 'approved' })
+          const news = await News.find(await visibilityFilter())
             .populate('author', 'name uniqueId')
             .sort({ 'engagement.likes': -1, publishedAt: -1 }) // Sort by likes first, then recency
             .limit(2);
@@ -233,11 +236,13 @@ class ContentCurationService {
 
         // Featured events (top 2 highest likes, only upcoming events)
         (async () => {
+          if (!includeActivities) return [];
           const events = await Event.find({
             status: 'published',
+        deletedAt: null,
             startDate: { $gte: new Date() } // Only upcoming events
           })
-            .populate('organizer', 'name uniqueId')
+            .select('+mediaRefs').populate('organizer', 'name')
             .sort({ 'engagement.likes': -1, startDate: 1 }) // Sort by likes first, then upcoming date
             .limit(2);
 
@@ -306,4 +311,4 @@ class ContentCurationService {
   }
 }
 
-module.exports = new ContentCurationService(); 
+module.exports = new ContentCurationService();

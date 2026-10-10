@@ -1,7 +1,13 @@
 /* Shared ClassHub chrome, typography and controls. Homepage is the visual source. */
-@import '/fonts/classhub/fonts.css';
+@import '/fonts/classhub/fonts-core.css';
 @import '../../tokens.css';
 html, body { overflow-x: clip; }
+/* Keep centered content and the fixed header aligned across short/long routes. */
+html { scrollbar-gutter: stable; }
+@supports (scrollbar-gutter: stable) {
+  /* The root gutter already reserves this space while Radix locks scrolling. */
+  html body[data-scroll-locked] { margin-right: 0 !important; }
+}
 body { background: var(--page-bg); color: hsl(var(--ink)); font-family: var(--font-body); font-size: var(--text-body); line-height: 1.7; }
 * { scrollbar-width: thin; scrollbar-color: hsl(var(--line-strong)) transparent; }
 *::-webkit-scrollbar, .overflow-y-auto::-webkit-scrollbar, .overflow-x-auto::-webkit-scrollbar, .overflow-auto::-webkit-scrollbar { display: block; width: 6px; height: 6px; }
@@ -51,7 +57,6 @@ img { max-width: 100%; }
 .masthead[data-morph-mode]:not([data-morph-mode='measuring']) .masthead-nav a { transform: translate3d(calc(var(--header-link-shift, 0px) * (1 - var(--header-horizontal-progress, 0))), 0, 0); }
 .masthead[data-morph-mode]:not([data-morph-mode='measuring']) .masthead-actions { transform: translate3d(0, calc(var(--header-tools-y, 0px) * var(--header-progress, 0)), 0); }
 .masthead[data-morph-mode]:not([data-morph-mode='measuring']) .masthead-paper { transform-origin: center top; transform: scaleY(calc(1 + (var(--header-paper-scale, 1) - 1) * var(--header-progress, 0))); }
-.masthead[data-morph-mode='mobile'] .masthead-brand { transform-origin: left center; }
 .masthead[data-morphing='true'] :is(.masthead-brand, .masthead-nav, .masthead-nav a, .masthead-actions, .masthead-paper) { will-change: transform; }
 .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; padding-bottom: .5rem; margin-bottom: 1.75rem; flex-wrap: wrap; }
 .page-heading h1 { font-size: clamp(1.85rem, 1.4rem + 1.8vw, 3rem); font-weight: 750; line-height: 1.3; letter-spacing: -.02em; }
@@ -191,6 +196,7 @@ img { max-width: 100%; }
 .site-main .legacy-page { background: transparent; min-height: auto; }
 .site-main .legacy-page h1 { font-size: var(--text-title); font-weight: 900; line-height: 1.25; }
 @media (max-width: 767px) {
+  .site-shell { --mobile-nav-row-height: 62px; }
   .header-reserve { height: 6.25rem; }
   .masthead-inner { grid-template-columns: minmax(0,1fr) auto; gap: .5rem; padding-block: .75rem; }
   .masthead-nav { display: none; }
@@ -211,9 +217,14 @@ img { max-width: 100%; }
   .schedule-date strong { font-size: 1.5rem; }
   .archive-strip { gap: 1rem; }
   .resource-grid { grid-template-columns: minmax(0,1fr); }
-  .site-footer { margin-bottom: 5rem; }
-  .mobile-nav { position: fixed; bottom: 0; inset-inline: 0; z-index: var(--z-bottom); background: hsl(var(--paper)); border-top: 1px solid hsl(var(--line)); display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); padding-bottom: env(safe-area-inset-bottom); }
-  .mobile-nav a, .mobile-nav > button { display: flex; flex-direction: column; gap: .25rem; align-items: center; justify-content: center; min-height: 62px; font-size: .6875rem; white-space: nowrap; border-top: 2px solid transparent; }
+  /* Padding remains in scroll height, keeping links above the fixed nav and iOS safe area. */
+  .site-footer { padding-bottom: calc(1.25rem + var(--mobile-nav-row-height) + 1px + env(safe-area-inset-bottom, 0px)); }
+  .footer-inner { flex-direction: column; align-items: center; gap: .5rem; }
+  .footer-identity { max-width: 100%; justify-content: center; }
+  .footer-credit { text-align: center; }
+  .footer-links { width: 100%; justify-content: center; gap: .25rem 1rem; }
+  .mobile-nav { position: fixed; bottom: 0; inset-inline: 0; z-index: var(--z-bottom); background: hsl(var(--paper)); border-top: 1px solid hsl(var(--line)); display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .mobile-nav a, .mobile-nav > button { display: flex; flex-direction: column; gap: .25rem; align-items: center; justify-content: center; min-height: var(--mobile-nav-row-height); font-size: .6875rem; white-space: nowrap; border-top: 2px solid transparent; }
   .mobile-nav svg { width: 19px; height: 19px; }
   .mobile-nav [aria-current='page'] { color: hsl(var(--action)); border-top-color: hsl(var(--action)); }
   .mobile-menu { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .5rem; }

@@ -123,8 +123,8 @@
 .home-card .social-entry { padding-block: 1.5rem; border-bottom: 1px solid hsl(var(--line)); }
 .home-page .hero .ed-button { border-radius: .1875rem; }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .page-shell :is(.announcement-entry, .news-entry, .schedule-entry, .resource-entry, .archive-entry, .social-entry, .feature-card) { transition: border-color var(--motion-fast), box-shadow var(--motion-fast); }
-  .page-shell :is(.announcement-entry, .news-entry, .schedule-entry, .resource-entry, .archive-entry, .social-entry, .feature-card):hover { border-color: hsl(var(--line)); box-shadow: var(--shadow-card-hover); }
+  .page-shell :is(.announcement-entry, .news-entry, .schedule-entry, .resource-entry, .archive-entry, .social-entry, .feature-card) { transition: border-color var(--motion-fast) var(--ease-standard); }
+  .page-shell :is(.announcement-entry, .news-entry, .schedule-entry, .resource-entry, .archive-entry, .social-entry, .feature-card):hover { border-color: hsl(var(--line)); }
 }
 @media (max-width: 1023px) {
   .page-shell .article-list, .page-shell .schedule-list, .page-shell .saved-list { grid-template-columns: minmax(0, 1fr); }

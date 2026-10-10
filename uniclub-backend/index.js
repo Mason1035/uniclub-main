@@ -7,8 +7,14 @@ const EnrolledUser = require('./models/EnrolledUser');
 const path = require('path');
 const authenticateToken = require('./middleware/auth');
 const requireAdmin = require('./middleware/admin');
+const { startDailyNewsScheduler } = require('./jobs/dailyNewsScheduler');
 
 const app = express();
+// Set before parsers/auth/static handlers so failures carry the same noindex
+// directive; this does not grant access to any content or alter authorization.
+const privateResponseHeaders = require('./middleware/privateResponseHeaders');
+app.use('/api', privateResponseHeaders);
+app.use('/uploads', privateResponseHeaders);
 // Nginx is the only trusted proxy in the ECS deployment.
 if (process.env.TRUST_PROXY === 'loopback') app.set('trust proxy', 'loopback');
 
@@ -264,6 +270,11 @@ if (require.main === module) {
       quantificationRouter.service.run(s => s.cleanup()).catch(() => console.error('[quantification] cleanup deferred'));
     }, 15 * 60 * 1000);
     cleanupTimer.unref();
+    // ECS currently runs one persistent process. The database lease and unique
+    // day job still fence duplicate instances. Development reloads never make
+    // automatic paid calls; explicit admin/CLI/Cron execution remains available.
+    const stopDailyNewsScheduler = process.env.NODE_ENV === 'production' && !process.env.VERCEL
+      ? startDailyNewsScheduler() : () => {};
     const server = app.listen(PORT, HOST, () => {
       console.log(`🚀 Backend API running at: http://localhost:${server.address().port}`);
       console.log('🚀 Available endpoints:');
@@ -298,6 +309,7 @@ if (require.main === module) {
       if (shuttingDown) return;
       shuttingDown = true;
       clearInterval(cleanupTimer);
+      stopDailyNewsScheduler();
       const deadline = setTimeout(() => process.exit(1), 25000);
       deadline.unref();
       server.close(async () => {

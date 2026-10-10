@@ -1,3 +1,4 @@
+import "../../styles/ui-motion.css"
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
@@ -19,7 +20,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "dialog-overlay",
+      "dialog-overlay ui-motion-overlay",
       className
     )}
     {...props}
@@ -37,12 +38,12 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "dialog-panel",
+        "dialog-panel ui-motion-centered",
         className
       )}
       {...props}
       onOpenAutoFocus={event => { opener.current = document.activeElement as HTMLElement | null; props.onOpenAutoFocus?.(event); }}
-      onCloseAutoFocus={event => { props.onCloseAutoFocus?.(event); if (!event.defaultPrevented) { event.preventDefault(); opener.current?.focus({ preventScroll: true }); } }}
+      onCloseAutoFocus={event => { props.onCloseAutoFocus?.(event); if (!event.defaultPrevented && opener.current?.isConnected) { event.preventDefault(); opener.current.focus({ preventScroll: true }); } }}
     >
       {children}
       <DialogPrimitive.Close className="absolute right-2 top-2 icon-control">

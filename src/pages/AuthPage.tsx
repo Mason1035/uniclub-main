@@ -3,6 +3,7 @@ import { useUser } from '../context/userContextState';
 import SignInForm from './SignInForm';
 import Illustration from '../components/Illustration';
 import { useAuth } from '../context/authContextState';
+import BrandLogo from '../components/BrandLogo';
 
 export default function AuthPage() {
   const { isAuthenticated, isLoading } = useUser();
@@ -13,12 +14,10 @@ export default function AuthPage() {
   if (!isLoading && !auth.loading && isAuthenticated && auth.user) return <Navigate to={destination} replace/>;
   return <main className="auth-layout">
     <section className="auth-brand">
-      <img
+      <BrandLogo
         className="auth-logo"
-        src="/branding/classhub-logo-v2.png"
         alt="ClassHub 软件工程班级信息平台"
-        width={2172}
-        height={724}
+        sizes="(max-width: 767px) 256px, 320px"
         decoding="async"
       />
       <h1>班级日常，<br/>一起记录。</h1>

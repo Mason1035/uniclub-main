@@ -361,7 +361,7 @@ const AdminNotifications: React.FC = () => {
                         <Pencil className="h-3.5 w-3.5" />
                         编辑
                       </AdminButton>
-                      <AdminButton variant="ghost" onClick={() => setDeleting(item)}>
+                      <AdminButton variant="danger-outline" onClick={() => setDeleting(item)}>
                         <Trash2 className="h-3.5 w-3.5" />
                         删除
                       </AdminButton>

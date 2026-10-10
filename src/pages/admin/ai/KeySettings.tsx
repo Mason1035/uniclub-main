@@ -36,7 +36,7 @@ export default function KeySettings({ settings, onChange, onTested, disabled }: 
       <div className="flex flex-wrap gap-2">
         {settings?.configured && <AdminButton variant="secondary" loading={testing} disabled={disabled || busy} onClick={() => void test()}>测试连接</AdminButton>}
         <AdminButton variant={settings?.configured ? 'secondary' : 'primary'} disabled={disabled || busy || testing || !settings} onClick={edit}>{settings?.configured ? '更换 API Key' : '配置 API Key'}</AdminButton>
-        {settings?.configured && <AdminButton variant="ghost" disabled={disabled || busy || testing} onClick={() => { setError(''); setDeleting(true); }}>删除</AdminButton>}
+        {settings?.configured && <AdminButton variant="danger-outline" disabled={disabled || busy || testing} onClick={() => { setError(''); setDeleting(true); }}>删除</AdminButton>}
       </div>
     </div>
     {error && !open && <p className="mt-3 text-sm text-destructive" role="alert">{error}</p>}

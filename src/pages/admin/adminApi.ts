@@ -31,7 +31,13 @@ export interface AdminEvent {
   location?: { type?: string; address?: string; room?: string; virtualLink?: string };
   eventType: string;
   category: string[];
-  status: 'draft' | 'published' | 'cancelled' | 'completed';
+  status: 'draft' | 'published' | 'cancelled' | 'completed' | 'archived';
+  phase?: 'UPCOMING' | 'ONGOING' | 'ENDED';
+  updatedAt?: string;
+  summary?: string;
+  coverMediaId?: string | null;
+  mediaVersion?: number;
+  deletedAt?: string | null;
   imageUrl: string | null;
   maxCapacity: number | null;
   rsvpCount: number;
@@ -41,6 +47,7 @@ export interface AdminEvent {
 
 export interface AdminNews {
   _id: string;
+  origin?: 'manual' | 'ai_daily';
   title: string;
   excerpt: string;
   source: string;
@@ -275,6 +282,8 @@ export const getEvents = async (params: {
   limit?: number;
   search?: string;
   status?: string;
+  eventType?: string;
+  includeDeleted?: boolean;
 }): Promise<Paged<AdminEvent>> => {
   const { data } = await api.get('/api/admin/events', { params });
   return { items: data.events, pagination: data.pagination };
@@ -471,4 +480,3 @@ export const deleteGalleryImage = async (id: string, index: number): Promise<Adm
   const { data } = await api.delete(`/api/admin/past-events/${id}/gallery/${index}`);
   return data.pastEvent;
 };
-

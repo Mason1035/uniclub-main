@@ -161,3 +161,39 @@ ECS 的具体目录、备份、回滚和运维流程见 [`deploy/ecs/README.md`]
 - [ECS 部署说明](deploy/ecs/README.md)
 - [管理端 AI 助手说明](uniclub-backend/README.ai.md)
 - [UniClub 历史资料归档](docs/archive/legacy-uniclub/README.md)
+
+## ClassHub 交互系统（2026-10-09）
+
+本轮沿用现有品牌、字体、页面结构、Radix 与 GSAP，升级共享组件，不新增依赖。
+审计优先级：P0 为加载文案导致尺寸变化、移动菜单跨断点未关闭；P1 为不一致的浮层时序、搜索布局变化与首屏等待；P2 为 Tabs 指示面、骨架屏及通知细节。
+
+### 共享动效与组件约定
+
+- `tokens.css`：微交互 140ms、浮层 220ms、结构进入 320ms、退出 160ms；加载旋转 800ms、骨架呼吸 1600ms。
+- `src/lib/motion.ts`：GSAP 从 CSS tokens 读取秒数，集中管理 easing 和 reduced-motion 查询；不在动画帧中读取布局。
+- `src/styles/ui-motion.css`：按钮、字段、Dialog/AlertDialog、菜单、Popover、Tooltip、Sheet、Toast 和 Skeleton 的状态反馈；`interaction.css` 补齐既有页面控件。
+- `Button` 增加可选 `loading` / `loadingLabel`；通过同一网格保留空闲与加载文案尺寸，处理中使用原生 disabled 和 aria-busy。`asChild` 保留子节点及 ref，阻止禁用时的激活；固定尺寸图标按钮只显示加载图标，加载文案用于无障碍名称。
+- 登录、后台操作和确认弹窗复用加载按钮；点赞/收藏保留计数与稳定文案，原 API 与乐观更新逻辑保持原样。
+- 搜索按后续反馈恢复升级前的紧凑搜索框及交互：结果区随输入显示，移除新增说明、帮助行、清空按钮和固定高面板；保留原 debounce、取消请求、排序、Escape、焦点恢复和移动 visualViewport。
+- 导航保留 Header morph，细化选中和按下反馈；移动“更多”菜单在路由或桌面断点变化时关闭。
+- Tabs 保留 Radix API 和键盘交互；指示面仅在选中、内容或尺寸变化时测量，过渡仅移动 transform/opacity。当前业务页面尚未使用此基础组件。
+
+### 性能与验证
+
+首屏最短展示从 900ms 收敛为 320ms，退出改为 220ms 的透明度变化；移除重模糊和正文位移，保留关键资源等待、会话跳过、取消清理及超时释放。减少动态效果时直接显示静态状态。卡片不再插入新的 hover 阴影变化；不新增全局 will-change。
+
+验证通过：`npm run build`（含 typecheck、Vite、SEO HTML）、修改 TS/TSX 的定向 ESLint、`node scripts/test-preloader.mjs` 的 23 项检查。
+内置浏览器验证了实际首页/登录页、按钮加载尺寸（前后均 126px）、Slot 禁用、横纵 Tabs 键盘切换、浮层 Escape/焦点/滚动锁释放、搜索清空与错误反馈、移动菜单跨断点关闭、Toast 取消滑动后关闭及移动短高度布局。
+
+验证边界：未执行真实账号的登录、后台提交或搜索成功数据回归；搜索错误反馈使用未登录时的真实接口拒绝响应。未独立实测 Chromium、Safari/iOS 真机、系统 reduced-motion 设置或 FPS/低端设备性能。构建提示现有 Browserslist 数据较旧，未在本轮升级依赖。本轮仅更新本地源码与 dist，未推送生产服务器。
+
+### 后续修正：后台按钮与原版搜索
+
+后台 AdminButton 显式映射共享 Button 的样式类型，修复 ghost 按钮继承蓝底并叠加灰字的问题。主要操作沿用蓝底高对比文字；次要操作为浅底深字；普通轻量操作为透明底深字；列表删除/移除为浅红底、红字及红色描边，确认危险操作为红底高对比文字。相册图片删除图标也改为红色。原操作处理函数与接口保持不变。搜索已恢复升级前备份，仅做兼容共享弹窗的移动端动画选择器修正。
+
+
+### 最新修正：首屏加载与手机页脚
+
+首屏加载按后续反馈恢复为 Logo 800ms 模糊淡入、最短展示 900ms、关键资源最多等待 4 秒；Logo 收缩上移 200ms，覆盖层以 `power4.inOut` 上滑 900ms，正文从下方 32px 进入。保留同标签页会话跳过、reduced-motion 200ms 淡入淡出、资源等待与清理。相关 preloader 测试 34 项通过。
+
+手机端 Header Logo 固定大小，不再参与滚动缩放；桌面和平板维持原有滚动动效。页脚链接在版权文字下方居中，使用实际底部 padding 为固定导航与 iOS 安全区留出空间。390px、320px 窄屏及 About 点击验证通过；必要 typecheck、build 与定向 ESLint 通过。

@@ -1,9 +1,10 @@
 /**
  * Shared presentational primitives for the ClassHub admin console.
- * Deliberately dependency-free (only lucide-react + tailwind theme tokens) so it
- * inherits both light and dark themes from the existing app.
+ * Uses existing shared Button/Dialog primitives and theme tokens, inheriting
+ * both light and dark themes from the app.
  */
 import React from 'react';
+import { Button } from '../../components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../../components/ui/dialog';
 import { AlertCircle, Loader2, X } from 'lucide-react';
 
@@ -70,26 +71,38 @@ export const StatCard: React.FC<{
 /* Buttons                                                           */
 /* ---------------------------------------------------------------- */
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'danger-outline';
+
+// Pass the semantic variant through; className alone leaves the shared default
+// primary background on ghost buttons.
+const sharedButtonVariant = {
+  primary: 'default',
+  secondary: 'outline',
+  ghost: 'ghost',
+  danger: 'destructive',
+  'danger-outline': 'outline',
+} as const;
 
 const buttonStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-primary text-primary-foreground hover:bg-primary/90',
-  secondary: 'border border-border bg-card text-foreground hover:bg-accent/10',
-  ghost: 'text-muted-foreground hover:bg-accent/10 hover:text-foreground',
-  danger: 'bg-destructive text-primary-foreground hover:bg-destructive',
+  primary: '',
+  secondary: 'border-border bg-card text-foreground hover:bg-secondary hover:text-foreground',
+  ghost: 'bg-transparent text-foreground hover:bg-secondary hover:text-foreground',
+  danger: '',
+  'danger-outline': 'border-destructive/40 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:text-destructive',
 };
 
 export const AdminButton: React.FC<
   React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant; loading?: boolean }
 > = ({ variant = 'primary', loading = false, className = '', children, disabled, ...rest }) => (
-  <button
+  <Button
     {...rest}
-    disabled={disabled || loading}
+    variant={sharedButtonVariant[variant]}
+    loading={loading}
+    disabled={disabled}
     className={`inline-flex items-center justify-center gap-2 rounded-sm min-h-11 px-3.5 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${buttonStyles[variant]} ${className}`}
   >
-    {loading && <Loader2 className="h-4 w-4 animate-spin" />}
     {children}
-  </button>
+  </Button>
 );
 
 /* ---------------------------------------------------------------- */
@@ -97,8 +110,8 @@ export const AdminButton: React.FC<
 /* ---------------------------------------------------------------- */
 
 export const LoadingState: React.FC<{ label?: string }> = ({ label = '加载中…' }) => (
-  <div className="flex items-center justify-center gap-3 py-16 text-sm text-muted-foreground">
-    <Loader2 className="h-5 w-5 animate-spin" />
+  <div role="status" aria-live="polite" className="flex items-center justify-center gap-3 py-16 text-sm text-muted-foreground">
+    <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin" />
     {label}
   </div>
 );

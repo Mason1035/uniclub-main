@@ -1,5 +1,7 @@
 # ClassHub 量化材料云函数接入
 
+> Activities V2 安全扩展：新版网站可用服务器专用 `CLASSHUB_SCF_AUTH_SECRET` 调用两个函数。启用该变量后所有调用均校验 `X-ClassHub-Service-Auth` 和固定 Bucket / Region；活动图片必须启用鉴权且返回 `secured: true`。下文的开放量化模式只为原部署兼容，不能用于具有 `activity/` 权限的角色。部署顺序、IAM、CORS、历史目录白名单及真实云端 **NOT TESTED** 边界见 [活动媒体技术说明](../../../docs/activity-v2/ACTIVITY_V2_COS.md)。
+
 ## 管理员如何配置
 
 打开网站 **管理后台 → 量化材料 → 存储配置**，填写并保存：
@@ -21,11 +23,11 @@
 
 ## Function URL 调用与本地云函数源码
 
-两个腾讯云 SCF Function URL 使用“授权类型：开放”。网站直接通过普通 GET 调用上传凭证根地址、下载 `/list` 和 `/download`，无需配置云函数访问凭据。原云函数只要返回下文所示接口字段即可继续使用；网站不要求响应带 `integrationVersion`。
+SCF Function URL 的腾讯云传输授权方式沿用现有部署；应用层支持服务器共享密钥校验。未配置 `CLASSHUB_SCF_AUTH_SECRET` 时，量化调用保留旧普通 GET 接口兼容；配置后网站发送 `X-ClassHub-Service-Auth`，两个函数校验后才允许访问。活动业务必须采用该受保护模式并返回 `secured: true`，不能在旧开放模式下追加活动权限。量化原响应仍不要求 `integrationVersion`。
 
 在网站填写六项配置，保存后点击“检查已保存配置”。检查只读取接口，不上传或删除真实文件。通过表示凭证及列表接口可访问；实际 ZIP 上传、确认和下载还依赖运行角色权限及 COS 跨域配置。
 
-仓库附有对应源码，均采用开放调用方式。需要从这些源码重新部署时：
+仓库源码支持上述受保护模式，并保留未配置新 secret 时的量化兼容分支。重新部署时先按活动媒体技术说明完成 server auth、固定 Bucket/Region 与实际历史目录白名单：
 
 - 上传凭证函数使用 `upload-token/index.py`，Python 入口 `index.main_handler`，无第三方依赖。
 - 下载函数使用 Node.js Web 函数；部署包根目录包含 `scf_bootstrap`、`package.json`、`package-lock.json`、`src/app.js`、`node_modules/`。在 `download/` 运行 `npm ci --omit=dev`、`chmod +x scf_bootstrap`，再打包目录内文件，避免多套一层目录。
@@ -54,7 +56,7 @@ COS 中已有同名文件时提示修改文件名；网站签名带 `x-cos-forbi
 
 ## 请求及响应
 
-所有云函数请求都由网站服务器直接发起，不添加鉴权头，也不在 query/body 中附带云函数访问凭据。ClassHub 登录 JWT 仍用于网站自身 API 的用户与管理员校验；COS 临时会话凭证继续用于 COS 签名，不作为 SCF 请求的鉴权字段。
+所有云函数请求都由网站服务器发起。配置 `CLASSHUB_SCF_AUTH_SECRET` 后通过专用 header 传递应用层鉴权，不在 URL/query/body 暴露密钥；未配置时仅量化旧兼容调用不添加该 header。ClassHub 登录 JWT 用于网站自身 API，COS 临时凭据用于对象签名；二者均不替代 SCF 的应用层鉴权。
 
 ### 上传凭证 GET 根地址
 

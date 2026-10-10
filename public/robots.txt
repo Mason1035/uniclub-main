@@ -1,14 +1,21 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
+# Search and general crawling are restricted to reviewed public pages and rendering assets.
+# No GPTBot / Google-Extended / other training-specific authorization is added here.
 User-agent: *
-Allow: /
+User-agent: OAI-SearchBot
+Disallow: /
+Allow: /$
+Allow: /?
+Allow: /about$
+Allow: /about?
+Allow: /about/$
+Allow: /privacy$
+Allow: /privacy?
+Allow: /privacy/$
+Allow: /static/
+Allow: /branding/
+Allow: /fonts/
+Allow: /manifest.json$
+Allow: /sitemap.xml$
+Allow: /robots.txt$
+
+Sitemap: https://csrg3b.top/sitemap.xml

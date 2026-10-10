@@ -2,13 +2,16 @@ const express = require('express');
 const router = express.Router();
 const ContentCurationService = require('../services/ContentCurationService');
 const requireAdmin = require('../middleware/admin');
+const { optional: activityReader } = require('../middleware/activityReadAccess').createActivityReadAccess();
+const { activityPreview } = require('../middleware/activityReadAccess');
 const { curationLimit } = require('../middleware/rateLimit');
 
 // GET /api/curation/homepage - Get curated content for homepage (top 3 per category)
-router.get('/homepage', async (req, res) => {
+router.get('/homepage', activityReader, async (req, res) => {
   try {
     console.log('🏠 API: Fetching curated homepage content...');
-    const homepageContent = await ContentCurationService.getHomepageContent();
+    const homepageContent = await ContentCurationService.getHomepageContent({ includeActivities: req.canReadActivities === true });
+    homepageContent.events = await Promise.all(homepageContent.events.map(row => activityPreview(row, req.user?.userId)));
     
     console.log('🏠 API: Homepage content retrieved:', {
       news: homepageContent.news.length,
@@ -31,10 +34,11 @@ router.get('/homepage', async (req, res) => {
 });
 
 // GET /api/curation/featured - Get featured content (#1 per category)
-router.get('/featured', async (req, res) => {
+router.get('/featured', activityReader, async (req, res) => {
   try {
     console.log('🌟 API: Fetching featured content...');
-    const featuredContent = await ContentCurationService.getFeaturedContent();
+    const featuredContent = await ContentCurationService.getFeaturedContent({ includeActivities: req.canReadActivities === true });
+    featuredContent.events = await Promise.all(featuredContent.events.map(row => activityPreview(row, req.user?.userId)));
     
     console.log('🌟 API: Featured content retrieved:', {
       news: featuredContent.news ? featuredContent.news.title : 'none',

@@ -1,18 +1,21 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, matchRoutes, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
-import { initializeMobileFeatures } from './lib/mobile';
+import { startNativeFeatures } from './lib/nativeBootstrap';
 import { cleanupLegacyDemoSession } from './utils/portfolioDemo';
 import { UserProvider } from './context/UserContext';
 import { PopupProvider } from './context/PopupContext';
 import { ThemeProvider } from './context/ThemeContext';
 import AppRoutes from './routes';
+import { appRouteConfig } from './routeConfig';
+import { isNotFoundRoute } from './lib/routeState';
 import { AuthProvider } from './context/AuthContext';
 import PetProvider from './features/pet/PetProvider';
 import PetLayer from './features/pet/PetLayer';
 import CookieConsent from './components/privacy/CookieConsent';
+import PageMetadata from './components/PageMetadata';
 
 // Create a QueryClient instance for React Query
 const queryClient = new QueryClient({
@@ -31,17 +34,18 @@ const queryClient = new QueryClient({
  */
 const AppShell: React.FC = () => {
   const location = useLocation();
+  const notFound = isNotFoundRoute(matchRoutes(appRouteConfig, location));
   const isAdminConsole =
     location.pathname === '/admin' || location.pathname.startsWith('/admin/');
 
-  if (isAdminConsole) {
-    return <AppRoutes />;
+  if (isAdminConsole && !notFound) {
+    return <><PageMetadata notFound={false}/><AppRoutes /></>;
   }
 
   return (
-    <Layout>
+    <><PageMetadata notFound={notFound}/><Layout notFound={notFound}>
       <AppRoutes />
-    </Layout>
+    </Layout></>
   );
 };
 
@@ -51,8 +55,7 @@ function App() {
     // so visitors see the public homepage rather than a fabricated member session.
     cleanupLegacyDemoSession();
     
-    // Initialize mobile features
-    initializeMobileFeatures().catch(console.error);
+    const stopNativeFeatures = startNativeFeatures();
     // Discard account-specific cached data before another session can reuse it.
     const clearAccountQueries = () => {
       void queryClient.cancelQueries();
@@ -66,6 +69,7 @@ function App() {
     window.addEventListener('auth:changed', clearAccountQueries);
     window.addEventListener('storage', syncSession);
     return () => {
+      stopNativeFeatures();
       window.removeEventListener('auth:changed', clearAccountQueries);
       window.removeEventListener('storage', syncSession);
     };

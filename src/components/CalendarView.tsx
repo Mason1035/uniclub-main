@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useCalendarMotion } from '../hooks/useCalendarMotion';
 import { Link } from 'react-router-dom';
 import { addMonths,addDays,startOfMonth,startOfWeek,isSameDay,isSameMonth,format } from 'date-fns';
@@ -7,9 +7,10 @@ import { ChevronLeft,ChevronRight } from 'lucide-react';
 import { usePageViewState } from '../hooks/usePageViewState';
 import type { MongoEvent } from '../utils/eventTransform';
 import { formatEventLocation } from '../utils/eventTransform';
-export default function CalendarView({events}: {events:MongoEvent[]}) {
+export default function CalendarView({events,onRangeChange}: {events:MongoEvent[];onRangeChange?:(from:string,to:string)=>void}) {
   const [date,setDate]=usePageViewState('calendar-month',new Date().toISOString()); const [selected,setSelected]=usePageViewState('calendar-day',new Date().toISOString());
   const month=new Date(date); const chosen=new Date(selected); const days=useMemo(()=>{const first=startOfWeek(startOfMonth(new Date(date)),{weekStartsOn:1});return Array.from({length:42},(_,i)=>addDays(first,i));},[date]);
+  useEffect(()=>{if(onRangeChange&&days.length)onRangeChange(days[0].toISOString(),addDays(days[days.length-1],1).toISOString());},[days,onRangeChange]);
   const eventsOn=(day:Date)=>events.filter(e=>{const start=new Date(e.startDate); const end=new Date(e.endDate||e.startDate); return isSameDay(day,start) || (day>=startOfDay(start)&&day<=startOfDay(end));});
   const agenda=eventsOn(chosen);
   const scope = useRef<HTMLElement>(null);

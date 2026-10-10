@@ -11,9 +11,12 @@ import ContentState from '../components/ContentState';
 import PageHeading from '../components/PageHeading';
 import BackNavigation from '../components/BackNavigation';
 import InteractionButtons from '../components/InteractionButtons';
+import NotFound from './NotFound';
+import { isMissingContent } from '../lib/routeState';
 export default function ResourceDetailPage() {
   const {id}=useParams();const location=useLocation();const navigate=useNavigate();const [preview,setPreview]=useState(false);
-  const query=useQuery({queryKey:['resource',id],enabled:!!id,queryFn:async()=>{const {data}=await api.get(`/api/resources/${id}`);return (data.resource||data) as ApiResource;}});
+  const query=useQuery({queryKey:['resource',id],enabled:!!id,retry:(count,error)=>!isMissingContent(error)&&count<2,queryFn:async()=>{const {data}=await api.get(`/api/resources/${id}`);return (data.resource||data) as ApiResource;}});
+  if (isMissingContent(query.error) || (query.isSuccess && !query.data)) return <NotFound />;
   const resource=query.data;const raw=resource?.file?.url||resource?.fileUrl||resource?.linkUrl;let url:string|undefined;
   try {if(raw){const parsed=new URL(raw,window.location.origin);if(['https:','http:'].includes(parsed.protocol))url=parsed.href;}}catch{url=undefined;}
   const isUpload=resource?.file?.type==='upload'||!!resource?.fileUrl;const mime=resource?.file?.mimeType||'';const isImage=/^image\/(png|jpeg|webp|gif|avif)$/.test(mime);const isPdf=mime==='application/pdf';

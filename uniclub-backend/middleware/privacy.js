@@ -15,7 +15,9 @@ const checkPostPrivacy = async (req, res, next) => {
     }
     
     const SocialPost = require('../models/SocialPost');
-    const post = await SocialPost.findById(postId).populate('author');
+    // req.post is returned by the existing detail handler. Populate only the
+    // already displayed author fields, never password hashes or session state.
+    const post = await SocialPost.findById(postId).populate('author', 'name uniqueId profile.avatar');
     
     if (!post) {
       return res.status(404).json({ error: 'Post not found' });

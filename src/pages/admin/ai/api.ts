@@ -1,10 +1,8 @@
 import api from '@/lib/axios';
-import { clearSession, readToken } from '@/lib/session';
+import { AiRequestError, postAiStream } from '@/lib/aiStream';
 import type { AiGeneration, AiSettings, AiStatus, HistoryMessage, Scenario } from './types';
 
-export class AiRequestError extends Error {
-  constructor(message: string, public code = 'AI_ERROR') { super(message); }
-}
+export { AiRequestError } from '@/lib/aiStream';
 export function aiErrorMessage(error: unknown): string {
   if (error instanceof AiRequestError) return error.message;
   const e = error as { response?: { status?: number; data?: { error?: string } }; message?: string; code?: string };
@@ -27,49 +25,10 @@ export async function generateAi(payload: { scenario: Scenario; prompt: string; 
   const body = new FormData();
   body.append('scenario', payload.scenario); body.append('prompt', payload.prompt); body.append('history', JSON.stringify(payload.history));
   payload.images.forEach(file => body.append('images', file));
-  const token = readToken();
-  let response: Response;
-  try {
-    response = await fetch(`${(api.defaults.baseURL || '').replace(/\/$/, '')}/api/admin/ai/generate`, {
-      method: 'POST', headers: { Accept: 'text/event-stream', ...(token && { Authorization: `Bearer ${token}` }) }, body, signal,
-    });
-  } catch (error) {
-    if (signal.aborted) throw error;
-    throw new AiRequestError('无法连接网站服务，请检查网络后重试。', 'NETWORK_ERROR');
-  }
-  if (response.status === 401 && token === readToken()) {
-    clearSession(); window.dispatchEvent(new CustomEvent('auth:expired'));
-  }
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    const message = response.status === 401 ? '登录已过期，请重新登录。' : response.status === 403 ? '此账号没有管理员权限。' : response.status === 413 ? '上传内容过大，请缩小图片后重试。' : data.error || '网站 AI 服务暂时无法响应。';
-    throw new AiRequestError(message, data.code || 'HTTP_ERROR');
-  }
-  if (!response.body || !response.headers.get('content-type')?.includes('text/event-stream')) throw new AiRequestError('AI 响应格式异常，请重新生成。', 'INVALID_RESPONSE');
-  const reader = response.body.getReader(), decoder = new TextDecoder();
-  let pending = '', result: AiGeneration | null = null;
-  const consume = (block: string) => {
-    const lines = block.split('\n');
-    const event = lines.find(line => line.startsWith('event:'))?.slice(6).trim();
-    const raw = lines.filter(line => line.startsWith('data:')).map(line => line.slice(5).trim()).join('\n');
-    if (!raw) return;
-    let data;
-    try { data = JSON.parse(raw); } catch { throw new AiRequestError('AI 响应格式异常，请重新生成。', 'INVALID_RESPONSE'); }
-    if (event === 'error') throw new AiRequestError(data.error || 'AI 服务异常，请重试。', data.code);
-    if (event === 'delta' && typeof data.text === 'string') onDelta(data.text);
-    if (event === 'result') result = data as AiGeneration;
-  };
-  try {
-    for (;;) {
-      const chunk = await reader.read();
-      pending += decoder.decode(chunk.value, { stream: !chunk.done });
-      if (pending.length > 1024 * 1024) throw new AiRequestError('AI 响应过长，请缩小问题范围。', 'OUTPUT_TOO_LONG');
-      let end;
-      while ((end = pending.indexOf('\n\n')) !== -1) { consume(pending.slice(0, end)); pending = pending.slice(end + 2); }
-      if (chunk.done) break;
-    }
-    if (pending.trim()) consume(pending);
-    if (!result) throw new AiRequestError('AI 连接中断，结果未完整接收，请重新生成。', 'INCOMPLETE_STREAM');
-    return result;
-  } finally { await reader.cancel().catch(() => undefined); reader.releaseLock(); }
+  return postAiStream<AiGeneration>('/api/admin/ai/generate', body, {
+    signal, onDelta,
+    forbiddenMessage: '此账号没有管理员权限。',
+    tooLargeMessage: '上传内容过大，请缩小图片后重试。',
+    validateResult: (value): value is AiGeneration => !!value && typeof value === 'object' && typeof (value as AiGeneration).answer === 'string',
+  });
 }

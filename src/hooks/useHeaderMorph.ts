@@ -5,7 +5,7 @@ const MOTION = { smoothingMs: 65, settleEpsilon: 0.0005, scrollHeaderLengths: 2.
 const GEOMETRY = {
   compactGapEm: 1.5, logoGapEm: 1.75, maxLogoEm: 9.5, logoScale: .55,
   landingShiftRatio: .04, arcRatio: .06, scrollStartRatio: .08,
-  mobileScale: .94, tabletScale: .66, tabletLogoShiftRatio: .17, tabletNavShift: 42,
+  tabletScale: .66, tabletLogoShiftRatio: .17, tabletNavShift: 42,
 } as const;
 
 /** Keep the existing fixed, two-row header; only its painted geometry morphs. */
@@ -27,6 +27,9 @@ export function useHeaderMorph(scope: RefObject<HTMLDivElement>) {
     const ease = gsap.parseEase('power2.inOut');
     const media = gsap.matchMedia();
     media.add({ desktop: '(min-width: 1024px)', tablet: '(min-width: 768px) and (max-width: 1023px)', mobile: '(max-width: 767px)', reduce: '(prefers-reduced-motion: reduce)' }, ({ conditions }) => {
+      // Mobile keeps the CSS logo size and never subscribes to scroll morphing.
+      // matchMedia restores desktop/tablet styles before entering this branch.
+      if (conditions?.mobile) return;
       let alive = true;
       let frame = 0;
       let measurementFrame = 0;
@@ -38,11 +41,9 @@ export function useHeaderMorph(scope: RefObject<HTMLDivElement>) {
       let logoEndY = 0;
       let arc = 0;
       let desktop = false;
-      const mobile = !!conditions?.mobile;
       const reduce = !!conditions?.reduce;
       const write = (name: string, value: number, unit = '') => header.style.setProperty(name, `${value}${unit}`);
       const readTarget = () => {
-        if (mobile) return window.scrollY > 80 ? 1 : 0;
         const progress = gsap.utils.clamp(0, 1, (Math.max(0, window.scrollY) - start) / distance);
         return reduce ? (progress > 0 ? 1 : 0) : progress;
       };
@@ -108,18 +109,18 @@ export function useHeaderMorph(scope: RefObject<HTMLDivElement>) {
         // A small downward landing retains the accepted contraction (~one nav row).
         const compactCenterY = brandCenterY + brandBox.height * GEOMETRY.landingShiftRatio;
         const compactHeight = Math.max(compactCenterY * 2, compactLogoWidth / 3 + fontSize * 2);
-        logoEndY = desktop ? compactCenterY - brandCenterY : mobile ? 0 : -brandBox.height * GEOMETRY.tabletLogoShiftRatio;
+        logoEndY = desktop ? compactCenterY - brandCenterY : -brandBox.height * GEOMETRY.tabletLogoShiftRatio;
         arc = brandBox.height * GEOMETRY.arcRatio;
         write('--header-logo-x', desktop ? center - (brandBox.left + brandBox.width / 2) - (compactNavWidth + logoGap) / 2 : 0, 'px');
-        write('--header-logo-scale', desktop ? compactLogoWidth / brandBox.width : mobile ? GEOMETRY.mobileScale : GEOMETRY.tabletScale);
+        write('--header-logo-scale', desktop ? compactLogoWidth / brandBox.width : GEOMETRY.tabletScale);
         write('--header-nav-start-x', desktop ? -(openGap - compactGap) * (links.length - 1) / 2 : 0, 'px');
         write('--header-nav-end-x', desktop ? (compactLogoWidth + logoGap) / 2 : 0, 'px');
-        write('--header-nav-y', desktop ? compactCenterY - (navLineBox.top + navLineBox.height / 2 - headerBox.top) : mobile ? 0 : -GEOMETRY.tabletNavShift, 'px');
+        write('--header-nav-y', desktop ? compactCenterY - (navLineBox.top + navLineBox.height / 2 - headerBox.top) : -GEOMETRY.tabletNavShift, 'px');
         write('--header-tools-y', desktop ? compactCenterY - (toolsBox.top + toolsBox.height / 2 - headerBox.top) : 0, 'px');
-        write('--header-paper-scale', desktop ? compactHeight / headerBox.height : mobile ? 1 : (headerBox.height - GEOMETRY.tabletNavShift) / headerBox.height);
+        write('--header-paper-scale', desktop ? compactHeight / headerBox.height : (headerBox.height - GEOMETRY.tabletNavShift) / headerBox.height);
         if (desktop) nav.style.columnGap = `${compactGap}px`;
         links.forEach((link, index) => link.style.setProperty('--header-link-shift', `${desktop ? index * (openGap - compactGap) : 0}px`));
-        header.dataset.morphMode = desktop ? 'desktop' : mobile ? 'mobile' : 'tablet';
+        header.dataset.morphMode = desktop ? 'desktop' : 'tablet';
         header.dataset.reducedMotion = String(reduce);
         header.dataset.morphing = 'false';
         start = headerBox.height * GEOMETRY.scrollStartRatio;

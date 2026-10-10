@@ -76,6 +76,7 @@ class QuantificationStorageSettings {
     if (endpoint !== expected) fail(400, 'Endpoint 必须是此存储桶与地域对应的 HTTPS COS 地址。');
     const directoryPrefix = text(body.directoryPrefix).replace(/\/$/, '') + '/';
     if (!validPrefix(directoryPrefix)) fail(400, '上传目录只能包含字母、数字、下划线、短横线和斜杠，最多 4 层目录。');
+    if (directoryPrefix.startsWith('activity/')) fail(400, '量化上传目录不能使用活动图片专用的 activity/ 路径。');
     const tokenEndpoint = functionEndpoint(text(body.tokenEndpoint));
     const functionUrl = functionEndpoint(text(body.functionUrl));
     if (!tokenEndpoint || !functionUrl) fail(400, '请填写腾讯云 SCF 的 HTTPS 函数根地址，不要附加 /list、/download 或查询参数。');
@@ -112,3 +113,7 @@ module.exports = QuantificationStorageSettings;
 module.exports.functionEndpoint = functionEndpoint;
 module.exports.validPrefix = validPrefix;
 module.exports.cosEndpoint = cosEndpoint;
+// All default services share the configuration operation gate. Otherwise a
+// first activity upload and a quantification bucket change could race before
+// any durable storage record existed. Explicit test/settings injection remains.
+module.exports.sharedStorageSettings = new QuantificationStorageSettings();

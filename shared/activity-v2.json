@@ -1,0 +1,24 @@
+{
+  "types": [
+    { "value": "LEAGUE_ACTIVITY", "label": "团活动" },
+    { "value": "TEAM_BUILDING", "label": "团建" },
+    { "value": "CLASS_MEETING", "label": "班会" },
+    { "value": "GROUP_DISCUSSION", "label": "小组交流" },
+    { "value": "OTHER", "label": "其他" }
+  ],
+  "legacyTypes": [
+    { "value": "Workshop", "label": "工作坊（历史分类）" },
+    { "value": "Masterclass", "label": "大师课（历史分类）" },
+    { "value": "Tutorial", "label": "教学交流（历史分类）" },
+    { "value": "Meetup", "label": "交流聚会（历史分类）" },
+    { "value": "Hackathon", "label": "黑客松（历史分类）" },
+    { "value": "Seminar", "label": "研讨会（历史分类）" },
+    { "value": "Social", "label": "社交活动（历史分类）" },
+    { "value": "Lecture", "label": "讲座（历史分类）" },
+    { "value": "Sports", "label": "体育活动（历史分类）" },
+    { "value": "Other", "label": "其他（历史分类）" }
+  ],
+  "statuses": ["draft", "published", "cancelled", "completed", "archived"],
+  "registrationStatuses": ["PENDING", "APPROVED", "REJECTED", "CANCELLED"],
+  "legacyRegistrationMap": { "going": "APPROVED", "maybe": "PENDING", "waitlist": "PENDING", "not_going": "CANCELLED" }
+}

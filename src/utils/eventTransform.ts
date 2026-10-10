@@ -6,7 +6,21 @@ export interface MongoEvent {
   id?: string;
   _id?: string;
   rsvpLink?: string;
+  rsvpDeadline?: string | null;
   status?: string;
+  phase?: 'UPCOMING' | 'ONGOING' | 'ENDED';
+  registrationOpen?: boolean;
+  registrationClosedReason?: string;
+  cancellationOpen?: boolean;
+  cancellationClosedReason?: string;
+  approvedCount?: number;
+  summary?: string;
+  coverUrl?: string | null;
+  coverMediaId?: string | null;
+  mediaVersion?: number;
+  updatedAt?: string;
+  createdAt?: string;
+  deletedAt?: string | null;
   title: string;
   description: string;
   startDate: string;
@@ -131,8 +145,8 @@ export function transformToEventCard(event: MongoEvent): EventCardData {
     attendeeCount: event.rsvpCount || 0,
     rsvpCount: event.rsvpCount || 0,
     discussionCount: event.discussionCount || 0,
-    imageUrl: event.imageUrl,
-    category: event.category?.[0] || 'General',
+    imageUrl: event.coverUrl || event.imageUrl,
+    category: event.eventType || event.category?.[0] || 'General',
     eventType: event.eventType,
     isFeatured: false,
     isCompact: false,

@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Source Han Serif SC / 思源宋体 | `ClassHub Han Serif` | variable `wght` 250–900 | 首页中文引言与叙事性分区标题、登录页中文 Hero、新闻列表/详情标题、往期活动故事标题、编辑式阅读正文 |
 | Source Han Sans SC / 思源黑体 | `ClassHub Han Sans` | variable `wght` 250–900 | 导航、默认说明、按钮、表单、设置、通知、活动日程、资源列表、后台及表格 |
-| Smiley Sans / 得意黑 v2.0.1 | `ClassHub Pulse` | 400，真实单字重 | 首页与班级动态页现有的「班级动态」短标题，共两处 |
+| Smiley Sans / 得意黑 v2.0.1 | `ClassHub Pulse` | 400，真实单字重 | 保留 Signature 字族与工具类；当前首页、班级动态栏目已采用 Editorial，Guest 首页不请求此字族 |
 | Schibsted Grotesk | `ClassHub Grotesk` | variable `wght` 400–900 | 当前英文 Hero、可编辑文本品牌标识、英文、日期、年份、数字与 Metadata |
 
 图片 Logo 的内嵌字形保持原样；字体栈不修改 PNG。现有 Hero 文案与打字/光标行为不在本轮改写范围。代码块与技术标识保留系统 monospace。
@@ -42,7 +42,7 @@ Hero、Display、H1–H3、功能正文、阅读正文采用集中管理的 `cla
 - [固定源文件](https://raw.githubusercontent.com/adobe-fonts/source-han-serif/7889f11bf31170b5d092a083b357c8c8130f89e0/Variable/WOFF2/TTF/Subset/SourceHanSerifCN-VF.ttf.woff2)
 - 官方 CN region subset，SC 字形；11,035,128 B。
 - SHA-256：`556749ba783b148fa1f48644e8883e5b9351f01abd0d1faad0ba24a21185e76a`。
-- 版权：Copyright 2017–2022 Adobe，Reserved Font Name `Source`。
+- 源文件版权元数据：© 2017–2024 Adobe，Reserved Font Name `Source`。
 - 许可证：`public/fonts/classhub/licenses/source-han-serif.txt`。
 
 ### Source Han Sans SC
@@ -71,7 +71,7 @@ Hero、Display、H1–H3、功能正文、阅读正文采用集中管理的 `cla
 - Copyright 2023 The Schibsted-Grotesk Project Authors。
 - 许可证：`public/fonts/classhub/licenses/schibsted-grotesk.txt`。
 
-子集不是未经修改的官方字体包。内部 family、full name、PostScript、variable prefix 与思源 named-instance PostScript 名称均使用 ClassHub 衍生命名；版权与 OFL 文本保留原作者信息。不得在修改后的主要字体名中沿用保留名。网站文档使用原字体名称说明字形来源。
+子集不是未经修改的官方字体包。内部 family、full name、PostScript、variable prefix 与思源 named-instance PostScript 名称均使用 ClassHub 衍生命名；版权与 OFL 文本保留原作者信息。构建显式保留全部原始 name 元数据及语言记录，包括版权、作者、商标与 OFL（name ID 0、7–9、13–14），修正 fonttools 默认 name 子集会移除许可证记录的问题。不得在修改后的主要字体名中沿用保留名。网站文档使用原字体名称说明字形来源。
 
 ## 4. 覆盖、分片与 fallback
 
@@ -84,9 +84,11 @@ Hero、Display、H1–H3、功能正文、阅读正文采用集中管理的 `cla
 
 中文包排除已交给 Latin 的重复字符以及私用区和控制字符。中文/全角标点、弯引号、破折号及省略号由中文字族提供。每个子集的准确 `unicode-range` 与文件实际 cmap 一致，同一字族的 core / common / tail 范围互不重叠。保留 GSUB / GPOS、真实 variable axes、数字特性与必要字形闭包。
 
-- 黑体 core 覆盖正式 `src/**/*.ts(x)` 静态汉字文案及中文标点；宋体 core 根据现有编辑式页面文案与常用正文字符生成；不是照搬实验文案。
-- 思源字体其余 GB2312 常用字符每 **96 个字符** 分片；源字体其余字符每 **384 个字符** 分片。常用短标题无需为一个字下载一大块 384 字文件。
-- 得意黑 core 只包含两处实际短标题所需的「班级动态」四个字，其余字形按 384 个字符分片，仅在未来实际使用时请求。
+- 黑体 core 为 Layout/跳过导航链接、Header、Footer、底部导航、共享加载状态、Cookie（含偏好设置及 CSS 生成内容）、Homepage（含全部 Guest 卡片说明）及 iPhone 安装卡源文案中的汉字与实际标点，共 **284 字**；「嗨、决、私、川、师、跳」及 Cookie 列表生成的 `–`、加载状态 `…` 已纳入。没有把全站后台/表单文案一并塞进公共 preload。
+- 宋体 core 为首页 Hero 中文引言、栏目标题及 iPhone 安装卡/引导的 Editorial 标题，共 **82 字**；新闻正文与其他页面按内容请求其余分片。
+- 其余正式 `src/**/*.ts(x)` 静态汉字按源码出现频率排序，每 **96 个字符** 放入 common 分片；剩余全部源支持字符按 Unicode 顺序、每 **384 个字符** 放入 tail。取消将完整 GB2312 集合从 tail 抽走的分组，减少两边互相挖洞造成的范围碎片；覆盖集合保持相同。
+- Latin core 为 ASCII、公共文案的中点与箭头，共 **97 字**；其余 **365 字** 保留在一份按需 tail，扩展 Latin 姓名、数学符号等仍可用。
+- 得意黑 core 保留「班级动态」四个字，其余字形按 384 个字符分片，仅在实际使用 Signature 样式时请求。
 - 未包含在 core 的动态新闻、姓名和输入文字，浏览器按 `unicode-range` 请求相应分片；不会因只覆盖实验文字而混用常见字形。
 - 原始官方字体本身不覆盖所有 Unicode 汉字/IVS/emoji。`喆、祎、彧、玥、龘` 由正式思源分片提供；`𠮷` 在本次 macOS Chrome 验证中由 PingFang SC 回退，无缺字方框。其他系统的极生僻字仍取决于系统 fallback，不能宣称全 Unicode 覆盖。
 
@@ -94,7 +96,13 @@ Hero、Display、H1–H3、功能正文、阅读正文采用集中管理的 `cla
 
 ## 5. 加载与缓存策略
 
-`index.html` 只 preload `latin.*.woff2` 与 `sans-core.*.woff2`（crossorigin）。宋体与 Signature 根据实际样式/文字按需加载。全部 CSS face 描述由 Vite 合并到正常样式入口，浏览器仅下载有字符命中的字体文件。
+`index.html` 的字体二进制只 preload `latin-core.*.woff2` 与 `sans-core.*.woff2`（crossorigin），合计 **109,684 B**。宋体、Signature 与全部 tail 根据实际样式/文字按需加载。
+
+- `editorial.css` 只引入 `fonts-core.css`，四个 core face 经 Vite 合并到首屏样式入口；字体描述 **3,370 B raw / 1,266 B gzip6**。Guest 当前文案不依赖其他 face 注册。
+- 其余 **195 个 face** 在 `fonts-extended.5b6e6f7943.css`，完整精确范围仍存在；**108,051 B raw / 27,366 B gzip6**。HTML 用低优先级 `preload as="style"` 及 `media="print"` stylesheet 提前下载，避免此样式表阻塞初始屏幕绘制。浏览器只下载命中字符的 WOFF2，不会因为注册 face 下载全部字形。
+- 同源 `fonts-loader.cd129072cf.js`（235 B raw / 188 B gzip6）以 `defer` 执行，将已完成加载的 stylesheet 的 media 改为 `all`；也处理样式表先于脚本完成的情况。没有 inline onload，不要求 CSP 的 `unsafe-inline`。严格 `script-src 'self'; style-src 'self'; font-src 'self'` 的独立字体夹具验证通过。
+- JavaScript 禁用时，`noscript` 内正常 stylesheet 保留完整字体覆盖；专项夹具观察到全部 199 face，以及生僻中文与扩展 Latin 的 tail 请求。动态姓名/正文在 extended CSS 完成注册前短暂使用现有系统 fallback，之后按 `swap` 替换；其他系统极生僻字仍受原源字体及系统 fallback 限制。
+- extended CSS、loader JS 和每个 WOFF2 均按内容 SHA-256 前 10 位命名，适合匹配内容哈希资源的长期 immutable 缓存。`fonts-core.css` 由 Vite 编入带 hash 的共享 CSS；其固定 public 路径不要单独设一年 immutable。
 
 旧 UniClub 字体已从 `public/fonts/` 根目录清理：`sans-0.woff2` 至 `sans-100.woff2`、`serif-101.woff2` 至 `serif-201.woff2`、`geist-mono-variable.woff2`、旧 `fonts.css` 及其三份旧 OFL 文本不再属于当前网站资源。独立设计原型使用自己的 `design-experiments/homepage-v2-concept/public/fonts/`，没有依赖这些根目录文件。正式字体全部保留在 `public/fonts/classhub/`，其 manifest 与相邻 CSS 继续作为唯一正式字体清单。
 
@@ -110,11 +118,13 @@ Hero、Display、H1–H3、功能正文、阅读正文采用集中管理的 `cla
 python scripts/build-fonts.py /path/to/official-font-sources
 # 可选：只重建指定字体，保留其他字族资源
 python scripts/build-fonts.py /path/to/official-font-sources --only=smiley,latin
+# 只按当前已校验 manifest 重新输出 CSS/loader/HTML（不重建字形）
+python scripts/build-fonts.py /path/to/official-font-sources --metadata-only
 ```
 
-脚本校验官方源文件哈希，生成互斥分片、内容哈希文件名、manifest、fonts.css 并更新必要 preload。源字体 timestamp 固定，避免仅因构建时间改变缓存 URL。重建后应一起提交字体文件、CSS、manifest 与 index.html。
+脚本校验官方源文件哈希，生成互斥分片、内容哈希文件名、manifest、core/extended CSS、loader 并更新 HTML 加载引用与必要 preload。每片检查实际 cmap 与分配字符完全一致、真实 variable axes/HVAR/gvar 表和字体内版权/OFL 记录。保留既有文件时先校验 manifest 中的字节数与 hash。源字体 timestamp 固定，避免仅因构建时间改变缓存 URL。重建后应一起提交字体文件、CSS/loader、manifest 与 index.html。改变公共首页文案或字体角色后应重建并复核真实字体请求。
 
-## 7. 本轮验证与限制
+## 7. 原字体迁移的验证记录与限制
 
 - `npm run build` 含项目 typecheck，通过。未运行无关业务回归。
 - 使用本地产物预览和隔离浏览器视觉夹具，未读写真实业务记录；实验样例没有进入正式代码。
@@ -130,18 +140,20 @@ python scripts/build-fonts.py /path/to/official-font-sources --only=smiley,latin
 
 ## 8. 正式资源实测清单
 
-全部单文件的路径、大小、SHA-256、字符数与 Unicode 范围见 `public/fonts/classhub/manifest.json`，CSS 在相邻 `fonts.css`。
+全部单文件的路径、大小、SHA-256、字符数与 Unicode 范围见 `public/fonts/classhub/manifest.json`，加载文件见其中 `stylesheets` 记录。
 
 | 字族 | WOFF2 文件数 | 字体资源总量 | core/Latin 文件 | core/Latin 大小 | core 字符数 |
 |---|---:|---:|---|---:|---:|
-| ClassHub Han Serif | 135 | 13,401,628 B / 12.78 MiB | `serif-core.e67263be13.woff2` | 192,524 B / 188.01 KiB | 490 |
-| ClassHub Han Sans | 130 | 9,928,980 B / 9.47 MiB | `sans-core.addfeeae45.woff2` | 261,916 B / 255.78 KiB | 923 |
-| ClassHub Pulse | 25 | 1,290,380 B / 1.23 MiB | `signature-core.cde5a5deb2.woff2` | 1,312 B / 1.28 KiB | 4 |
-| ClassHub Grotesk | 1 | 62,976 B / 0.06 MiB | `latin.06f626d915.woff2` | 62,976 B / 61.50 KiB | 462 |
+| ClassHub Han Serif | 87 | 13,270,492 B / 12.66 MiB | `serif-core.c5d9e7b48a.woff2` | 29,788 B / 29.09 KiB | 82 |
+| ClassHub Han Sans | 85 | 9,826,180 B / 9.37 MiB | `sans-core.2b88dea1fa.woff2` | 77,540 B / 75.72 KiB | 284 |
+| ClassHub Pulse | 25 | 1,301,108 B / 1.24 MiB | `signature-core.6f80d4cdb1.woff2` | 1,760 B / 1.72 KiB | 4 |
+| ClassHub Grotesk | 2 | 70,080 B / 0.07 MiB | `latin-core.87db008acf.woff2` | 32,144 B / 31.39 KiB | 97 |
 
-- 全部 291 个 WOFF2：24,683,964 B / 23.54 MiB，**不是首次访问下载量**。
-- 两个 preload 合计：324,892 B / 317.28 KiB。
-- 下表来自生产构建预览、空浏览器缓存、1440px 初始渲染的实际字体请求；统计 WOFF2 原始字节，不含 CSS、图片、JS 或 HTTP 头。浏览器也会加载首屏下方已存在的文字字形。
+- 全部 **199 个 WOFF2：24,467,860 B / 23.33 MiB**，**不是首次访问下载量**。字体内保留许可证记录；完整动态覆盖相同。
+- 两个 preload 合计 **109,684 B / 107.11 KiB**，原为 324,892 B，减少 **215,208 B / 66.2%**。
+- Guest 首页实际所需 Sans/Serif/Latin 三份 core 合计 **139,472 B / 136.20 KiB**；Cookie、Footer、跳过导航链接及加载状态当前文案均命中 core。与审计的 mobile 545,612 B / desktop 635,988 B 比较，core 场景分别减少 **406,140 B / 74.4%**、**496,516 B / 78.1%**。这是资源合计与当前文案分配的核对，页面冷请求和时间收益仍须用最终生产构建复测，不将字节变化当作 LCP 毫秒保证。
+- 字体描述 **291 → 199 faces**；首屏共享样式中仅留 **4 face / 3,370 B raw / 1,266 B gzip6**，原全 face 描述为 243,072 B minified / 79,984 B gzip6。其余 195 face 的独立 stylesheet 为 27,366 B gzip6；这些元数据仍下载，但以独立非阻塞请求加载。上述是各字体文件/样式的字节口径，shared CSS 总压缩量应以最终 Vite 产物复测，不能重复计入字体二进制收益。
+- 下表保留上一次字体迁移的历史网络场景，不代表当前产物。统计 WOFF2 原始字节，不含 CSS、图片、JS 或 HTTP 头。
 
 | 场景 | 字体请求数 | 实际字体体积 |
 |---|---:|---:|
@@ -156,10 +168,12 @@ python scripts/build-fonts.py /path/to/official-font-sources --only=smiley,latin
 
 ### 字体与构建
 
-- `public/fonts/classhub/fonts.css`
+- `public/fonts/classhub/fonts-core.css`
+- `public/fonts/classhub/fonts-extended.*.css`
+- `public/fonts/classhub/fonts-loader.*.js`
 - `public/fonts/classhub/manifest.json`
 - `public/fonts/classhub/licenses/（四份 OFL 原文）`
-- `public/fonts/classhub/*.woff2（291 个生成文件）`
+- `public/fonts/classhub/*.woff2（199 个生成文件）`
 - `scripts/build-fonts.py`
 - `FONT_NOTES.md`
 
@@ -189,3 +203,12 @@ python scripts/build-fonts.py /path/to/official-font-sources --only=smiley,latin
 - `src/pages/SocialPage.tsx`
 
 未提交的实验目录、既有品牌素材与其他业务代码未由本轮迁移改写。未提交 Git commit、未推送到服务器。现有常规部署脚本继续适用。
+
+## 10. 2026-10-05 性能优化验证
+
+- 从相同已固定 hash 的官方完整源重建；没有合并 variable 分片、改变字体家族/字重或缩减动态覆盖。
+- 对全部 199 WOFF2 核对实际 cmap 与 manifest/CSS 范围一致、同族互斥，合并字符集合与原 291 片完全相同；检查文件 hash 与内容 hash 名称、真实 `wght` 范围及 `gvar` / `HVAR`。
+- 每片内版权/商标/作者/OFL 元数据与官方源一致；衍生主要字体名无保留名称。四份原始 OFL 文件继续保留。
+- 对代表字符（含「嗨、决、私、川、师、跳」、`–`、`…`、`喆祎彧玥龘`、Signature 与 Latin 数字）在 min / 中间 / max 字重做 **109 次源与衍生轮廓及 advance 比较**，全部一致；Latin core 保留真实 `tnum`。
+- 隔离 headless Chrome 字体夹具验证严格 self CSP、已先加载 stylesheet 的 loader 场景、全部 199 face 注册及动态中文/扩展 Latin 字形。CDP 明确禁用页面 JS 时，media 仍为 print、页面脚本未执行，noscript stylesheet 仍注册 199 face 并请求相应 tail。没有访问业务 API 或写入业务记录。
+- 这部分验证不替代正式首页 cold network、CLS/LCP 或成员态场景复测；扩展 face 注册前的动态字形可能短暂显示系统 fallback。Windows / iOS 实机仍未验证。

@@ -38,7 +38,42 @@ Nginx 实际配置为 `/etc/nginx/sites-available/classhub`，由 `/etc/nginx/si
 
 这两个公开配置项已保存于 [`domain.env.example`](domain.env.example)。配置生产环境时，将其中两项合并到服务器现有 `backend.env`，保留数据库、密钥及其他环境变量。
 
-`nginx-https.conf` 同步最终生产配置；`nginx.conf` 的初始 HTTP 模板包含正确域名。正常发布脚本不会覆盖服务器 Nginx 配置。每次修改先备份，只有 `nginx -t` 成功才 reload。
+`nginx-https.conf` 为 HTTPS 模板；`nginx.conf` 为初始 HTTP 模板。发布脚本只更新 ClassHub 管理的上传、静态性能与 SEO 配置块，保留域名、证书和 API 代理。每次修改先备份，只有 `nginx -t` 成功才 reload；失败恢复原配置。
+
+### 公开页面与索引边界（2026-10-08，本地待部署）
+
+`update-seo-nginx.cjs` 仅处理 root 为 `/opt/classhub/current/dist` 的应用 server 块，不修改重定向站点、TLS 证书、API Streaming、上传限额或已有静态缓存规则。重复发布不会重复添加规则。它区分：
+
+- `/`、`/privacy`、`/about`：直接提供构建时生成的匿名公开 HTML，保留现有网站 Shell 与样式；不从业务数据库生成成员信息。
+- 已声明的登录、成员、后台路由及合法格式的内容 ID：提供 `app.html`，保持前端鉴权，并附加 `X-Robots-Tag: noindex, nofollow, noarchive` 与 `Cache-Control: private, no-store`。
+- 未声明路由、错误格式的内容 ID：以真实 HTTP 404 提供现有 404 页面，地址保持原路径。合法 ID 是否存在继续由受鉴权保护的业务 API 判断，静态服务器不会查询数据库。
+- `/api/` 与 `/api/social/posts`：保持原代理规则，增加禁止索引与不缓存响应头；`/uploads/` 增加禁止索引响应头，保留媒体缓存行为。响应头与 robots.txt 均不替代鉴权。
+- `/robots.txt`、`/sitemap.xml`：按静态资源返回，Sitemap 使用 `application/xml`；`.html` 公开页面别名重定向到干净 URL，私有应用文件不作为独立页面对外访问。
+
+发布包必须包含 `index.html`、`privacy.html`、`about.html`、`app.html`、`404.html`、`robots.txt` 和 `sitemap.xml`。缺失文件会在切换版本前停止发布。回滚至尚未包含 `app.html` 的旧版本时，成员路由兼容回退至旧 `index.html`，仍保留 `noindex` 头；404 响应同样可回退旧 HTML 并保持 404 状态。
+
+本次没有执行正式发布。下一次授权发布后，应检查实际 Nginx 与 CDN 响应，不能只根据本地模板判断线上已经生效：
+
+```bash
+curl -I https://csrg3b.top/
+curl -I https://csrg3b.top/privacy
+curl -I https://csrg3b.top/about
+curl -I https://csrg3b.top/settings
+curl -I https://csrg3b.top/api/health
+curl -I https://csrg3b.top/news/not-exist-page
+curl https://csrg3b.top/sitemap.xml
+curl https://csrg3b.top/robots.txt
+```
+
+相关本地验证：`node --test scripts/test-seo-serving.cjs scripts/test-performance-nginx.cjs`。若本机安装 Nginx，该测试会启动临时本地实例验证真实 HTTP 状态与响应头；未安装时仅跳过该集成项。私有路由不区分大小写，保持现有 React Router 行为；Nginx 将 `/About`、`/Privacy` 等公开大小写变体以 308 归一到小写。
+
+Vercel 的 `vercel.json` 使用同一公开/私有路由边界。根据 [Vercel 官方 routes 说明](https://vercel.com/docs/project-configuration/vercel-json#routes)，其 `src` 默认不区分大小写，因此私有路由变体同样返回禁止索引的应用 Shell。Vercel 上公开 `/About`、`/Privacy` 变体直接返回对应静态页面并使用小写 canonical，而非 Nginx 的 308；本次未为此引入重复重定向系统。正式 Vercel 响应仍需在实际部署后检查。
+
+### 静态性能配置（2026-10-05）
+
+`update-performance-nginx.cjs` 将 gzip 级别设为 6，并启用 `Vary: Accept-Encoding`。仅带内容 hash 的 `/fonts/classhub/` 字体、补充字体 CSS/loader 与 `/branding/` 图片设置一年 immutable 缓存；HTML 继续 `no-cache`，旧的无 hash 资源不会被错误缓存一年。此模块只修改 root 为 `/opt/classhub/current/dist` 的 server 块。
+
+HTTPS 模板使用兼容旧版 Nginx 的 `listen ... ssl http2`。激活脚本先检查 `nginx -V` 的 `--with-http_v2_module`；没有该模块则仅应用压缩与缓存。`nginx -t` 是上线前的实际配置验证门槛。这些本地配置修改须通过发布脚本上线后才生效，性能修复任务不会自行登录或改动正式服务器。
 
 本次修复前备份：
 
@@ -126,6 +161,8 @@ Certbot 由官方 `certbot/certbot:v5.4.0` 镜像执行，证书放在 `/etc/let
 旧的失败容器保留在停止状态，以便查证。数据库版本与 Mac 的 8.3.11 一致，采用 `mongodump` / `mongorestore` 逻辑迁移。
 
 ## AI
+
+AI 每日新闻的本地实现沿用统一 DeepSeek Assistant 与 NewsAPI 搜索；本次代码没有自动发布到正式服务器。部署前按 [`README.daily-news.md`](../../uniclub-backend/README.daily-news.md) 执行可重复迁移、检查既有 AI 密钥与 `NEWS_API_KEY`。生产主进程会按 Asia/Shanghai 每分钟检查持久化设置，默认每天 19:00 执行。数据库租约及批次提交防止重复运行并保护人工新闻；旧 createdAt 自动删除已停用。开发模式默认不自动调用付费 AI。
 
 保留现有尚未完成的 Gemini 代码。按本次沟通，AI 服务后续改接 DeepSeek；本次不把它计为已上线功能。
 

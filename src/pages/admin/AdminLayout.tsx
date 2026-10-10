@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { clearSession } from './adminApi';
 import { useAdminSession } from './adminSession';
+import BrandLogo from '../../components/BrandLogo';
 
 interface NavItem {
   to: string;
@@ -47,11 +48,9 @@ const NAV_ITEMS: NavItem[] = [
 
 const Brand: React.FC = () => (
   <div className="flex items-center px-2">
-    <img
-      src="/branding/classhub-logo-v2.png"
+    <BrandLogo
       alt="ClassHub"
-      width="2172"
-      height="724"
+      sizes="208px"
       className="block h-auto w-full max-w-[208px]"
     />
   </div>
