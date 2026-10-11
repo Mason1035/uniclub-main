@@ -6,11 +6,9 @@ const Comment = require('../models/Comment');
 const authenticateToken = require('../middleware/auth');
 const requireAdmin = require('../middleware/admin');
 const { isAdminUser } = require('../middleware/admin');
-const { curationLimit } = require('../middleware/rateLimit');
+const { curationLimit, generalLimit } = require('../middleware/rateLimit');
 const NewsCurationService = require('../services/NewsCurationService');
-const { Readability } = require('@mozilla/readability');
-const { JSDOM } = require('jsdom');
-const axios = require('axios');
+const WebPageFetcher = require('../services/WebPageFetcher');
 const mongoose = require('mongoose');
 const crypto = require('crypto');
 const { runtime, publicNewsFilter, articleVisible } = require('../utils/dailyNewsVisibility');
@@ -301,7 +299,10 @@ router.post('/trigger-curation', requireAdmin, curationLimit, async (req, res) =
 });
 
 // GET /api/news/:id/summary - Get AI summary of the article
-router.get('/:id/summary', async (req, res) => {
+// 需要登录并受全局限流约束才会触发生成；正文抓取改走 WebPageFetcher（safeWebUrl
+// 逐跳校验、响应字节上限、不执行脚本不抓外链子资源），替代原先裸 axios + JSDOM
+// resources:"usable" 的写法。
+router.get('/:id/summary', authenticateToken, generalLimit, async (req, res) => {
   try {
     const news = await News.findById(req.params.id).lean();
     if (!news) {
@@ -329,43 +330,31 @@ router.get('/:id/summary', async (req, res) => {
       }
     }
 
-    // Scrape and generate new summary
-    let articleText = '';
-    try {
-      const response = await axios.get(news.originalUrl, { 
-        timeout: 10000,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-      });
-      
-      // Use Mozilla Readability with jsdom
-      const dom = new JSDOM(response.data, {
-        url: news.originalUrl,
-        resources: "usable",
-        pretendToBeVisual: false
-      });
-      
-      const reader = new Readability(dom.window.document);
-      const article = reader.parse();
-      
-      if (article && article.textContent) {
-        articleText = article.textContent;
-      } else {
-        throw new Error('No content extracted from article');
-          }
-    } catch (err) {
-      return res.status(500).json({ error: 'Failed to scrape article', details: err?.message });
+    // 并发去重：同一篇文章同一时刻只跑一次"抓取+生成"，突发请求共享同一结果，
+    // 不能再靠并发竞争把一次缓存未命中放大成多次 Gemini 调用。
+    const result = await summarizeNewsArticle(req.params.id, news.originalUrl);
+    if (!result.ok) {
+      return res.status(result.status).json({ error: result.error });
     }
+    return res.json({ summary: result.summary, structured: result.structured });
+  } catch (error) {
+    console.error('Error serving news summary:', error.message);
+    res.status(500).json({ error: 'Failed to generate summary' });
+  }
+});
 
-    if (!articleText || articleText.length < 200) {
-      return res.status(400).json({ error: 'Could not extract enough content from the original article.' });
-    }
+const summaryFetcher = new WebPageFetcher();
+const summaryInflight = new Map();
 
-    // Generate new summary with Gemini
-    try {
-      const { generateText } = require('../utils/geminiClient');
-      const prompt = `You are an AI news summarizer for a university AI club. Please analyze and summarize the following news article in a structured format that includes:
+async function generateNewsSummary(articleId, originalUrl) {
+  const page = await summaryFetcher.fetchPage(originalUrl, { timeoutMs: 10000 });
+  const articleText = page.text || '';
+  if (articleText.length < 200) {
+    return { ok: false, status: 400, error: 'Could not extract enough content from the original article.' };
+  }
+
+  const { generateText } = require('../utils/geminiClient');
+  const prompt = `You are an AI news summarizer for a university AI club. Please analyze and summarize the following news article in a structured format that includes:
 
 1. Key Points (3-5 bullet points)
 2. Technical Details (if applicable)
@@ -378,39 +367,39 @@ Use clear, concise language and focus on the most important aspects. Do not hall
 ARTICLE:
 ${articleText}`;
 
-      const summary = await generateText(prompt, {
-        maxTokens: 1024,
-        temperature: 0.3,
-      });
-      
-      if (!summary) {
-        throw new Error('Failed to generate summary');
-      }
-
-      // Parse the structured summary
-      const structured = parseStructuredSummary(summary);
-      
-      // Update the article with new summary
-      await News.findByIdAndUpdate(req.params.id, {
-        summary: {
-          raw: summary,
-          ...structured,
-          lastUpdated: new Date()
-        }
-      });
-
-      return res.json({ 
-        summary,
-        structured
-      });
-      
-    } catch (err) {
-      return res.status(500).json({ error: 'Failed to summarize article', details: err?.message });
-    }
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to generate summary', details: error?.message });
+  const summary = await generateText(prompt, {
+    maxTokens: 1024,
+    temperature: 0.3,
+  });
+  if (!summary) {
+    return { ok: false, status: 500, error: 'Failed to summarize article' };
   }
-});
+
+  const structured = parseStructuredSummary(summary);
+  await News.findByIdAndUpdate(articleId, {
+    summary: {
+      raw: summary,
+      ...structured,
+      lastUpdated: new Date()
+    }
+  });
+  return { ok: true, summary, structured };
+}
+
+function summarizeNewsArticle(articleId, originalUrl) {
+  if (!summaryInflight.has(articleId)) {
+    const shared = generateNewsSummary(articleId, originalUrl)
+      .catch((error) => {
+        // WebPageFetcher 抛出的 AiError 自带面向用户的中文消息与 status，可安全
+        // 返回；其余内部错误只回通用文案，不向调用方泄露细节。
+        if (error?.code) return { ok: false, status: error.status || 502, error: error.message };
+        return { ok: false, status: 500, error: 'Failed to summarize article' };
+      })
+      .finally(() => summaryInflight.delete(articleId));
+    summaryInflight.set(articleId, shared);
+  }
+  return summaryInflight.get(articleId);
+}
 
 // Helper function to parse structured summary
 function parseStructuredSummary(summary) {
