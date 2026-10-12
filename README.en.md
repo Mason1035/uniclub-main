@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="README.md">简体中文</a> · <strong>English</strong> · Русский (planned) · हिन्दी (planned) · 繁體中文（待翻譯）
+  <a href="README.md">简体中文</a> · <strong>English</strong> · Русский (planned) · <a href="README.hi.md">हिन्दी</a> · 繁體中文（待翻譯）
 </p>
 
 <p align="center">
@@ -647,7 +647,7 @@ The Simplified Chinese README is the source for translations. Completed versions
 | 简体中文 (Simplified Chinese) | Available: [README.md](README.md) |
 | English | Available: [README.en.md](README.en.md) |
 | Русский (Russian) | Planned |
-| हिन्दी (Hindi) | Planned |
+| हिन्दी (Hindi) | Available: [README.hi.md](README.hi.md) |
 | 繁體中文 (Traditional Chinese) | Planned |
 
 Translations preserve the same features, commands, limitations, and links; they do not add capabilities absent from the Chinese version. Additional languages can be added as needed.
