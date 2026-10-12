@@ -1,5 +1,5 @@
 <p align="center">
-  <strong>简体中文</strong> · <a href="README.en.md">English</a> · Русский（待翻译） · <a href="README.hi.md">हिन्दी</a> · 繁體中文（待翻譯）
+  <strong>简体中文</strong> · <a href="README.en.md">English</a> · <a href="README.ru.md">Русский</a> · <a href="README.hi.md">हिन्दी</a> · 繁體中文（待翻譯）
 </p>
 
 <p align="center">
@@ -641,13 +641,13 @@ uniclub-main/
 
 ## 多语言 README
 
-简体中文版作为后续翻译基准，英文版与印地语版已完成。语言导航只链接已存在的译文；其他计划版本暂不启用链接。
+简体中文版作为后续翻译基准，英文版、印地语版与俄语版已完成。语言导航只链接已存在的译文；其他计划版本暂不启用链接。
 
 | 语言 | 状态 |
 | --- | --- |
 | 简体中文 | 已完成：[README.md](README.md) |
 | English | 已完成：[README.en.md](README.en.md) |
-| Русский（俄语） | 待翻译 |
+| Русский（俄语） | 已完成：[README.ru.md](README.ru.md) |
 | हिन्दी（印地语） | 已完成：[README.hi.md](README.hi.md) |
 | 繁體中文 | 待翻译 |
 

@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="README.md">简体中文</a> · <a href="README.en.md">English</a> · Русский (planned) · <strong>हिन्दी</strong> · 繁體中文（待翻譯）
+  <a href="README.md">简体中文</a> · <a href="README.en.md">English</a> · <a href="README.ru.md">Русский</a> · <strong>हिन्दी</strong> · 繁體中文（待翻譯）
 </p>
 
 <p align="center">
@@ -646,7 +646,7 @@ uniclub-main/
 | --- | --- |
 | 简体中文 (सरलीकृत चीनी) | उपलब्ध: [README.md](README.md) |
 | English (अंग्रेज़ी) | उपलब्ध: [README.en.md](README.en.md) |
-| Русский (रूसी) | नियोजित |
+| Русский (रूसी) | उपलब्ध: [README.ru.md](README.ru.md) |
 | हिन्दी | उपलब्ध: [README.hi.md](README.hi.md) |
 | 繁體中文 (पारंपरिक चीनी) | नियोजित |
 
