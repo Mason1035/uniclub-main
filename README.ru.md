@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="README.md">简体中文</a> · <a href="README.en.md">English</a> · <strong>Русский</strong> · <a href="README.hi.md">हिन्दी</a> · 繁體中文（待翻譯）
+  <a href="README.md">简体中文</a> · <a href="README.en.md">English</a> · <strong>Русский</strong> · <a href="README.hi.md">हिन्दी</a> · <a href="README.ja.md">日本語</a> · <a href="README.zh-TW.md">繁體中文</a>
 </p>
 
 <p align="center">
@@ -648,7 +648,8 @@ README на упрощённом китайском служит исходни�
 | English (английский) | Готово: [README.en.md](README.en.md) |
 | Русский | Готово: [README.ru.md](README.ru.md) |
 | हिन्दी (хинди) | Готово: [README.hi.md](README.hi.md) |
-| 繁體中文 (традиционный китайский) | Запланировано |
+| 日本語 (японский) | Готово: [README.ja.md](README.ja.md) |
+| 繁體中文 (традиционный китайский) | Готово: [README.zh-TW.md](README.zh-TW.md) |
 
 Переводы сохраняют те же функции, команды, ограничения и ссылки; возможности, которых нет в китайском оригинале, не добавляются. Другие языки можно включать по мере необходимости.
 
