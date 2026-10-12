@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import Illustration, { type IllustrationKind } from '../Illustration';
+import CardCutBorder from './CardCutBorder';
 
 type Props = {
   kind: IllustrationKind;
@@ -17,6 +18,7 @@ export default function HomeSectionCard({ kind, title, titleTone = 'editorial', 
   const headingId = `home-${kind}-title`;
   return (
     <section className={`home-card home-card--${kind}${wide ? ' home-card--wide' : ''} home-section`} aria-labelledby={headingId}>
+      <CardCutBorder kind={kind} />
       <div className="home-card__art" aria-hidden="true">
         <Illustration kind={kind} size="large"/>
       </div>

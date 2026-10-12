@@ -138,3 +138,99 @@
   .home-card, .home-card__link span { transition: none; }
   .home-card__link:hover span { transform: none; }
 }
+
+/* ==== Cut-glass hover: frosted material, interior facets, chamfered outline (v2) ==== */
+.home-card { transition: transform 300ms cubic-bezier(.22, 1, .36, 1), border-color 350ms ease, box-shadow 350ms ease, background-color 350ms ease; }
+.home-card__content, .home-card__art { position: relative; z-index: 2; }
+
+/* Frosted glass material (::before). No clip-path here: Chromium renders clip + backdrop-filter on one element as a black box. */
+.home-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(105deg, transparent 40%, rgb(255 255 255 / .45) 50%, transparent 60%),
+    linear-gradient(var(--fa, 115deg), rgb(148 163 255 / .20) 16%, rgb(148 163 255 / .06) 40%, transparent 58%),
+    linear-gradient(rgb(240 244 255 / .33), rgb(235 240 254 / .27));
+  background-size: 200% 100%, 100% 100%, 100% 100%;
+  background-position: -60% 0, 0 0, 0 0;
+  background-repeat: no-repeat;
+  -webkit-backdrop-filter: blur(20px) saturate(1.45);
+  backdrop-filter: blur(20px) saturate(1.45);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .65), inset 0 0 0 1px rgb(255 255 255 / .22);
+  opacity: 0;
+  transition: opacity 350ms ease;
+}
+
+/* Interior facets (::after): light plane, polished crease, prism sliver. */
+.home-card::after {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--fa, 115deg), rgb(255 255 255 / .23), rgb(255 255 255 / .04) 36%, transparent 54%),
+    linear-gradient(var(--fa, 115deg), transparent 53%, rgb(255 255 255 / .9) 54%, rgb(255 255 255 / .12) 55.5%, transparent 57%),
+    linear-gradient(var(--fa, 115deg), transparent 60%, rgb(148 163 255 / .21) 64%, rgb(148 163 255 / .03) 70%, transparent 74%);
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+
+/* Per-card facet angle and asymmetric chamfer sizes; top-right is the signature cut. */
+.home-card--announcement { --fa: 100deg; --ctl: 36px; --ctr: 52px; --cbr: 40px; --cbl: 12px; }
+.home-card--activity     { --fa: 65deg;  --ctl: 22px; --ctr: 32px; --cbr: 26px; --cbl: 10px; }
+.home-card--resource     { --fa: 115deg; --ctl: 26px; --ctr: 38px; --cbr: 30px; --cbl: 8px; }
+.home-card--news         { --fa: 125deg; --ctl: 38px; --ctr: 26px; --cbr: 10px; --cbl: 30px; }
+.home-card--pulse        { --fa: 108deg; --ctl: 30px; --ctr: 44px; --cbr: 34px; --cbl: 10px; }
+.home-card--gallery      { --fa: 72deg;  --ctl: 24px; --ctr: 34px; --cbr: 28px; --cbl: 8px; }
+
+@media (hover: hover) {
+  .home-card:hover {
+    transform: translateY(-7px);
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: 0 26px 52px -16px rgb(31 38 60 / .28);
+    clip-path: polygon(var(--ctl, 26px) 0, calc(100% - var(--ctr, 38px)) 0, 100% var(--ctr, 38px), 100% calc(100% - var(--cbr, 30px)), calc(100% - var(--cbr, 30px)) 100%, var(--cbl, 8px) 100%, 0 calc(100% - var(--cbl, 8px)), 0 var(--ctl, 26px));
+  }
+  .home-card:hover::before, .home-card:hover::after, .home-card:hover .home-card__cut { opacity: 1; }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .home-card:hover::before { animation: home-glass-glint 2.4s ease-in-out .2s infinite; }
+  .home-card:hover .home-card__cut-glint { animation: home-cut-run 3.2s linear .3s infinite; }
+}
+
+@keyframes home-glass-glint {
+  0% { background-position: -60% 0, 0 0, 0 0; }
+  55%, 100% { background-position: 160% 0, 0 0, 0 0; }
+}
+@keyframes home-cut-run { to { stroke-dashoffset: -320; } }
+
+/* Precision-cut border (SVG from CardCutBorder): outline polish line, facet ticks, refraction, traveling glint. */
+.home-card__cut {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 3;
+  overflow: visible;
+  opacity: 0;
+  transition: opacity 380ms ease;
+}
+.home-card__cut-under { fill: none; stroke: rgb(31 38 60 / .14); stroke-width: 1; transform: translateY(1.2px); vector-effect: non-scaling-stroke; }
+.home-card__cut-polish { fill: none; stroke: rgb(255 255 255 / .85); stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+.home-card__cut-tick { stroke: rgb(255 255 255 / .5); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.home-card__cut-tick--dim { stroke: rgb(255 255 255 / .4); }
+.home-card__cut-refract { stroke: rgb(148 163 255 / .55); stroke-width: 2; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.home-card__cut-refract--dim { stroke: rgb(148 163 255 / .45); }
+.home-card__cut-glint { fill: none; stroke: rgb(255 255 255 / .9); stroke-width: 2; stroke-linecap: round; vector-effect: non-scaling-stroke; stroke-dasharray: 18 320; }
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .home-card::before { background: linear-gradient(rgb(246 248 255 / .76), rgb(240 244 254 / .68)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-card::before, .home-card::after, .home-card__cut { transition: none; }
+  .home-card:hover { transform: none; }
+}
