@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="README.md">简体中文</a> · <a href="README.en.md">English</a> · <a href="README.ru.md">Русский</a> · <a href="README.hi.md">हिन्दी</a> · <strong>日本語</strong> · <a href="README.zh-TW.md">繁體中文</a>
+  <a href="README.md">简体中文</a> · <a href="README.en.md">English</a> · <a href="README.ru.md">Русский</a> · <a href="README.hi.md">हिन्दी</a> · <strong>日本語</strong> · <a href="README.zh-TW.md">繁體中文</a> · <a href="README.es.md">Español</a>
 </p>
 
 <p align="center">
@@ -650,6 +650,7 @@ uniclub-main/
 | हिन्दी（ヒンディー語） | 利用可能: [README.hi.md](README.hi.md) |
 | 日本語 | 利用可能: [README.ja.md](README.ja.md) |
 | 繁體中文（繁体字中国語） | 利用可能: [README.zh-TW.md](README.zh-TW.md) |
+| Español（スペイン語） | 利用可能: [README.es.md](README.es.md) |
 
 翻訳版も同じ機能、コマンド、制限、リンクを保持し、中国語版にない機能は追加しません。必要に応じて言語を追加できます。
 

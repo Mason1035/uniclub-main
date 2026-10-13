@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="README.md">简体中文</a> · <a href="README.en.md">English</a> · <a href="README.ru.md">Русский</a> · <a href="README.hi.md">हिन्दी</a> · <a href="README.ja.md">日本語</a> · <strong>繁體中文</strong>
+  <a href="README.md">简体中文</a> · <a href="README.en.md">English</a> · <a href="README.ru.md">Русский</a> · <a href="README.hi.md">हिन्दी</a> · <a href="README.ja.md">日本語</a> · <strong>繁體中文</strong> · <a href="README.es.md">Español</a>
 </p>
 
 <p align="center">
@@ -641,7 +641,7 @@ uniclub-main/
 
 ## 多語言 README
 
-簡體中文版作為後續翻譯的基準，英文版、俄文版、印地語版、日文版與繁體中文版均已完成。語言導覽連結至各版本的 README。
+簡體中文版作為後續翻譯的基準，英文版、俄文版、印地語版、日文版、繁體中文版與西班牙語版均已完成。語言導覽連結至各版本的 README。
 
 | 語言 | 狀態 |
 | --- | --- |
@@ -651,6 +651,7 @@ uniclub-main/
 | हिन्दी（印地語） | 已完成：[README.hi.md](README.hi.md) |
 | 日本語（日文） | 已完成：[README.ja.md](README.ja.md) |
 | 繁體中文 | 已完成：[README.zh-TW.md](README.zh-TW.md) |
+| Español（西班牙語） | 已完成：[README.es.md](README.es.md) |
 
 後續譯文應保持相同的功能、指令、限制與連結，不加入簡體中文版未描述的功能。完成實際檔案後再啟用語言切換連結；其他語言可依需求繼續擴充。
 

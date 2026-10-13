@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="README.md">简体中文</a> · <strong>English</strong> · <a href="README.ru.md">Русский</a> · <a href="README.hi.md">हिन्दी</a> · <a href="README.ja.md">日本語</a> · <a href="README.zh-TW.md">繁體中文</a>
+  <a href="README.md">简体中文</a> · <strong>English</strong> · <a href="README.ru.md">Русский</a> · <a href="README.hi.md">हिन्दी</a> · <a href="README.ja.md">日本語</a> · <a href="README.zh-TW.md">繁體中文</a> · <a href="README.es.md">Español</a>
 </p>
 
 <p align="center">
@@ -650,6 +650,7 @@ The Simplified Chinese README is the source for translations. Completed versions
 | हिन्दी (Hindi) | Available: [README.hi.md](README.hi.md) |
 | 日本語 (Japanese) | Available: [README.ja.md](README.ja.md) |
 | 繁體中文 (Traditional Chinese) | Available: [README.zh-TW.md](README.zh-TW.md) |
+| Español (Spanish) | Available: [README.es.md](README.es.md) |
 
 Translations preserve the same features, commands, limitations, and links; they do not add capabilities absent from the Chinese version. Additional languages can be added as needed.
 
