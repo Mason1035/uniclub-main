@@ -6,7 +6,8 @@
 import React from 'react';
 import { Button } from '../../components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../../components/ui/dialog';
-import { AlertCircle, Loader2, X } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import LiquidGlass from '../../components/LiquidGlass';
 
 /* ---------------------------------------------------------------- */
 /* Layout helpers                                                    */
@@ -33,7 +34,7 @@ export const Panel: React.FC<{
   children: React.ReactNode;
   padded?: boolean;
 }> = ({ title, description, actions, children, padded = true }) => (
-  <section className="rounded-sm border border-border bg-card  overflow-hidden">
+  <LiquidGlass as="section" density="workspace" className="admin-panel overflow-hidden">
     {(title || actions) && (
       <header className="flex flex-col gap-3 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -44,7 +45,7 @@ export const Panel: React.FC<{
       </header>
     )}
     <div className={padded ? 'p-5' : ''}>{children}</div>
-  </section>
+  </LiquidGlass>
 );
 
 export const StatCard: React.FC<{
@@ -53,7 +54,7 @@ export const StatCard: React.FC<{
   value: number | string;
   hint?: string;
 }> = ({ icon, label, value, hint }) => (
-  <div className="rounded-sm border border-border bg-card p-5  transition-colors hover:border-primary/40">
+  <LiquidGlass as="div" density="workspace" optics={false} className="admin-stat-card p-5 transition-colors hover:border-primary/40">
     <div className="flex items-start justify-between">
       <div>
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
@@ -64,7 +65,7 @@ export const StatCard: React.FC<{
         {icon}
       </span>
     </div>
-  </div>
+  </LiquidGlass>
 );
 
 /* ---------------------------------------------------------------- */

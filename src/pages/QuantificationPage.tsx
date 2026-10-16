@@ -1,3 +1,4 @@
+import LiquidGlass from '../components/LiquidGlass';
 import PageShell from '../components/PageShell';
 import { useEffect, useRef, useState, type DragEvent } from 'react';
 import { Link } from 'react-router-dom';
@@ -145,8 +146,8 @@ export default function QuantificationPage() {
         setSelectedId(e.target.value); setFile(null); setPhase('idle'); setError(''); setProgress(null); setConfirmId(''); session.current = null; fileValidation.current++;
       }}>{collections.data?.collections.map(c => <option key={c.id} value={c.id}>{c.title} · {collectionStatusLabel[collectionAvailability(c)]}</option>)}</select></label></div>
       <ContentState loading={mine.isPending} error={mine.error} onRetry={() => void mine.refetch()}>
-        {collection && <div className="quant-workspace"><section className="quant-instructions"><p className="eyebrow">本期材料收集</p><h2>{collection.title}</h2><p className="quant-description">{collection.description || '请按班级要求整理材料，在截止时间前提交 ZIP 压缩包。'}</p><dl className="quant-facts"><dt>收集状态</dt><dd>{collectionStatusLabel[status]}</dd><dt>开始时间</dt><dd>{collection.startAt ? quantificationDate(collection.startAt) : '开放后即可提交'}</dd><dt>截止时间</dt><dd>{collection.deadline ? quantificationDate(collection.deadline) : '本期未设置截止时间'}</dd><dt>文件要求</dt><dd>ZIP 压缩包，最大 500MB</dd><dt>文件命名</dt><dd>建议使用“学号_姓名.zip”</dd></dl><p className="quant-note mt-6">{collections.data?.storage.provider === 'scf' ? '材料与当前登录账号关联，按原文件名保存到上传目录。同名文件不会覆盖，请先修改文件名；传输完成但确认失败时，可重新确认，无需重复上传。' : '材料与当前登录账号关联。新材料确认成功后才替换原提交；上传失败不会影响已提交材料。'}</p></section>
-        <section className="quant-desk" aria-labelledby="quant-submit-heading"><h2 id="quant-submit-heading">我的提交</h2>
+        {collection && <div className="quant-workspace"><LiquidGlass as="section" density="workspace" className="quant-instructions"><p className="eyebrow">本期材料收集</p><h2>{collection.title}</h2><p className="quant-description">{collection.description || '请按班级要求整理材料，在截止时间前提交 ZIP 压缩包。'}</p><dl className="quant-facts"><dt>收集状态</dt><dd>{collectionStatusLabel[status]}</dd><dt>开始时间</dt><dd>{collection.startAt ? quantificationDate(collection.startAt) : '开放后即可提交'}</dd><dt>截止时间</dt><dd>{collection.deadline ? quantificationDate(collection.deadline) : '本期未设置截止时间'}</dd><dt>文件要求</dt><dd>ZIP 压缩包，最大 500MB</dd><dt>文件命名</dt><dd>建议使用“学号_姓名.zip”</dd></dl><p className="quant-note mt-6">{collections.data?.storage.provider === 'scf' ? '材料与当前登录账号关联，按原文件名保存到上传目录。同名文件不会覆盖，请先修改文件名；传输完成但确认失败时，可重新确认，无需重复上传。' : '材料与当前登录账号关联。新材料确认成功后才替换原提交；上传失败不会影响已提交材料。'}</p></LiquidGlass>
+        <LiquidGlass as="section" density="workspace" className="quant-desk" aria-labelledby="quant-submit-heading"><h2 id="quant-submit-heading">我的提交</h2>
           {mine.data?.submission ? <div className="quant-receipt"><p className="quant-receipt-title"><CheckCircle2 size={18} aria-hidden="true"/>已提交 · 第 {mine.data.submission.version} 次</p><p className="quant-file-name">{mine.data.submission.originalFilename}</p><p className="text-sm text-muted-foreground">{quantificationBytes(mine.data.submission.fileSize)} · {quantificationDate(mine.data.submission.submittedAt)}</p><button type="button" className="ed-button secondary mt-4" onClick={() => void downloadMine()} disabled={downloading}><Download size={16} aria-hidden="true"/>{downloading ? '正在获取链接…' : '下载已提交材料'}</button></div> : <p className="text-sm text-muted-foreground mb-6">本期尚未提交材料。</p>}
           {!collections.data?.storage.configured && <p className="quant-note warning mb-4">文件上传尚未开通，请联系管理员配置对象存储。</p>}
           {status !== 'open' && <p className="quant-note mb-4">{status === 'scheduled' ? '收集尚未开始，请在开始时间后提交。' : '本期已截止，已提交材料仍可查看和下载。'}</p>}
@@ -159,7 +160,7 @@ export default function QuantificationPage() {
           {phase === 'success' && <p role="status" className="quant-success">材料已确认，当前有效提交已更新。</p>}
           {phase === 'cancelled' && <p role="status" className="text-sm text-muted-foreground mt-4">已取消本次上传，原提交保持不变。</p>}
           <div className="quant-actions"><button className="ed-button" type="button" disabled={!file || !canUpload || busy} onClick={() => void (transferredPending ? retryConfirm(pendingId) : upload())}>{transferredPending ? '重新确认提交' : phase === 'preparing' ? '正在准备上传…' : phase === 'uploading' ? '正在上传…' : phase === 'confirming' ? '正在确认…' : phase === 'error' && file ? '重试上传' : mine.data?.submission ? '上传并重新提交' : '上传并提交'}</button>{phase === 'uploading' && <button className="ed-button secondary" type="button" onClick={() => void cancel()}>取消上传</button>}{pendingId && !transferredPending && canUpload && !busy && <button className="ed-button secondary" type="button" onClick={() => void retryConfirm(pendingId)}>重新确认提交</button>}</div>
-        </section></div>}
+        </LiquidGlass></div>}
       </ContentState>
     </ContentState><QuantificationDownloads result={download} onClose={() => setDownload(null)}/>
   </PageShell>;

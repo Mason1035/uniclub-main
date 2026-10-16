@@ -212,3 +212,7 @@ python scripts/build-fonts.py /path/to/official-font-sources --metadata-only
 - 对代表字符（含「嗨、决、私、川、师、跳」、`–`、`…`、`喆祎彧玥龘`、Signature 与 Latin 数字）在 min / 中间 / max 字重做 **109 次源与衍生轮廓及 advance 比较**，全部一致；Latin core 保留真实 `tnum`。
 - 隔离 headless Chrome 字体夹具验证严格 self CSP、已先加载 stylesheet 的 loader 场景、全部 199 face 注册及动态中文/扩展 Latin 字形。CDP 明确禁用页面 JS 时，media 仍为 print、页面脚本未执行，noscript stylesheet 仍注册 199 face 并请求相应 tail。没有访问业务 API 或写入业务记录。
 - 这部分验证不替代正式首页 cold network、CLS/LCP 或成员态场景复测；扩展 face 注册前的动态字形可能短暂显示系统 fallback。Windows / iOS 实机仍未验证。
+
+## About 展示字体
+
+About 英文展示字使用现有 Space Grotesk Regular，文件位于 `src/pages/about/assets/SpaceGrotesk-Regular.woff2`，通过 CSS family `ClassHub About Space` 引用。原始字体按 SIL Open Font License 1.1 发布，版权与许可全文保留在 `public/fonts/classhub/SpaceGrotesk-OFL.txt`；其他页面继续使用上述正式字体清单。

@@ -49,10 +49,13 @@ export default function BrandPreloader() {
       // would change the containing block of fixed navigation or modal controls.
       const main = root.querySelector('main');
       const home = main?.querySelector('.home-page');
+      const about = main?.querySelector('.about-experience');
       const page = main?.children.length === 1 && main.firstElementChild?.tagName === 'DIV'
         ? main.firstElementChild : main;
       const candidates = home
         ? Array.from(home.querySelectorAll<HTMLElement>(':scope > .hero > *, :scope > .home-card-grid'))
+        // About 的滚动容器与固定背景不参与首屏位移，只动画可见标题。
+        : about ? Array.from(about.querySelectorAll<HTMLElement>('.about-intro-meta > *, .about-intro-title'))
         : Array.from(page?.children || []);
       const content = candidates.filter(isFirstFoldVisible).slice(0, 6);
       const slideAt = timing.logoExitMs / 1000;

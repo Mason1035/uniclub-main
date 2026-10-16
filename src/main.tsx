@@ -7,6 +7,9 @@ import './styles/editorial.css'
 import './styles/site-system.css'
 import './styles/homepage.css'
 import './styles/interaction.css'
+import './styles/home-stars.css'
+import './styles/site-glass.css'
+import './styles/appearance-transition.css'
 
 // Service worker removed to fix loading issues
 

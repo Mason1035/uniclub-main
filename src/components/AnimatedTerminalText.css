@@ -29,6 +29,11 @@
   animation: terminal-cursor-blink 900ms ease-in-out infinite;
 }
 
+/* Preserve the same blink frame in both views of the theme cross-fade. */
+:root[data-appearance-motion='paused'] .terminal-text .terminal-text__visual > .terminal-text__cursor {
+  animation-play-state: paused;
+}
+
 @keyframes terminal-cursor-blink {
   0%, 35%, 100% { opacity: 1; }
   55%, 80% { opacity: .12; }

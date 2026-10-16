@@ -32,7 +32,9 @@ test('public build contains real guest HTML and one coherent metadata set withou
     const html = read(page.file);
     const head = html.split('</head>')[0];
     const body = html.split('<div id="root">')[1];
-    assert.ok(body?.includes('masthead-brand')); assert.ok(body?.includes('footer-links'));
+    if (page.path === '/about') assert.doesNotMatch(body, /masthead-brand/);
+    else assert.ok(body?.includes('masthead-brand'));
+    assert.ok(body?.includes('footer-links'));
     assert.equal((head.match(/rel="canonical"/g) || []).length, 1);
     assert.ok(head.includes(`href="${site.origin + page.path}"`));
     assert.equal((head.match(/name="description"/g) || []).length, 1);

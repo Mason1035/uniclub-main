@@ -1,3 +1,5 @@
+import AppearanceToggle from './AppearanceToggle';
+import { useTheme } from '../context/themeContextState';
 import { useRef } from 'react';
 import { useHeaderMorph } from '../hooks/useHeaderMorph';
 import { useLocation, Link } from 'react-router-dom';
@@ -13,6 +15,7 @@ export default function SiteHeader({ onSearch, onProfile, name, isAuthenticated 
   isAuthenticated: boolean;
 }) {
   const { pathname } = useLocation();
+  const { isDarkMode } = useTheme();
   const scope = useRef<HTMLDivElement>(null);
   useHeaderMorph(scope);
 
@@ -30,8 +33,12 @@ export default function SiteHeader({ onSearch, onProfile, name, isAuthenticated 
                 fetchPriority="high"
                 decoding="async"
               />
+              {isDarkMode && <span className="masthead-logo-contrast" aria-hidden="true">
+                <BrandLogo className="masthead-logo" alt="" sizes="(max-width: 767px) 184px, (max-width: 1090px) 240px, (max-width: 1309px) 22vw, 288px" decoding="async"/>
+              </span>}
             </Link>
             <div className="masthead-actions">
+              <AppearanceToggle/>
               {isAuthenticated ? <>
               <button
                 type="button"

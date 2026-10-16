@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
+import LiquidGlass from '../LiquidGlass';
 import { Link } from 'react-router-dom';
 import Illustration, { type IllustrationKind } from '../Illustration';
-import CardCutBorder from './CardCutBorder';
 
 type Props = {
   kind: IllustrationKind;
@@ -17,8 +17,7 @@ type Props = {
 export default function HomeSectionCard({ kind, title, titleTone = 'editorial', to, linkLabel, wide, children }: Props) {
   const headingId = `home-${kind}-title`;
   return (
-    <section className={`home-card home-card--${kind}${wide ? ' home-card--wide' : ''} home-section`} aria-labelledby={headingId}>
-      <CardCutBorder kind={kind} />
+    <LiquidGlass as="section" className={`home-card home-card--${kind}${wide ? ' home-card--wide' : ''} home-section`} aria-labelledby={headingId}>
       <div className="home-card__art" aria-hidden="true">
         <Illustration kind={kind} size="large"/>
       </div>
@@ -31,6 +30,6 @@ export default function HomeSectionCard({ kind, title, titleTone = 'editorial', 
         </div>
         <div className="home-card__body">{children}</div>
       </div>
-    </section>
+    </LiquidGlass>
   );
 }

@@ -199,6 +199,7 @@ app.use('/api/curation', curationRouter);
 console.log('✅ Curation router mounted at /api/curation');
 
 app.use('/api/resources', resourceRouter);
+app.use('/api/resource-quick-links', require('./routes/resourceQuickLinksRouter'));
 console.log('✅ Resource router mounted at /api/resources');
 
 app.use('/api/notifications', notificationRouter);

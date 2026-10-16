@@ -27,7 +27,7 @@ export function renderPublic(path: string) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const html = renderToString(<StaticRouter location={path}>
     <QueryClientProvider client={client}>
-      <ThemeContext.Provider value={{ isDarkMode: false }}>
+      <ThemeContext.Provider value={{ isDarkMode: false, toggleDarkMode: noop }}>
         <AuthContext.Provider value={{ user: null, loading: false, error: null, login: async () => {}, logout: async () => {}, getAuthHeaders: () => ({}) }}>
           <UserContext.Provider value={{ user: guest, authUser: null, isAuthenticated: false, isLoading: false, setUser: noop, setAuthUser: noop, updateProfileImage: noop, login: noop, logout: noop }}>
             <PopupContext.Provider value={{ showUserProfile: false, openUserProfile: noop, closeUserProfile: noop }}>

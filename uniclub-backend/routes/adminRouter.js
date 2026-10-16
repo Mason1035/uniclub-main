@@ -23,6 +23,7 @@ const { escapeRegex, paginationOf, paged } = require('./admin/_shared');
 router.use(requireAdmin);
 router.use('/quantification', require('./quantificationRouter').adminRouter);
 router.use('/fees', require('./feesRouter').adminRouter);
+router.use('/resource-quick-links', require('./resourceQuickLinksRouter').adminRouter);
 
 // 其余管理员模块拆到 routes/admin/ 下，挂载点仍是 /api/admin/*
 router.use('/announcements', require('./admin/announcements'));

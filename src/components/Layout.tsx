@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/userContextState';
 import { usePopup } from '../context/popupContextState';
@@ -9,6 +9,8 @@ import ContentState from './ContentState';
 import { useAuth } from '../context/authContextState';
 import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
 import { SearchContext } from '../context/searchContextState';
+import { useTheme } from '../context/themeContextState';
+import AppearanceToggle from './AppearanceToggle';
 
 const SearchDialog = lazy(() => import('./SearchDialog'));
 const UserProfile = lazy(() => import('./UserProfile'));
@@ -39,6 +41,8 @@ export default function Layout({ children, notFound = false }: { children: React
   const checking = isLoading || auth.loading;
   const member = !checking && isAuthenticated && !!auth.user;
   const normalizedPath = pathname.replace(/\/+$/, '').toLowerCase() || '/';
+  const immersiveAbout = normalizedPath === '/about';
+  const { isDarkMode: starry } = useTheme();
   const publicPage = notFound || normalizedPath === '/' || normalizedPath === '/privacy' || normalizedPath === '/about';
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchActivated, setSearchActivated] = useState(false);
@@ -65,13 +69,6 @@ export default function Layout({ children, notFound = false }: { children: React
   // Keep each dialog mounted after first use so its close/reset/focus lifecycle runs.
   useEffect(() => { if (searchOpen) setSearchActivated(true); }, [searchOpen]);
   useEffect(() => { if (showUserProfile) setProfileActivated(true); }, [showUserProfile]);
-  // Keep the accepted home presentation; shared neutral tokens serve all routes.
-  useLayoutEffect(() => {
-    if (pathname !== '/') return;
-    const root = document.documentElement;
-    root.setAttribute('data-classhub-page', 'home');
-    return () => root.removeAttribute('data-classhub-page');
-  }, [pathname]);
   useEffect(() => {
     const handle = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k' && member) {
@@ -87,11 +84,18 @@ export default function Layout({ children, notFound = false }: { children: React
   if (normalizedPath === '/auth') return <>{children}</>;
   if (!publicPage && checking) return <div className="site-container py-12"><ContentState loading/></div>;
   if (!publicPage && !member) return <Navigate to="/auth" replace state={{ from: pathname + search + hash }}/>;
-  return <SearchContext.Provider value={{ openSearch }}><div className="site-shell">
-    <a className="skip-link" href="#main-content">跳到正文</a>
-    <SiteHeader isAuthenticated={member} name={member ? user.displayName || user.name : ''} onSearch={openSearch} onProfile={openProfile}/>
+  const pageContent = <>
     <main id="main-content" tabIndex={-1} className="site-main site-container">{children}</main>
     <SiteFooter/>
+  </>;
+  return <SearchContext.Provider value={{ openSearch }}><div className={`site-shell${immersiveAbout ? ' site-shell--about' : ''}${starry ? ' site-shell--starry' : ''}`}>
+    {immersiveAbout && !starry && <div id="about-background-host" aria-hidden="true"/>}
+    {immersiveAbout && <AppearanceToggle className="appearance-toggle--floating"/>}
+    <a className="skip-link" href="#main-content">跳到正文</a>
+    {!immersiveAbout && <SiteHeader isAuthenticated={member} name={member ? user.displayName || user.name : ''} onSearch={openSearch} onProfile={openProfile}/>}
+    {immersiveAbout ? <div id="about-scroll-wrapper"><div id="about-scroll-content">
+      {pageContent}
+    </div></div> : pageContent}
     <BottomNavigation onNavigate={closeUserProfile}/>
     {member && <>
       {(searchOpen || searchActivated) && <Suspense fallback={searchOpen ? <ModalLoading label="搜索" onClose={() => setSearchOpen(false)} restoreFocusRef={searchOpener} isOpenRef={searchOpenRef}/> : null}>

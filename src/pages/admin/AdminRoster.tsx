@@ -169,17 +169,17 @@ const AdminRoster: React.FC = () => {
 
       {summary && (
         <div className="mb-6 grid gap-4 sm:grid-cols-3">
-          <div className="rounded-sm border border-border bg-card p-5">
+          <div className="glass-material glass-material--workspace p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">名单总数</p>
             <p className="mt-2 text-3xl font-semibold tabular-nums text-foreground">{summary.total}</p>
           </div>
-          <div className="rounded-sm border border-border bg-card p-5">
+          <div className="glass-material glass-material--workspace p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">账号已创建</p>
             <p className="mt-2 text-3xl font-semibold tabular-nums text-primary">
               {summary.registered}
             </p>
           </div>
-          <div className="rounded-sm border border-border bg-card p-5">
+          <div className="glass-material glass-material--workspace p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">待开通</p>
             <p className="mt-2 text-3xl font-semibold tabular-nums text-foreground">{pendingCount}</p>
           </div>

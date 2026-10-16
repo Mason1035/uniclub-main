@@ -3,7 +3,7 @@
  */
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../../components/ui/dialog';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import {
   Bell,
   Bot,
@@ -19,11 +19,12 @@ import {
   Newspaper,
   Users,
   Wallet,
-  X,
 } from 'lucide-react';
 import { clearSession } from './adminApi';
 import { useAdminSession } from './adminSession';
 import BrandLogo from '../../components/BrandLogo';
+import AppearanceToggle from '../../components/AppearanceToggle';
+import { useTheme } from '../../context/themeContextState';
 
 interface NavItem {
   to: string;
@@ -46,15 +47,19 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/admin/ai', label: 'AI 助手', icon: <Bot className="h-4 w-4" /> },
 ];
 
-const Brand: React.FC = () => (
-  <div className="flex items-center px-2">
-    <BrandLogo
-      alt="ClassHub"
-      sizes="208px"
-      className="block h-auto w-full max-w-[208px]"
-    />
-  </div>
-);
+const Brand: React.FC = () => {
+  const { isDarkMode } = useTheme();
+  return (
+    <div className="flex items-center px-2">
+      <span className="admin-brand relative block w-full max-w-[208px]">
+        <BrandLogo alt="ClassHub" sizes="208px" className="block h-auto w-full" />
+        {isDarkMode && <span className="masthead-logo-contrast" aria-hidden="true">
+          <BrandLogo alt="" sizes="208px" className="block h-auto w-full" />
+        </span>}
+      </span>
+    </div>
+  );
+};
 
 const SidebarNav: React.FC<{ onNavigate?: () => void }> = ({ onNavigate }) => (
   <nav className="space-y-1">
@@ -81,7 +86,6 @@ const SidebarNav: React.FC<{ onNavigate?: () => void }> = ({ onNavigate }) => (
 
 const AdminLayout: React.FC = () => {
   const user = useAdminSession();
-  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleLogout = () => {
@@ -90,9 +94,9 @@ const AdminLayout: React.FC = () => {
   };
 
   return (
-    <div className="admin-workspace min-h-screen bg-background">
+    <div className="admin-workspace min-h-screen">
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-card px-3 py-5 lg:flex">
+      <aside className="admin-sidebar fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-card px-3 py-5 lg:flex">
         <Brand />
         <div className="mt-7 flex-1 overflow-y-auto">
           <SidebarNav />
@@ -112,7 +116,7 @@ const AdminLayout: React.FC = () => {
       <Dialog open={mobileOpen} onOpenChange={setMobileOpen}><DialogContent className="admin-menu"><DialogTitle>管理导航</DialogTitle><DialogDescription>选择需要管理的班级内容。</DialogDescription><div className="mt-4"><SidebarNav onNavigate={() => setMobileOpen(false)} /></div></DialogContent></Dialog>
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-border bg-card/95 px-4  sm:px-6">
+        <header className="admin-topbar sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-border bg-card/95 px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -128,15 +132,16 @@ const AdminLayout: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <p className="text-xs font-medium text-foreground">{user?.name || '管理员'}</p>
-              <p className="text-[11px] text-muted-foreground">{user?.email}</p>
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <AppearanceToggle />
+            <div className="min-w-0 max-w-[8rem] text-right sm:max-w-none">
+              <p className="truncate text-xs font-medium text-foreground">{user?.name || '管理员'}</p>
+              <p className="truncate text-[11px] text-muted-foreground">{user?.email}</p>
             </div>
             <button
               type="button"
               onClick={handleLogout}
-              className="flex items-center gap-2 rounded-sm border border-border px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent/10 hover:text-foreground"
+              className="flex shrink-0 items-center gap-2 rounded-sm border border-border px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent/10 hover:text-foreground"
             >
               <LogOut className="h-3.5 w-3.5" />
               退出

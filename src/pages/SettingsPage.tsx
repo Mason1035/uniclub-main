@@ -1,3 +1,5 @@
+import LiquidGlass from '../components/LiquidGlass';
+import { useTheme } from '../context/themeContextState';
 import PageShell from '../components/PageShell';
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -25,11 +27,12 @@ const NOTIFICATIONS: [keyof NotificationPreferences, string, string][] = [
   ['news', '新闻更新通知', '接收新闻相关消息，包括文章评论提醒。'],
 ];
 function Section({ id, number, title, children }: { id: string; number: string; title: string; children: ReactNode }) {
-  return <section id={id} className="account-section" aria-labelledby={`${id}-title`}><div className="account-section-heading"><span className="account-section-number" aria-hidden="true">{number}</span><h2 id={`${id}-title`}>{title}</h2></div>{children}</section>;
+  return <LiquidGlass as="section" density="workspace" id={id} className="account-section" aria-labelledby={`${id}-title`}><div className="account-section-heading"><span className="account-section-number" aria-hidden="true">{number}</span><h2 id={`${id}-title`}>{title}</h2></div>{children}</LiquidGlass>;
 }
 function AccountSettings({ store }: { store: ClassHubPetConfigStore }) {
   const { account, notifications, available, status, error: preferencesError } = useSyncExternalStore(store.subscribe, store.getSnapshot);
   const { setUser, logout } = useUser(); const { hash } = useLocation();
+  const { isDarkMode, toggleDarkMode } = useTheme();
   const [displayName, setDisplayName] = useState(''), [bio, setBio] = useState(''), [email, setEmail] = useState('');
   const [profilePending, setProfilePending] = useState(false), [emailPending, setEmailPending] = useState(false);
   const [profileMessage, setProfileMessage] = useState(''), [profileError, setProfileError] = useState('');
@@ -69,7 +72,7 @@ function AccountSettings({ store }: { store: ClassHubPetConfigStore }) {
   if (!available || !account) return <ContentState loading={status === 'loading'} error={status === 'error' || (available && !account) ? new Error(preferencesError || '设置暂时不可用。') : null} onRetry={store.retry}/>;
   const timestamp = account.security.lastLoginAt && !Number.isNaN(Date.parse(account.security.lastLoginAt)) ? new Date(account.security.lastLoginAt).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }) : '暂无登录记录';
   return <>
-    <nav className="account-settings-nav" aria-label="设置目录">{SECTIONS.map(([id, label], index) => <Link key={id} data-pet-avoid to={`#${id}`}><span className="account-section-number">0{index + 1}</span>{label}</Link>)}</nav>
+    <nav className="account-settings-nav glass-material glass-material--workspace" aria-label="设置目录">{SECTIONS.map(([id, label], index) => <Link key={id} data-pet-avoid to={`#${id}`}><span className="account-section-number">0{index + 1}</span>{label}</Link>)}</nav>
     <Section id="profile-settings" number="01" title="个人资料">
       <div className="account-avatar"><ProfilePictureUpload size="xl" showUploadButton={false}/><div><p className="font-semibold">头像</p><p className="text-sm text-muted-foreground mt-1">JPEG、PNG 或 WebP，原图不超过 5 MB。</p><button type="button" className="text-link min-h-11 text-sm" onClick={() => setAvatarOpen(true)}>更换头像</button></div></div>
       <dl className="account-identity"><div><dt>真实姓名</dt><dd data-testid="real-name">{account.profile.name}</dd></div><div><dt>学号</dt><dd>{account.profile.uniqueId}</dd></div></dl>
@@ -93,7 +96,7 @@ function AccountSettings({ store }: { store: ClassHubPetConfigStore }) {
       <p role={preferencesError ? 'alert' : 'status'} className={`text-sm mt-3 ${preferencesError ? 'text-destructive' : 'text-muted-foreground'}`}>{preferencesError || (status === 'saving' ? '正在保存偏好…' : '偏好已同步到账号。')}{preferencesError && <button type="button" className="text-link min-h-11 ml-3" onClick={store.retry}>重试保存</button>}</p>
       <Link to="/notifications" className="text-link inline-flex items-center min-h-11 mt-2">打开通知中心 →</Link>
     </Section>
-    <Section id="appearance-settings" number="04" title="外观"><div className="account-notification-row"><div><p className="font-semibold text-foreground">浅色界面</p><p>ClassHub 统一使用浅色外观。</p></div><span className="status-label">浅色</span></div></Section>
+    <Section id="appearance-settings" number="04" title="外观"><div className="account-notification-row"><div><label htmlFor="settings-dark-mode">深色星空</label><p>在所有页面使用深色星空与液态玻璃。</p></div><Switch id="settings-dark-mode" aria-label="深色星空" checked={isDarkMode} onCheckedChange={value => { if (value !== isDarkMode) toggleDarkMode(); }}/></div></Section>
     <PetSettings sectionNumber="05"/>
     <Section id="account-actions" number="06" title="账户操作"><p className="text-sm text-muted-foreground mb-4">退出此浏览器的当前账号，个人资料和偏好将保留。</p><button type="button" className="ed-button secondary" onClick={logout}>退出当前账号</button><div className="mt-4"><Link to="/saved-posts" className="text-link inline-flex min-h-11 items-center">我的收藏 →</Link></div></Section>
     <AvatarManagementModal isOpen={avatarOpen} onClose={() => setAvatarOpen(false)} onSaved={profile => { store.setProfile(profile); setProfileMessage('头像已更新。'); }}/>

@@ -1,0 +1,27 @@
+/* One composited cross-fade, without animating blur, lens maps or page geometry. */
+:root[data-appearance-transition='snapshot']::view-transition { pointer-events: none; }
+:root[data-appearance-transition='snapshot']::view-transition-group(root),
+:root[data-appearance-transition='snapshot']::view-transition-old(root),
+:root[data-appearance-transition='snapshot']::view-transition-new(root) {
+  animation-duration: 1.5s;
+  animation-timing-function: cubic-bezier(.4, 0, .2, 1);
+}
+
+/* Older engines interpolate only the visible surfaces and semantic colors. */
+:root[data-appearance-transition='colors'] :is(body, .app-scene, .site-shell, .masthead-paper, .site-footer, .mobile-nav, .glass-material, .home-appearance-toggle, .admin-workspace, .admin-sidebar, .admin-topbar, .admin-auth-shell, .auth-layout, .dialog-panel, .reading-page, .calendar-grid, .account-settings-nav, .pet-settings, .ed-button, .filter-option, .resource-quick-access__link, input, textarea, select) {
+  transition-property: color, background-color, border-color;
+  transition-duration: 1.5s;
+  transition-timing-function: cubic-bezier(.4, 0, .2, 1);
+}
+:root[data-appearance-transition='colors'] :is(h1, h2, h3, h4, p, a, strong, label, svg, .text-muted-foreground, .result-count, .resource-quick-access__copy > span) {
+  transition: color 1.5s cubic-bezier(.4, 0, .2, 1);
+}
+:root[data-appearance-transition='colors'] .home-starfield { animation: appearance-stars-in 1.5s cubic-bezier(.4, 0, .2, 1) both; }
+@keyframes appearance-stars-in { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
+  :root[data-appearance-transition]::view-transition-group(root),
+  :root[data-appearance-transition]::view-transition-old(root),
+  :root[data-appearance-transition]::view-transition-new(root) { animation-duration: 0s; }
+  :root[data-appearance-transition='colors'] * { transition: none; animation: none; }
+}

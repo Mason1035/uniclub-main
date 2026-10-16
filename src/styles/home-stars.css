@@ -1,0 +1,101 @@
+/* Shared night palette also reaches dialogs rendered through body portals. */
+:root[data-home-appearance='starry'] {
+  color-scheme: dark !important;
+  --page-bg: #03080e;
+  --surface: rgb(12 21 32 / .86);
+  --surface-solid: #101b29;
+  --border-subtle: rgb(198 218 239 / .16);
+  --paper: 211 65% 3.3%;
+  --paper-raised: 216 39% 11%;
+  --paper-deep: 216 32% 16%;
+  --ink: 230 24% 97%;
+  --ink-muted: 210 16% 74%;
+  --line: 215 22% 24%;
+  --line-strong: 215 21% 43%;
+  --action: 207 87% 76%;
+  --action-hover: 207 90% 84%;
+  --on-action: 214 48% 10%;
+  --error: 4 80% 76%;
+  --success: 163 54% 70%;
+  --shadow-card: 0 8px 24px rgb(0 0 0 / .12);
+}
+
+.home-appearance-toggle { border: 1px solid rgb(255 255 255 / .46); background: rgb(255 255 255 / .16); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); box-shadow: inset 0 1px 1px rgb(255 255 255 / .45), 0 3px 10px rgb(28 34 48 / .04); }
+.home-appearance-toggle[aria-checked='true'] { color: hsl(var(--action)); border-color: rgb(219 236 255 / .2); background: rgb(219 236 255 / .06); box-shadow: inset 0 1px 1px rgb(240 249 255 / .16), 0 3px 10px rgb(0 0 0 / .08); }
+.masthead-logo-contrast { position: absolute; inset: 0; pointer-events: none; clip-path: inset(0 35% 0 30%); filter: brightness(0) invert(1); }
+.masthead-logo-contrast picture, .masthead-logo-contrast img { display: block; width: 100%; height: auto; }
+
+.site-shell--starry { position: relative; isolation: isolate; }
+.site-shell--starry > .site-main,
+.site-shell--starry > .site-footer { position: relative; z-index: 1; }
+.site-shell--starry .masthead-brand { position: relative; }
+.site-shell--starry .masthead-paper { background: rgb(3 8 14 / .95); border-bottom-color: rgb(198 218 239 / .12); }
+.site-shell--starry .mobile-nav { background: #07101a; }
+
+.home-starfield { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background-color: #03080e; }
+.home-starfield__canvas,
+.home-starfield__ambient,
+.home-starfield__vignette { position: absolute; inset: 0; width: 100%; height: 100%; }
+.home-starfield__canvas { opacity: 0; }
+.home-starfield[data-ready='true'] .home-starfield__canvas { opacity: 1; }
+.home-starfield[data-ready='false'] { background-image: var(--home-starfield-fallback); background-position: center; background-size: cover; }
+.home-starfield__ambient { background: radial-gradient(ellipse at 65% 48%, transparent 0%, #23435f0c 42%, #23435f50 100%); mix-blend-mode: plus-lighter; opacity: .55; }
+.home-starfield__vignette { background: radial-gradient(ellipse at center, transparent 38%, #00000018 72%, #0000009c 100%); }
+
+/* A clear dark material lets the starfield pass through; text stays on the ink tokens. */
+.site-shell--starry .home-card,
+.site-shell--starry .home-card:hover,
+.site-shell--starry .home-card:focus-within {
+  background: rgb(10 19 30 / .26);
+  border-color: rgb(207 225 245 / .18);
+  box-shadow: inset 0 1px 1px rgb(235 245 255 / .14), inset 0 -1px 2px rgb(0 0 0 / .15),
+    0 12px 28px -12px rgb(0 0 0 / .32);
+  -webkit-backdrop-filter: var(--home-glass-lens, blur(3px)) saturate(1.12);
+  backdrop-filter: var(--home-glass-lens, blur(3px)) saturate(1.12);
+}
+.site-shell--starry .home-card::before { background: linear-gradient(145deg, rgb(211 229 251 / .04), transparent 44%, rgb(113 140 178 / .02)); }
+.site-shell--starry .home-card__glass { background: linear-gradient(155deg, rgb(233 244 255 / .48) 4%, rgb(215 231 249 / .12) 26%, rgb(111 142 177 / .08) 49%, rgb(215 231 249 / .08) 66%, rgb(233 244 255 / .28) 95%); }
+.site-shell--starry .home-card__glass-light { background: radial-gradient(ellipse, rgb(240 249 255 / .75), rgb(221 238 255 / .26) 28%, transparent 70%); }
+.site-shell--starry .home-card__glass-fresnel { opacity: .45; }
+.site-shell--starry .home-card__glass-sheen { background: radial-gradient(ellipse, rgb(213 233 255 / .045), transparent 68%); }
+.site-shell--starry .home-card:focus-within { border-color: hsl(var(--action) / .65); }
+@media (max-width: 599px) {
+  .site-shell--starry .home-card,
+  .site-shell--starry .home-card:hover,
+  .site-shell--starry .home-card:focus-within { background: rgb(10 19 30 / .36); -webkit-backdrop-filter: blur(5px) saturate(1.12); backdrop-filter: blur(5px) saturate(1.12); }
+}
+:root[data-home-appearance='starry'] .dialog-overlay { background: rgb(0 0 0 / .65); }
+:root[data-home-appearance='starry'] .ios-install-backdrop { background: rgb(0 0 0 / .55); }
+
+@media (hover: hover) and (pointer: fine) {
+  .site-shell--starry .home-card:hover { border-color: rgb(198 218 239 / .3); }
+}
+/* During input, keep the same Snell lens and Fresnel lip with one sampling pass.
+   Full subpixel dispersion resumes at rest. Accessibility overrides remain below. */
+@media (min-width: 900px) {
+  :where([data-home-rendering='interactive']) .site-shell--starry .home-card,
+  :where([data-home-rendering='interactive']) .site-shell--starry .home-card:hover,
+  :where([data-home-rendering='interactive']) .site-shell--starry .home-card:focus-within {
+    -webkit-backdrop-filter: var(--home-glass-lens-motion, var(--home-glass-lens, blur(3px))) saturate(1.12);
+    backdrop-filter: var(--home-glass-lens-motion, var(--home-glass-lens, blur(3px))) saturate(1.12);
+  }
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .site-shell--starry .home-card,
+  .site-shell--starry .home-card:hover,
+  .site-shell--starry .home-card:focus-within { background: var(--surface-solid); }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .home-appearance-toggle, .home-appearance-toggle[aria-checked='true'] { background: var(--surface-solid); border-color: hsl(var(--line-strong)); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
+  .site-shell--starry .home-card,
+  .site-shell--starry .home-card:hover,
+  .site-shell--starry .home-card:focus-within { background: var(--surface-solid); backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; border-color: hsl(var(--line-strong)); }
+}
+@media (forced-colors: active) {
+  .home-starfield { display: none; }
+  .home-appearance-toggle, .home-appearance-toggle[aria-checked='true'] { background: Canvas; border-color: CanvasText; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
+  .site-shell--starry .home-card,
+  .site-shell--starry .home-card:hover,
+  .site-shell--starry .home-card:focus-within { background: Canvas; border-color: CanvasText; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .masthead-logo-contrast { display: none; }
+}

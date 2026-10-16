@@ -12,7 +12,7 @@ import { AdminSessionContext } from './adminSession';
  * This is a UX gate only. Real enforcement happens on the server through
  * `requireAdmin` (User.isAdmin === true in MongoDB) on every /api/admin/* route.
  */
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Loader2, LockKeyhole, ShieldAlert, ShieldCheck } from 'lucide-react';
 import {
   clearSession,
@@ -23,12 +23,15 @@ import {
   type SessionUser,
 } from './adminApi';
 import { AdminButton, Field, TextInput } from './components';
+import AppearanceToggle from '../../components/AppearanceToggle';
+import LiquidGlass from '../../components/LiquidGlass';
 
 
 type Status = 'checking' | 'anonymous' | 'denied' | 'granted';
 
 const Shell: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
+  <div className="admin-auth-shell flex min-h-screen items-center justify-center px-4 py-20">
+    <AppearanceToggle className="appearance-toggle--floating" />
     <div className="w-full max-w-md">{children}</div>
   </div>
 );
@@ -73,7 +76,7 @@ const AdminLoginForm: React.FC<{ onSuccess: (user: SessionUser) => void; notice?
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 rounded-sm border border-border bg-card p-6 "
+      className="glass-material glass-material--workspace space-y-4 p-6"
     >
       {notice && (
         <p className="rounded-sm bg-primary/10 px-3 py-2 text-xs text-foreground dark:text-foreground">
@@ -153,7 +156,8 @@ const AdminGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   if (status === 'checking') {
     return (
-      <div className="flex min-h-screen items-center justify-center gap-3 bg-background text-sm text-muted-foreground">
+      <div className="admin-auth-shell flex min-h-screen items-center justify-center gap-3 text-sm text-muted-foreground">
+        <AppearanceToggle className="appearance-toggle--floating"/>
         <Loader2 className="h-5 w-5 animate-spin" />
         正在校验管理员权限…
       </div>
@@ -168,7 +172,7 @@ const AdminGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return (
       <Shell>
         <Brand />
-        <div className="rounded-sm border border-border bg-card p-6 text-center ">
+        <LiquidGlass as="section" density="workspace" className="p-6 text-center">
           <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-sm bg-destructive/10 text-destructive">
             <ShieldAlert className="h-6 w-6" />
           </span>
@@ -192,7 +196,7 @@ const AdminGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               重新校验
             </AdminButton>
           </div>
-        </div>
+        </LiquidGlass>
       </Shell>
     );
   }

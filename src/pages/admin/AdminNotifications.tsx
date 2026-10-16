@@ -215,7 +215,7 @@ const AdminNotifications: React.FC = () => {
 
       {overview && (
         <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-sm border border-border bg-card p-5">
+          <div className="glass-material glass-material--workspace p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">公告总数</p>
             <p className="mt-2 text-3xl font-semibold tabular-nums text-foreground">
               {overview.announcements.total}
@@ -224,19 +224,19 @@ const AdminNotifications: React.FC = () => {
               已发布 {overview.announcements.published} · 草稿 {overview.announcements.draft}
             </p>
           </div>
-          <div className="rounded-sm border border-border bg-card p-5">
+          <div className="glass-material glass-material--workspace p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">置顶公告</p>
             <p className="mt-2 text-3xl font-semibold tabular-nums text-foreground">
               {overview.announcements.pinned}
             </p>
           </div>
-          <div className="rounded-sm border border-border bg-card p-5">
+          <div className="glass-material glass-material--workspace p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">紧急公告</p>
             <p className="mt-2 text-3xl font-semibold tabular-nums text-destructive">
               {overview.announcements.urgent}
             </p>
           </div>
-          <div className="rounded-sm border border-border bg-card p-5">
+          <div className="glass-material glass-material--workspace p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">站内通知</p>
             <p className="mt-2 text-3xl font-semibold tabular-nums text-foreground">
               {overview.notifications.total}

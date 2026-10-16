@@ -1,3 +1,4 @@
+import LiquidGlass from '../LiquidGlass';
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Pin } from 'lucide-react';
@@ -65,7 +66,7 @@ function AnnouncementPreview({ body, link }: Pick<Announcement, 'body' | 'link'>
 }
 
 export default function AnnouncementCard({announcement,clampBody=false}: {announcement:Announcement;clampBody?:boolean}) {
-  return <article className="announcement-entry" data-flip-id={`announcement-${announcement._id}`}>
+  return <LiquidGlass as="article" className="announcement-entry" data-flip-id={`announcement-${announcement._id}`}>
     <Illustration kind="announcement" size="small" className="entry-illustration"/>
     <div data-pet-avoid>
       <div className="flex items-center gap-2"><span className={`status-label ${announcement.level}`}>{announcementLevel(announcement.level).label}</span>{announcement.pinned && <span className="entry-meta"><Pin size={13}/>置顶</span>}</div>
@@ -76,5 +77,5 @@ export default function AnnouncementCard({announcement,clampBody=false}: {announ
       </>}
     </div>
     <time dateTime={announcement.publishedAt}>{formatDate(announcement.publishedAt)}</time>
-  </article>;
+  </LiquidGlass>;
 }

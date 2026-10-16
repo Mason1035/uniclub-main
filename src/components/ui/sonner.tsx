@@ -1,8 +1,10 @@
 import { Toaster as Sonner } from "sonner"
+import { useTheme } from "../../context/themeContextState"
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
 const Toaster = ({ ...props }: ToasterProps) => {
+  const { isDarkMode } = useTheme()
   return (
     <Sonner
       className="toaster group"
@@ -18,7 +20,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         },
       }}
       {...props}
-      theme="light"
+      theme={isDarkMode ? "dark" : "light"}
     />
   )
 }
