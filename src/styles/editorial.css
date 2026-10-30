@@ -23,6 +23,11 @@ img { max-width: 100%; }
 .font-inter, .font-sf, .font-avigea { font-family: var(--font-body); }
 .card-shadow, .card-shadow-hover, .shadow-lg, .shadow-xl, .shadow-md { box-shadow: none; }
 .site-shell { min-height: 100dvh; }
+/* Fill short pages while keeping long-page footers in normal document flow.
+   About owns a separate ScrollSmoother wrapper and keeps its existing layout. */
+.site-shell:not(.site-shell--about) { display: flex; flex-direction: column; }
+.site-shell:not(.site-shell--about) > .site-main { flex: 1 0 auto; }
+.site-shell:not(.site-shell--about) > :is(.header-reserve, .site-footer) { flex-shrink: 0; }
 .site-container { width: 100%; max-width: var(--page-max); margin-inline: auto; padding-inline: var(--page-gutter); }
 .site-main { min-height: 50vh; padding-block: 1.5rem 4rem; }
 .skip-link { position: fixed; left: 1rem; top: -5rem; z-index: 80; padding: .75rem 1rem; background: hsl(var(--action)); color: hsl(var(--on-action)); }

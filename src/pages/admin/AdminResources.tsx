@@ -23,6 +23,7 @@ import {
 import { AdminButton, Badge, DataTable, EmptyState, ErrorState, Field, LoadingState, Modal, PageHeader, Pagination, Panel, SelectInput, Td, TextArea, TextInput, Th, Tr } from './components';
 import { validateResourceForm } from './contentValidation';
 import { formatDate } from './formatting';
+import ResourceQuickLinksManager from './ResourceQuickLinksManager';
 
 const PAGE_SIZE = 10;
 
@@ -356,6 +357,10 @@ const AdminResources: React.FC = () => {
           </>
         )}
       </Panel>
+
+      <div className="mt-8">
+        <ResourceQuickLinksManager />
+      </div>
 
       <Modal
         open={modalOpen}

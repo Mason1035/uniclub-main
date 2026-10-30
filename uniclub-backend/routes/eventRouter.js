@@ -1,7 +1,8 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const authenticateToken = require('../middleware/auth');
-const requireAdmin = require('../middleware/admin');
+const { requireStaff } = require('../middleware/admin');
+const { hasPermission } = require('../utils/roles');
 const { activityService, eventDTO } = require('../services/ActivityService');
 const { fail } = require('../utils/activityPolicy');
 function createEventRouter({ service = activityService, mediaService, mediaRouter } = {}) {
@@ -38,27 +39,27 @@ function createEventRouter({ service = activityService, mediaService, mediaRoute
     const account = await service.account(req.user.userId);
     const { paginationOf, paged, publicFilter } = require('../utils/activityPolicy');
     const { page, limit, skip } = paginationOf(req.query);
-    const filter = { $and: [account.isAdmin ? { deletedAt: null } : publicFilter(service.now()), {
+    const filter = { $and: [hasPermission(account, 'content:manage') ? { deletedAt: null } : publicFilter(service.now()), {
       $or: [{ organizer: req.user.userId }, { 'registrations.userId': req.user.userId }],
     }] };
     const [rows, total] = await Promise.all([service.events.find(filter).select('+mediaRefs').populate('organizer', 'name').sort({ startDate: -1 }).skip(skip).limit(limit).lean(), service.events.countDocuments(filter)]);
     res.json({ success: true, events: await Promise.all(rows.map(row => shape(row, req.user.userId))), pagination: paged(page, limit, total) });
   }));
   router.get('/user/recommended', wrap(async (req, res) => res.json(await service.list(req.user.userId, { ...req.query, view: 'upcoming', limit: req.query.limit || 10 }))));
-  router.post('/', requireAdmin, writes, wrap(async (req, res) => {
+  router.post('/', requireStaff, writes, wrap(async (req, res) => {
     const event = await service.create(req.body, req.user.userId);
     res.status(201).json({ success: true, event: await shape(event, req.user.userId, true) });
   }));
-  router.get('/:id/admin', requireAdmin, wrap(async (req, res) => {
+  router.get('/:id/admin', requireStaff, wrap(async (req, res) => {
     const { event, stats } = await service.memberRows(req.params.id, req.user.userId);
     res.json({ success: true, event: await shape(event, req.user.userId, true), stats });
   }));
-  router.get('/:id/registrations', requireAdmin, wrap(async (req, res) => res.json(await service.registrations(req.params.id, req.user.userId, req.query))));
-  router.post('/:id/registrations/bulk-review', requireAdmin, writes, wrap(async (req, res) => res.json(await service.bulkReview(req.params.id, req.body, req.user.userId))));
-  router.post('/:id/registrations/:userId/review', requireAdmin, writes, wrap(async (req, res) => res.json({ success: true, rsvp: await service.review(req.params.id, req.params.userId, req.body, req.user.userId) })));
-  router.put('/:id/summary', requireAdmin, writes, wrap(async (req, res) => res.json({ success: true, event: await shape(await service.summary(req.params.id, req.body, req.user.userId), req.user.userId, true) })));
-  router.post('/:id/archive', requireAdmin, writes, wrap(async (req, res) => res.json({ success: true, event: await shape(await service.archive(req.params.id, req.user.userId), req.user.userId, true) })));
-  router.post('/:id/restore', requireAdmin, writes, wrap(async (req, res) => res.json({ success: true, event: await shape(await service.hide(req.params.id, req.user.userId, true), req.user.userId, true) })));
+  router.get('/:id/registrations', requireStaff, wrap(async (req, res) => res.json(await service.registrations(req.params.id, req.user.userId, req.query))));
+  router.post('/:id/registrations/bulk-review', requireStaff, writes, wrap(async (req, res) => res.json(await service.bulkReview(req.params.id, req.body, req.user.userId))));
+  router.post('/:id/registrations/:userId/review', requireStaff, writes, wrap(async (req, res) => res.json({ success: true, rsvp: await service.review(req.params.id, req.params.userId, req.body, req.user.userId) })));
+  router.put('/:id/summary', requireStaff, writes, wrap(async (req, res) => res.json({ success: true, event: await shape(await service.summary(req.params.id, req.body, req.user.userId), req.user.userId, true) })));
+  router.post('/:id/archive', requireStaff, writes, wrap(async (req, res) => res.json({ success: true, event: await shape(await service.archive(req.params.id, req.user.userId), req.user.userId, true) })));
+  router.post('/:id/restore', requireStaff, writes, wrap(async (req, res) => res.json({ success: true, event: await shape(await service.hide(req.params.id, req.user.userId, true), req.user.userId, true) })));
   router.get('/:id/rsvp', wrap(async (req, res) => res.json({ success: true, rsvp: await service.mine(req.params.id, req.user.userId) })));
   router.post('/:id/rsvp', writes, wrap(async (req, res) => {
     const body = req.body || {};
@@ -68,7 +69,7 @@ function createEventRouter({ service = activityService, mediaService, mediaRoute
   router.delete('/:id/rsvp', writes, wrap(async (req, res) => res.json({ success: true, rsvp: await service.cancel(req.params.id, req.user.userId), message: '报名已取消，历史记录保留。' })));
   // Legacy list/check-in/calendar URLs remain usable with V2 authorization and
   // state. They never write to the preserved legacy RSVP collection.
-  router.get('/:id/attendees', requireAdmin, wrap(async (req, res) => {
+  router.get('/:id/attendees', requireStaff, wrap(async (req, res) => {
     const data = await service.registrations(req.params.id, req.user.userId, { ...req.query, filter: 'approved' });
     res.json({ ...data, attendees: data.members });
   }));
@@ -77,7 +78,8 @@ function createEventRouter({ service = activityService, mediaService, mediaRoute
     res.json({ success: true, calendarData: { title: event.title, description: event.description, start: event.startDate, end: event.endDate,
       location: event.location.type === 'virtual' ? '线上活动' : [event.location.address, event.location.room].filter(Boolean).join(' · '), attendees: [] } });
   }));
-  router.post('/:id/checkin/:userId', requireAdmin, writes, wrap(async (req, res) => {
+  router.post('/:id/checkin/:userId', requireStaff, writes, wrap(async (req, res) => {
+    await service.account(req.user.userId, { admin: true });
     const result = await service.mutate(req.params.id, event => {
       const row = event.registrations.find(row => String(row.userId) === req.params.userId);
       if (!row || row.status !== 'APPROVED') throw fail('只有已通过报名可以签到。', 409, 'NOT_APPROVED');
@@ -91,10 +93,10 @@ function createEventRouter({ service = activityService, mediaService, mediaRoute
   router.get('/:id', wrap(async (req, res) => {
     const event = await service.readableEvent(req.params.id, req.user.userId);
     const account = await service.account(req.user.userId);
-    res.json({ success: true, event: await shape(event, req.user.userId, account.isAdmin) });
+    res.json({ success: true, event: await shape(event, req.user.userId, hasPermission(account, 'content:manage')) });
   }));
-  router.put('/:id', requireAdmin, writes, wrap(async (req, res) => res.json({ success: true, event: await shape(await service.update(req.params.id, req.body, req.user.userId), req.user.userId, true) })));
-  router.delete('/:id', requireAdmin, writes, wrap(async (req, res) => res.json({ success: true, event: await shape(await service.hide(req.params.id, req.user.userId), req.user.userId, true), message: '活动已隐藏；报名和照片保留，可恢复。' })));
+  router.put('/:id', requireStaff, writes, wrap(async (req, res) => res.json({ success: true, event: await shape(await service.update(req.params.id, req.body, req.user.userId), req.user.userId, true) })));
+  router.delete('/:id', requireStaff, writes, wrap(async (req, res) => res.json({ success: true, event: await shape(await service.hide(req.params.id, req.user.userId), req.user.userId, true), message: '活动已隐藏；报名和照片保留，可恢复。' })));
   router.activityWrites = writes;
   return router;
 }

@@ -1,7 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { lazy, Suspense, useEffect, useLayoutEffect } from 'react';
 import { BrowserRouter as Router, matchRoutes, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Layout from './components/Layout';
+import { MMScrollCoordinator } from './design/mindmarket/MMScrollCoordinator';
+import { DesignProvider, useMindMarketDesign } from './design/mindmarket/DesignContext';
 import ScrollToTop from './components/ScrollToTop';
 import { startNativeFeatures } from './lib/nativeBootstrap';
 import { cleanupLegacyDemoSession } from './utils/portfolioDemo';
@@ -16,6 +18,13 @@ import PetProvider from './features/pet/PetProvider';
 import PetLayer from './features/pet/PetLayer';
 import CookieConsent from './components/privacy/CookieConsent';
 import PageMetadata from './components/PageMetadata';
+import { useTheme } from './context/themeContextState';
+import AppearanceToggle from './components/AppearanceToggle';
+import { clearSession } from './lib/session';
+import { loadHomeStarfield } from './lib/appearanceTransition';
+
+// A single optional canvas survives route changes, including the admin boundary.
+const Starfield = lazy(loadHomeStarfield);
 
 // Create a QueryClient instance for React Query
 const queryClient = new QueryClient({
@@ -34,19 +43,26 @@ const queryClient = new QueryClient({
  */
 const AppShell: React.FC = () => {
   const location = useLocation();
+  const { isDarkMode } = useTheme();
+  const mindmarket = useMindMarketDesign();
   const notFound = isNotFoundRoute(matchRoutes(appRouteConfig, location));
   const isAdminConsole =
     location.pathname === '/admin' || location.pathname.startsWith('/admin/');
 
-  if (isAdminConsole && !notFound) {
-    return <><PageMetadata notFound={false}/><AppRoutes /></>;
-  }
+  const path = location.pathname.replace(/\/+$/, '').toLowerCase() || '/';
+  useLayoutEffect(() => {
+    document.documentElement.dataset.classhubPage = path === '/' ? 'home' : isAdminConsole ? 'admin' : path.slice(1);
+    return () => { delete document.documentElement.dataset.classhubPage; };
+  }, [path, isAdminConsole]);
+  return <div className={`app-scene${isDarkMode && !mindmarket ? ' app-scene--starry' : ''}`}>
+    {isDarkMode && !mindmarket && <Suspense fallback={null}><Starfield/></Suspense>}
+    <div className="app-scene__content">
+      <PageMetadata notFound={notFound}/>
+      {path === '/auth' && <AppearanceToggle className="appearance-toggle--floating"/>}
+      {isAdminConsole && !notFound ? <AppRoutes/> : <Layout notFound={notFound}><AppRoutes/></Layout>}
+    </div>
+  </div>;
 
-  return (
-    <><PageMetadata notFound={notFound}/><Layout notFound={notFound}>
-      <AppRoutes />
-    </Layout></>
-  );
 };
 
 function App() {
@@ -62,7 +78,15 @@ function App() {
       queryClient.clear();
     };
     const syncSession = (event: StorageEvent) => {
-      if (event.key === null || ['token', 'authToken', 'authUser'].includes(event.key)) {
+      if (event.key === null || ['token', 'authToken'].includes(event.key)) {
+        // An older admin login can leave a tab-local token. A logout in another
+        // tab must not silently resurrect it after the shared token is removed.
+        try {
+          if (event.newValue === null && !localStorage.getItem('token') && !localStorage.getItem('authToken')) {
+            clearSession();
+            return;
+          }
+        } catch { /* AuthProvider still resolves the current storage state. */ }
         window.dispatchEvent(new Event('auth:changed'));
       }
     };
@@ -77,8 +101,10 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <DesignProvider>
       <Router>
         <ScrollToTop />
+        <MMScrollCoordinator/>
         <ThemeProvider>
           <AuthProvider>
             <UserProvider>
@@ -93,6 +119,7 @@ function App() {
           </AuthProvider>
         </ThemeProvider>
       </Router>
+      </DesignProvider>
     </QueryClientProvider>
   );
 }

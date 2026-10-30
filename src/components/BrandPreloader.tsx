@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { gsap, useGSAP } from '../lib/gsap';
+import { useMindMarketDesign } from '../design/mindmarket/DesignContext';
 import {
   isFirstFoldVisible, PRELOADER_DONE, PRELOADER_TIMING,
   waitForEntry, waitForLogoReveal, type PreloaderState,
@@ -7,6 +8,7 @@ import {
 
 /** Adopt the first-paint HTML layer; React never mounts a second overlay or logo. */
 export default function BrandPreloader() {
+  const mindmarket = useMindMarketDesign();
   const scope = useRef(document.getElementById('root'));
   useGSAP((context, contextSafe) => {
     const boot = window.__classhubPreloader;
@@ -14,6 +16,8 @@ export default function BrandPreloader() {
     const logo = layer?.querySelector<HTMLImageElement>('img');
     const root = scope.current;
     if (!boot || boot.state === 'done' || !layer || !logo || !root) return;
+    // Keep the HTML boot, timeout and keyboard release; only adopt the new brand color.
+    if (mindmarket) gsap.set(layer, { backgroundColor: '#8ed462' });
     const controller = new AbortController();
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
     let active = true;
@@ -49,10 +53,18 @@ export default function BrandPreloader() {
       // would change the containing block of fixed navigation or modal controls.
       const main = root.querySelector('main');
       const home = main?.querySelector('.home-page');
+      const about = main?.querySelector('.about-experience');
+      const mmHome = main?.querySelector('.c-hero-home');
+      const mmAbout = main?.querySelector('.mm-about-hero');
       const page = main?.children.length === 1 && main.firstElementChild?.tagName === 'DIV'
         ? main.firstElementChild : main;
-      const candidates = home
+      const candidates = mmHome
+        ? Array.from(mmHome.children)
+        : mmAbout ? Array.from(mmAbout.querySelectorAll<HTMLElement>(':scope > .mm-about-kicker, :scope > h1, :scope > .mm-about-hero__intro'))
+        : home
         ? Array.from(home.querySelectorAll<HTMLElement>(':scope > .hero > *, :scope > .home-card-grid'))
+        // About 的滚动容器与固定背景不参与首屏位移，只动画可见标题。
+        : about ? Array.from(about.querySelectorAll<HTMLElement>('.about-intro-meta > *, .about-intro-title'))
         : Array.from(page?.children || []);
       const content = candidates.filter(isFirstFoldVisible).slice(0, 6);
       const slideAt = timing.logoExitMs / 1000;
@@ -84,6 +96,6 @@ export default function BrandPreloader() {
       // StrictMode replays setup; only the HTML boot owns the session claim,
       // scroll lock and fallback deadline. Effect cleanup must not finish it.
     };
-  }, { scope });
+  }, { scope, dependencies: [mindmarket], revertOnUpdate: true });
   return null;
 }

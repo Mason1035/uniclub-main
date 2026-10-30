@@ -14,6 +14,7 @@ Allow: /privacy/$
 Allow: /static/
 Allow: /branding/
 Allow: /fonts/
+Allow: /mindmarket/
 Allow: /manifest.json$
 Allow: /sitemap.xml$
 Allow: /robots.txt$

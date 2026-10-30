@@ -1,12 +1,14 @@
 import { useRef, type RefObject } from 'react';
 import { gsap, useGSAP } from '@/lib/gsap';
+import { useHomeEntryAnimation } from '@/lib/homeEntry';
 
 /** Visible by default; offscreen content is only faded when its trigger plays. */
 export function useHomeScrollReveal(scope: RefObject<HTMLDivElement>, revision: string) {
   const played = useRef(new WeakSet<Element>());
+  const animateEntry = useHomeEntryAnimation();
   useGSAP((_context, contextSafe) => {
     const root = scope.current;
-    if (!root) return;
+    if (!root || !animateEntry) return;
     const media = gsap.matchMedia();
     media.add({ desktop: '(min-width: 768px)', mobile: '(max-width: 767px)', reduce: '(prefers-reduced-motion: reduce)' }, ({ conditions }) => {
       if (conditions?.reduce || typeof IntersectionObserver === 'undefined') return;
@@ -73,5 +75,5 @@ export function useHomeScrollReveal(scope: RefObject<HTMLDivElement>, revision: 
       };
     }, scope);
     return () => media.revert();
-  }, { scope, dependencies: [revision], revertOnUpdate: true });
+  }, { scope, dependencies: [revision, animateEntry], revertOnUpdate: true });
 }

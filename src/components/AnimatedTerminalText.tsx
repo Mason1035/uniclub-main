@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import './AnimatedTerminalText.css';
 import { PRELOADER_DONE } from '../lib/preloader';
+import { isAppearanceMotionPaused, subscribeAppearanceMotion } from '../lib/appearanceMotion';
 
 type Phase = 'TYPING' | 'HOLDING' | 'DELETING' | 'SHORT_PAUSE' | 'NEXT_WORD' | 'STATIC';
 type Frame = { wordIndex: number; characterCount: number; phase: Phase };
 type Props = { phrases: readonly [string, ...string[]] };
 
 const timing = {
-  typing: [45, 70],
+  typing: [55, 80],
   deleting: [25, 45],
   holding: [1400, 1900],
   emptyPause: [150, 300],
@@ -24,15 +25,24 @@ export default function AnimatedTerminalText({ phrases }: Props) {
   useEffect(() => {
     const words = phrases.map(phrase => Array.from(phrase));
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let timer: ReturnType<typeof setTimeout>;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let due = 0;
+    let remaining: number | undefined;
+    let appearancePaused = isAppearanceMotionPaused();
     let active = true;
     let current: Frame;
 
     // One pending timeout at a time. All mutable animation state belongs to
     // this effect, so StrictMode replay and route unmount cannot duplicate it.
-    const schedule = (milliseconds: number) => { timer = setTimeout(tick, milliseconds); };
+    const schedule = (milliseconds: number) => {
+      remaining = milliseconds;
+      due = performance.now() + milliseconds;
+      if (!appearancePaused) timer = setTimeout(tick, milliseconds);
+    };
     const tick = () => {
-      if (!active || motion.matches) return;
+      timer = undefined;
+      if (!active || motion.matches || appearancePaused) return;
+      remaining = undefined;
       const length = words[current.wordIndex].length;
       switch (current.phase) {
         case 'HOLDING':
@@ -66,17 +76,37 @@ export default function AnimatedTerminalText({ phrases }: Props) {
 
     const restart = () => {
       clearTimeout(timer);
+      timer = undefined;
+      remaining = undefined;
       current = { wordIndex: 0, characterCount: words[0].length, phase: motion.matches ? 'STATIC' : 'HOLDING' };
       setFrame(current);
       // Preserve the readable first phrase until the entry layer has uncovered it.
       if (!motion.matches && (!window.__classhubPreloader || window.__classhubPreloader.state === 'done')) schedule(delay(timing.holding));
     };
     restart();
+    const syncAppearance = () => {
+      const paused = isAppearanceMotionPaused();
+      if (paused === appearancePaused) return;
+      appearancePaused = paused;
+      if (paused) {
+        if (timer !== undefined) {
+          remaining = Math.max(0, due - performance.now());
+          clearTimeout(timer);
+          timer = undefined;
+        }
+        // The provider flushes this update before either theme snapshot is captured.
+        setFrame(current);
+      } else if (active && !motion.matches && remaining !== undefined) {
+        schedule(remaining);
+      }
+    };
+    const unsubscribeAppearance = subscribeAppearanceMotion(syncAppearance);
     motion.addEventListener('change', restart);
     window.addEventListener(PRELOADER_DONE, restart);
     return () => {
       active = false;
       clearTimeout(timer);
+      unsubscribeAppearance();
       motion.removeEventListener('change', restart);
       window.removeEventListener(PRELOADER_DONE, restart);
     };

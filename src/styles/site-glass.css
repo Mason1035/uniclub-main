@@ -1,0 +1,118 @@
+/* Shared material, scoped independently of each page's grid and content rhythm. */
+.app-scene { position: relative; min-height: 100dvh; isolation: isolate; }
+.app-scene__content { position: relative; z-index: 1; }
+.appearance-toggle--floating { position: fixed; top: max(1rem, env(safe-area-inset-top)); right: max(1rem, env(safe-area-inset-right)); z-index: 45; }
+.auth-logo-wrap { position: relative; width: min(100%, 20rem); }
+.auth-logo-wrap .masthead-logo-contrast .auth-logo { margin: 0; }
+
+/* Home retains its approved exact material. These rules apply only to other surfaces. */
+.glass-material:not(.home-card) {
+  position: relative; isolation: isolate; min-width: 0;
+  border: 1px solid rgb(255 255 255 / .38); border-radius: 28px;
+  background: rgb(255 255 255 / .26);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / .65), inset 0 -1px 2px rgb(83 95 113 / .08), 0 12px 28px -12px rgb(28 34 48 / .12);
+  -webkit-backdrop-filter: var(--home-glass-lens, blur(3px)) saturate(1.12);
+  backdrop-filter: var(--home-glass-lens, blur(3px)) saturate(1.12);
+}
+.glass-material:not(.home-card)::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; corner-shape: inherit;
+  background: linear-gradient(145deg, rgb(255 255 255 / .09), transparent 44%, rgb(111 130 156 / .025)); pointer-events: none;
+}
+.liquid-glass:not(.home-card) > .glass-decoration { z-index: -1; }
+.glass-material--reading:not(.home-card), .glass-material--workspace:not(.home-card) { background: rgb(255 255 255 / .68); }
+.liquid-glass:not(.home-card) .glass-nested { background: transparent; border: 0; box-shadow: none; }
+.reading-page .glass-nested.content-state { padding-inline: 0; }
+.app-scene--starry .glass-material:not(.home-card) {
+  background: rgb(10 19 30 / .26); border-color: rgb(207 225 245 / .18);
+  box-shadow: inset 0 1px 1px rgb(235 245 255 / .14), inset 0 -1px 2px rgb(0 0 0 / .15), 0 12px 28px -12px rgb(0 0 0 / .32);
+}
+.app-scene--starry .glass-material--reading:not(.home-card) { background: rgb(10 19 30 / .72); }
+.app-scene--starry .glass-material--workspace:not(.home-card) { background: rgb(10 19 30 / .62); }
+.app-scene--starry .glass-material:not(.home-card)::before { background: linear-gradient(145deg, rgb(211 229 251 / .04), transparent 44%, rgb(113 140 178 / .02)); }
+.app-scene--starry .glass-material .home-card__glass { background: linear-gradient(155deg, rgb(233 244 255 / .48) 4%, rgb(215 231 249 / .12) 26%, rgb(111 142 177 / .08) 49%, rgb(215 231 249 / .08) 66%, rgb(233 244 255 / .28) 95%); }
+.app-scene--starry .glass-material .home-card__glass-light { background: radial-gradient(ellipse, rgb(240 249 255 / .75), rgb(221 238 255 / .26) 28%, transparent 70%); }
+.app-scene--starry .glass-material .home-card__glass-fresnel { opacity: .45; }
+.app-scene--starry .glass-material .home-card__glass-sheen { background: radial-gradient(ellipse, rgb(213 233 255 / .045), transparent 68%); }
+.liquid-glass[data-glass-optics='ready'] > .home-card__glass { padding: 1px; opacity: .55; }
+.glass-material:not(.home-card):focus-within { border-color: hsl(var(--action) / .65); }
+.liquid-glass:focus-within > .home-card__glass { opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+  .glass-material:not(.home-card):hover { border-color: hsl(var(--line-strong) / .7); }
+  .glass-material:hover > .home-card__glass { opacity: 1; }
+}
+@supports (corner-shape: superellipse(2)) {
+  .glass-material:not(.home-card) { border-radius: 44px; corner-shape: superellipse(2); }
+}
+/* Match home: full optics at rest, one optical sampling pass while the background moves.
+   Accessibility and light-mode overrides remain below. */
+@media (min-width: 900px) {
+  :where([data-home-rendering='interactive']) .app-scene--starry .glass-material:not(.home-card) {
+    -webkit-backdrop-filter: var(--home-glass-lens-motion, var(--home-glass-lens, blur(3px))) saturate(1.12);
+    backdrop-filter: var(--home-glass-lens-motion, var(--home-glass-lens, blur(3px))) saturate(1.12);
+  }
+}
+/* Stable, readable controls and portaled surfaces do not stack optical maps. */
+:root[data-home-appearance='starry'] :is(.dialog-panel, [data-radix-popper-content-wrapper] > *) {
+  background: rgb(13 24 38 / .94); border-color: rgb(207 225 245 / .2);
+  box-shadow: inset 0 1px 1px rgb(235 245 255 / .12), 0 18px 48px rgb(0 0 0 / .32);
+}
+:root[data-home-appearance='starry'] .dialog-overlay { background: rgb(0 0 0 / .65); }
+:root[data-home-appearance='starry'] :is(.site-shell, .auth-layout, .admin-workspace, .admin-auth-shell, .dialog-panel) :is(input, textarea, select):not([type='range']):not([type='checkbox']):not([type='radio']) { background-color: #0a1421; }
+:root[data-home-appearance='starry'] :is(.calendar-grid, .account-settings-nav, .pet-settings) { background: rgb(10 19 30 / .7); border-color: rgb(207 225 245 / .18); }
+.events-page section[aria-label='活动月历'] { border-radius: 28px; }
+.app-scene--starry .events-page section[aria-label='活动月历'] { background: rgb(10 19 30 / .62); box-shadow: inset 0 1px 1px rgb(235 245 255 / .14), var(--shadow-card); }
+.admin-sidebar, .admin-topbar { background: var(--surface-solid); }
+.app-scene--starry :is(.admin-sidebar, .admin-topbar) { background: #08121f; border-color: rgb(198 218 239 / .16); }
+.admin-topbar .home-appearance-toggle { flex-shrink: 0; }
+.admin-auth-shell { position: relative; }
+.admin-panel { overflow: hidden; }
+.quant-page .quant-instructions, .fee-page .fee-qr-desk { padding: var(--card-padding); }
+.fee-qr-desk .fee-qr-image, .fee-selected-image img { background: white; }
+/* The album/vinyl and its physical black action remain recognizable in both modes. */
+
+/* About remains headerless, with its original smoother and geometries. */
+.site-shell--about.site-shell--starry { --page-bg: #03080e; }
+.site-shell--about.site-shell--starry .about-experience { color: hsl(var(--ink)); }
+.site-shell--about.site-shell--starry :is(.about-chapter-body p, .about-end p, .about-card-caption p, .about-card-top, .about-placeholder-note, .about-stage-bottom, .about-eyebrow, .about-feature-number) { color: hsl(var(--ink-muted)); }
+.site-shell--about.site-shell--starry .about-chapter-body .about-lead-copy { color: hsl(var(--ink)); }
+.site-shell--about.site-shell--starry :is(.about-inline-link, .about-text-link, .about-developer-name, .about-features-list li) { border-color: hsl(var(--line-strong) / .65); }
+.site-shell--about.site-shell--starry .about-experience a:hover { color: hsl(var(--action)); }
+.about-developer-card.glass-material { border-right-color: var(--border-subtle); border-bottom-color: var(--border-subtle); }
+@media (max-width: 599px) {
+  .glass-material:not(.home-card) { border-radius: 24px; }
+  @supports (corner-shape: superellipse(2)) { .glass-material:not(.home-card) { border-radius: 36px; } }
+  .app-scene--starry .glass-material:not(.home-card) { background: rgb(10 19 30 / .46); }
+  .app-scene--starry :is(.glass-material--reading, .glass-material--workspace):not(.home-card) { background: rgb(10 19 30 / .78); }
+  .admin-topbar { gap: .5rem; }
+  .appearance-toggle--floating { top: max(.75rem, env(safe-area-inset-top)); right: max(.75rem, env(safe-area-inset-right)); }
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-material:not(.home-card), .app-scene--starry .glass-material:not(.home-card) { background: var(--surface-solid); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .glass-material { transition: none; }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .glass-material:not(.home-card), .app-scene--starry .glass-material:not(.home-card) { background: var(--surface-solid); border-color: hsl(var(--line-strong)); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .glass-material:not(.home-card)::before, .glass-material > .glass-decoration { display: none; }
+}
+@media (forced-colors: active) {
+  .glass-material:not(.home-card), .app-scene--starry .glass-material:not(.home-card) { background: Canvas; border-color: CanvasText; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .glass-material:not(.home-card)::before, .glass-material > .glass-decoration { display: none; }
+  .app-scene--starry :is(.admin-sidebar, .admin-topbar) { background: Canvas; }
+}
+
+/* Presentation selectors for content icons must never style the hidden optical definitions. */
+.liquid-glass > svg.home-card__lens-defs { width: 0; height: 0; padding: 0; border: 0; background: transparent; }
+
+@media (max-width: 767px) { .auth-logo-wrap { width: min(100%, 16rem); } }
+
+@media (min-width: 1024px) { .admin-topbar .icon-control[aria-label='打开菜单'] { display: none; } }
+
+/* Light mode keeps the material's shape and rim without backdrop sampling. */
+:root:not([data-home-appearance='starry']) .glass-material,
+:root:not([data-home-appearance='starry']) .glass-material:hover,
+:root:not([data-home-appearance='starry']) .glass-material:focus-within,
+:root:not([data-home-appearance='starry']) .home-appearance-toggle {
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}

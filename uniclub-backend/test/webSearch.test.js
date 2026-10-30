@@ -78,10 +78,14 @@ test('search rejects invalid input, excessive/malformed responses and supports c
 });
 
 test('interactive lookup preserves the existing shape through shared retrieval', async () => {
-  const service = new NewsAPIService({ apiKey: 'isolated-test-key', fetchClient: async () => reply([result()]) });
+  // This caller deliberately uses a live 24h window. An old fixed date would
+  // reject the fixture and accidentally call the real RSS fallback in tests.
+  const recent = result({ publishedAt: new Date(Date.now() - 60000).toISOString() });
+  const service = new NewsAPIService({ apiKey: 'isolated-test-key', fetchClient: async () => reply([recent]),
+    feedSearch: { search: async () => assert.fail('A fresh primary fixture must not need RSS fallback') } });
   const found = await service.searchRecentNews('research');
-  assert.deepEqual(found, [{ title: result().title, url: result().url, description: 'New research findings.',
-    publishedAt: fresh, source: { name: 'Nature' } }]);
+  assert.deepEqual(found, [{ title: recent.title, url: recent.url, description: 'New research findings.',
+    publishedAt: recent.publishedAt, source: { name: 'Nature' } }]);
 });
 
 test('web URL/IP policy blocks private, mapped, transition and unusual local addresses', () => {

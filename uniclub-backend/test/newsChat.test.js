@@ -1,3 +1,4 @@
+const {passthroughUsage}=require('./fixtures/assistantUsageScope');
 const { test, before, after, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
@@ -86,7 +87,7 @@ const events = text => text.split(/\r?\n\r?\n/).flatMap(block => {
 let server, origin;
 async function startServer(options = {}) {
   const app = express(); app.use(express.json({ limit: '16kb' }));
-  app.use('/api/chat', createChatRouter({ assistant, newsModel: News, chatModel: Chat, requestLimit: 1000, ...options }));
+  app.use('/api/chat', createChatRouter({ withUsage:passthroughUsage, assistant, newsModel: News, chatModel: Chat, requestLimit: 1000, ...options }));
   return new Promise((resolve, reject) => {
     const instance = app.listen(0, '127.0.0.1', error => error ? reject(error) : resolve(instance));
   });

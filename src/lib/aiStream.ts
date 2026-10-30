@@ -5,7 +5,7 @@ export class AiRequestError extends Error {
   constructor(message: string, public code = 'AI_ERROR') { super(message); this.name = 'AiRequestError'; }
 }
 
-export interface AiStreamStatus { phase: 'searching' | 'reasoning' | 'answering'; message: string; }
+export interface AiStreamStatus { phase: 'retrieving' | 'searching' | 'reasoning' | 'answering'; message: string; }
 interface StreamOptions<TResult> {
   signal: AbortSignal;
   onDelta: (text: string) => void;
@@ -40,7 +40,7 @@ export async function readAiStream<TResult>(response: Response, options: StreamO
       if (outputLength > 1024 * 1024) throw new AiRequestError('AI 回答过长，请缩小问题范围。', 'OUTPUT_TOO_LONG');
       options.onDelta(data.text);
     }
-    if (event === 'status' && ['searching', 'reasoning', 'answering'].includes(String(data.phase)) && typeof data.message === 'string') {
+    if (event === 'status' && ['retrieving', 'searching', 'reasoning', 'answering'].includes(String(data.phase)) && typeof data.message === 'string') {
       options.onStatus?.({ phase: data.phase as AiStreamStatus['phase'], message: data.message.slice(0, 300) });
     }
     if (event === 'result') {

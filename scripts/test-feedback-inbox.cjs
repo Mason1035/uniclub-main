@@ -1,0 +1,24 @@
+const assert=require('node:assert/strict');
+const {createRequire}=require('node:module');const Module=require('node:module');
+const root=require('node:path').resolve(__dirname,'..'),req=createRequire(root+'/package.json');
+const {JSDOM}=req('./uniclub-backend/node_modules/jsdom');
+const dom=new JSDOM('<div id="root"></div>',{url:'http://isolated.test/admin/feedback',pretendToBeVisual:true});
+for(const key of ['window','document','HTMLElement','Element','Event','MouseEvent'])global[key]=dom.window[key];
+Object.defineProperty(global,'navigator',{value:dom.window.navigator,configurable:true});global.IS_REACT_ACT_ENVIRONMENT=true;
+let calls=[],pending=[],updates=[];
+const entry={id:'111111111111111111111111',title:'希望增强资源搜索',description:'输入 Python 时没有找到相关教程。',expected:'希望显示相关教程和分类。',page:'/resources',status:'new',createdAt:'2026-10-27T00:00:00Z',updatedAt:'2026-10-27T00:00:00Z',member:{id:'fixture',name:'测试成员',email:'fixture@example.invalid'}};
+const report={items:[entry],pagination:{page:1,limit:20,total:1,pages:1},summary:{new:1,read:0,resolved:0,total:1}};
+global.__inboxApi={getFeedbackInbox:(params,signal)=>{calls.push({params,signal});return new Promise((resolve,reject)=>pending.push({resolve,reject}));},updateFeedbackStatus:async(id,status)=>{updates.push({id,status});return{...entry,status};}};
+(async()=>{
+ const result=await req('esbuild').build({stdin:{contents:"export {default} from './src/pages/admin/AdminFeedback';export {backendPermissionFor,hasPermission} from './src/lib/roles';",resolveDir:root,loader:'tsx'},bundle:true,platform:'node',format:'cjs',write:false,packages:'external',jsx:'automatic',plugins:[{name:'api-boundary',setup(build){build.onResolve({filter:/feedbackInboxApi$/},()=>({path:'api',namespace:'memory'}));build.onLoad({filter:/.*/,namespace:'memory'},()=>({contents:'export const {getFeedbackInbox,updateFeedbackStatus}=globalThis.__inboxApi;',loader:'js'}));build.onLoad({filter:/\.css$/},()=>({contents:'',loader:'js'}));}}]});
+ const compiled=new Module(__filename,module);compiled.filename=__filename;compiled.paths=[root+'/node_modules'];compiled._compile(result.outputFiles[0].text,__filename);
+ const {default:Inbox,backendPermissionFor,hasPermission}=compiled.exports;
+ assert.equal(backendPermissionFor('/admin/feedback'),'system:manage');for(const role of ['student','committee','teacher'])assert.equal(hasPermission({role},backendPermissionFor('/admin/feedback')),false);
+ const React=req('react'),{act}=React,{createRoot}=req('react-dom/client');const host=createRoot(document.getElementById('root'));
+ await act(async()=>host.render(React.createElement(Inbox)));assert.equal(calls.length,1);await act(async()=>pending.shift().resolve(report));
+ assert.match(document.body.textContent,/希望增强资源搜索/);const button=document.querySelector('[data-feedback-id]');await act(async()=>button.click());assert.match(document.body.textContent,/测试成员/);assert.match(document.body.textContent,/希望显示相关教程/);
+ const read=[...document.querySelectorAll('button')].find(node=>node.textContent==='标为已读');await act(async()=>read.click());assert.equal(updates[0].status,'read');await act(async()=>pending.shift().resolve({...report,items:[{...entry,status:'read'}]}));
+ const refresh=[...document.querySelectorAll('button')].find(node=>node.textContent.includes('刷新'));await act(async()=>refresh.click());await act(async()=>pending.shift().reject(new Error('fixture unsafe secret')));assert.match(document.querySelector('[role="alert"]').textContent,/暂时无法读取/);assert.ok(!document.body.textContent.includes('unsafe secret'));
+ await act(async()=>refresh.click());const last=calls.at(-1);await act(async()=>host.unmount());assert.equal(last.signal.aborted,true);await act(async()=>pending.shift().resolve(report));dom.window.close();
+ console.log('PASS feedback inbox: admin-only route capability, real list/detail, status update, safe errors, cancelled reads.');
+})().catch(error=>{console.error(error);process.exitCode=1;});

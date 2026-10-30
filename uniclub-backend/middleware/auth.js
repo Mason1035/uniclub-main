@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const mongoose = require('mongoose');
+const { roleInfo } = require('../utils/roles');
 
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET environment variable is not set');
@@ -33,11 +34,11 @@ const authenticateToken = async (req, res, next) => {
     if (!user || typeof user !== 'object' || !mongoose.Types.ObjectId.isValid(user.userId)) {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
-    const account = await User.findById(user.userId).select('tokenVersion');
+    const account = await User.findById(user.userId).select('tokenVersion role isAdmin');
     if (!account || (account.tokenVersion || 0) !== (user.tokenVersion || 0)) {
       return res.status(401).json({ error: 'Session expired; please sign in again' });
     }
-    req.user = user;
+    req.user = { ...user, ...roleInfo(account) };
     next();
   } catch (error) {
     console.log('❌ Token validation failed:', error.message);

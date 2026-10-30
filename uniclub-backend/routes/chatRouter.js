@@ -8,6 +8,7 @@ const { AiError } = require('../utils/aiSecret');
 const { NEWS_LIMITS, clip, validateQuestion, buildNewsContext, safeSources } = require('../utils/newsAiContext');
 const { createAiRateLimiter, sendAiError, aiRequest } = require('../utils/aiHttp');
 const { articleVisible } = require('../utils/dailyNewsVisibility');
+const {withAssistantUsage}=require('../services/AssistantQuotaService');
 
 function newsError(error) {
   const code = error instanceof AiError ? error.code : 'AI_UNAVAILABLE';
@@ -17,6 +18,7 @@ function newsError(error) {
     QUESTION_TOO_LONG: ['问题最多 1000 字，请缩短后再发送。', 400],
   };
   if (Object.hasOwn(input, code)) return new AiError(code, ...input[code]);
+  if (code === 'AI_QUOTA_EXCEEDED' || code === 'AI_QUOTA_UNAVAILABLE') return error;
   if (code === 'CANCELLED') return new AiError(code, '请求已取消。', 499);
   if (code === 'PROVIDER_RATE_LIMIT') return new AiError(code, 'AI 请求较多，请稍后再试。', 429);
   if (code === 'PROVIDER_TIMEOUT') return new AiError(code, 'AI 回答超时，请稍后再试。', 504);
@@ -32,7 +34,7 @@ function displayMessages(messages) {
     }));
 }
 
-function createChatRouter({ assistant = new DeepSeekAssistant(), newsModel = News, chatModel = Chat, requestTimeoutMs = 240000, requestLimit = 20 } = {}) {
+function createChatRouter({ assistant = new DeepSeekAssistant(), newsModel = News, chatModel = Chat, requestTimeoutMs = 240000, requestLimit = 20, withUsage = withAssistantUsage } = {}) {
   const router = express.Router();
   router.use(authenticateToken);
   router.use((_req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next(); });
@@ -60,7 +62,8 @@ function createChatRouter({ assistant = new DeepSeekAssistant(), newsModel = New
     let chat = await chatModel.findOne({ articleId, userId });
     const history = Array.isArray(chat?.messages) ? chat.messages : [];
     const timestamp = new Date();
-    const result = await assistant.answerNews(article, question, history, options);
+    const scoped=await withUsage(userId,()=>assistant.answerNews(article, question, history, options),{source:'news'});
+    const result = scoped.result;
     if (options.signal.aborted) throw new AiError('CANCELLED', '请求已取消。', 499);
     if (typeof result.answer !== 'string' || !result.answer.trim() || result.answer.length > 16000) throw new AiError('EMPTY_OUTPUT', 'AI 回答未完整接收。', 502);
     const sources = safeSources(result.sources), warning = typeof result.warning === 'string' ? clip(result.warning, 2000) : null;
@@ -72,7 +75,7 @@ function createChatRouter({ assistant = new DeepSeekAssistant(), newsModel = New
     chat.lastUpdated = new Date();
     await chat.save();
     return {
-      answer: result.answer, messages: displayMessages(chat.messages), sources, warning,
+      usage:scoped.usage,quota:scoped.quota,answer: result.answer, messages: displayMessages(chat.messages), sources, warning,
       reasoning: result.reasoning === true, usedWebSearch: result.usedWebSearch === true && sources.length > 0,
       elapsedMs: result.elapsedMs,
     };

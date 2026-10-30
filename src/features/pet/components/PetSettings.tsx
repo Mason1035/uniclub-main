@@ -45,7 +45,7 @@ function SettingsControls({ store, sectionNumber }: { store: ClassHubPetConfigSt
     </select>
   </div>;
 
-  return <section ref={section} id="pet-settings" tabIndex={-1} className="pet-settings mb-8" aria-labelledby="pet-settings-title">
+  return <section ref={section} id="pet-settings" tabIndex={-1} className="pet-settings mb-8 glass-material glass-material--workspace" aria-labelledby="pet-settings-title">
     <div className="pet-settings-heading"><h2 id="pet-settings-title" className="text-xl font-bold">{sectionNumber && <span className="account-section-number mr-3" aria-hidden="true">{sectionNumber}</span>}桌宠设置</h2>
       <p className="text-sm text-muted-foreground mt-2">给班级生活添一位小伙伴。右下角的桌宠会随设置实时变化。</p></div>
     <div className="pet-setting-toggle border-b border-border">

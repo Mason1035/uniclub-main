@@ -1,4 +1,5 @@
 const crypto = require('node:crypto');
+const { roleFilter } = require('../utils/roles');
 const AiSettings = require('../models/AiSettings');
 const DailyNewsJob = require('../models/DailyNewsJob');
 const News = require('../models/News');
@@ -100,7 +101,7 @@ class DailyNewsRepository {
         (previous.attempts >= AUTO_ATTEMPTS || (previous.nextRetryAt && new Date(previous.nextRetryAt) > now))) {
         await this.release(claim); return null;
       }
-      const author = await this.users.findOne({ isAdmin: true, ...(requestedBy && { _id: requestedBy }) }).select('_id').lean();
+      const author = await this.users.findOne({ ...roleFilter('admin'), ...(requestedBy && { _id: requestedBy }) }).select('_id').lean();
       if (!author) throw new DailyNewsError('DATABASE_ERROR', '需要一个有效管理员作为每日新闻发布者。');
       claim.authorId = author._id;
       claim.attempts = force ? 1 : (previous?.attempts || 0) + 1;

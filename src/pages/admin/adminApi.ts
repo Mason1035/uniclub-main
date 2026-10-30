@@ -1,15 +1,16 @@
+import { normalizeAccess, type RoleIdentity, type UserRole } from '../../lib/roles';
 import { readToken, clearSession } from '@/lib/session';
 export { readToken, clearSession };
 /**
  * ClassHub admin API client.
  *
  * Reuses the project-wide axios instance (`src/lib/axios.ts`) so JWT handling
- * and the base URL stay in one place. Every endpoint under /api/admin is
- * enforced server-side by the requireAdmin middleware.
+ * and the base URL stay in one place. Every endpoint is
+ * enforced server-side with the corresponding staff or system capability.
  */
 import api from '@/lib/axios';
 
-export interface AdminUser {
+export interface AdminUser extends RoleIdentity {
   id: string;
   name: string;
   email: string;
@@ -21,6 +22,24 @@ export interface AdminUser {
   createdAt: string | null;
   hasAvatar: boolean;
 }
+
+export interface ManagedMember extends AdminUser {
+  accountId: string | null;
+  rosterId: string | null;
+  registered: boolean;
+  inRoster: boolean;
+  rosterName: string;
+  rosterEmail: string;
+}
+export interface MemberDirectoryPage extends Paged<ManagedMember> {
+  summary: { total: number; accounts: number; roster: number; registeredRoster: number; pending: number; outside: number };
+}
+export const getMembers = async (params: {
+  page?: number; limit?: number; search?: string; role?: string; membership?: string;
+}): Promise<MemberDirectoryPage> => {
+  const { data } = await api.get('/api/admin/members', { params });
+  return { items: data.members, pagination: data.pagination, summary: data.summary };
+};
 
 export interface AdminEvent {
   _id: string;
@@ -85,14 +104,8 @@ export interface Paged<T> {
   pagination: { page: number; limit: number; total: number; pages: number };
 }
 
-export interface AdminStats {
-  users: number;
-  events: number;
-  news: number;
-  resources: number;
-  breakdown: { admins: number; pendingResources: number; pendingNews: number };
-  generatedAt: string;
-}
+export type { DashboardStats as AdminStats } from './dashboard/types';
+import type { DashboardDays, DashboardStats } from './dashboard/types';
 
 export interface RosterEntry {
   id: string;
@@ -187,7 +200,7 @@ export const errorMessage = (error: unknown): string => {
   const err = error as ApiErrorShape;
   const status = err?.response?.status;
 
-  if (status === 403) return '此账号没有管理员权限。';
+  if (status === 403) return '当前身份没有执行此操作的权限。';
   if (status === 401) return '登录已过期，请重新登录。';
   // 后端没启动时，Vite 代理会回 500 + 纯文本 body，此时 data.error 不存在，
   // axios 只会给出英文的 "Request failed with status code 500"，需要换成人话。
@@ -211,7 +224,7 @@ export const errorMessage = (error: unknown): string => {
 /* Session                                                             */
 /* ------------------------------------------------------------------ */
 
-export interface SessionUser {
+export interface SessionUser extends RoleIdentity {
   id?: string;
   email: string;
   name: string;
@@ -224,21 +237,22 @@ export interface SessionUser {
  * who logs in here is also logged in for the member-facing pages.
  */
 export const persistSession = (token: string, user: SessionUser) => {
+  const identity = { ...user, ...normalizeAccess(user) };
   localStorage.setItem('token', token);
   localStorage.setItem('authToken', token);
   sessionStorage.setItem('authToken', token);
   localStorage.setItem(
     'authUser',
-    JSON.stringify({ email: user.email, name: user.name, uniqueId: user.uniqueId })
+    JSON.stringify(identity)
   );
-  sessionStorage.setItem('user', JSON.stringify(user));
+  sessionStorage.setItem('user', JSON.stringify(identity));
   window.dispatchEvent(new Event('auth:changed'));
 };
 
 /** GET /api/auth/me - throws on invalid/expired token. */
 export const fetchMe = async (): Promise<SessionUser> => {
   const { data } = await api.get('/api/auth/me');
-  return data.user;
+  return { ...data.user, ...normalizeAccess(data.user) };
 };
 
 /** POST /api/auth/login + GET /api/auth/me */
@@ -250,7 +264,8 @@ export const loginAsAdmin = async (uniqueId: string, password: string): Promise<
     email: data.user?.email || '',
     name: data.user?.name || uniqueId,
     uniqueId: data.user?.uniqueId || uniqueId,
-    isAdmin: data.user?.isAdmin === true,
+    id: data.user?.id,
+    ...normalizeAccess(data.user),
   });
 
   const me = await fetchMe();
@@ -262,8 +277,8 @@ export const loginAsAdmin = async (uniqueId: string, password: string): Promise<
 /* Reads                                                               */
 /* ------------------------------------------------------------------ */
 
-export const getStats = async (): Promise<AdminStats> => {
-  const { data } = await api.get('/api/admin/stats');
+export const getStats = async (days: DashboardDays = 30, signal?: AbortSignal): Promise<DashboardStats> => {
+  const { data } = await api.get('/api/admin/stats', { params: { days }, signal });
   return data;
 };
 
@@ -274,7 +289,7 @@ export const getUsers = async (params: {
   role?: string;
 }): Promise<Paged<AdminUser>> => {
   const { data } = await api.get('/api/admin/users', { params });
-  return { items: data.users, pagination: data.pagination };
+  return { items: data.users.map((user: AdminUser) => ({ ...user, ...normalizeAccess(user) })), pagination: data.pagination };
 };
 
 export const getEvents = async (params: {
@@ -327,6 +342,11 @@ export const getRoster = async (params: {
 export const setUserAdmin = async (id: string, isAdmin: boolean): Promise<AdminUser> => {
   const { data } = await api.patch(`/api/admin/users/${id}/admin`, { isAdmin });
   return data.user;
+};
+
+export const setUserRole = async (id: string, role: UserRole): Promise<AdminUser> => {
+  const { data } = await api.patch(`/api/admin/users/${id}/role`, { role });
+  return { ...data.user, ...normalizeAccess(data.user) };
 };
 
 /** POST /api/events - existing endpoint, organizer becomes the current admin. */

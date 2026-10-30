@@ -1,0 +1,4 @@
+html[data-mm-smooth='true'],html[data-mm-smooth='true'] body {height:auto;}
+html[data-mm-smooth='true'].lenis-smooth {scroll-behavior:auto!important;}
+html[data-mm-smooth='true'] [data-lenis-prevent] {overscroll-behavior:contain;}
+html[data-mm-smooth='true'].lenis-scrolling iframe {pointer-events:none;}

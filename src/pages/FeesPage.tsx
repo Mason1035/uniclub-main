@@ -1,3 +1,4 @@
+import LiquidGlass from '../components/LiquidGlass';
 import PageShell from '../components/PageShell';
 import EmptyState from '../components/EmptyState';
 import { useEffect, useRef, useState } from 'react';
@@ -59,14 +60,14 @@ export default function FeesPage() {
     <Link className="inline-flex items-center gap-2 text-primary mb-5 text-sm" to="/functions"><ArrowLeft size={16} aria-hidden="true"/>返回功能</Link>
     <PageHeading title="交班费" description="请完成付款后上传支付成功截图。"/>
     <div className="fee-workspace">
-      <section className="fee-qr-desk" aria-labelledby="fee-qr-title">
+      <LiquidGlass as="section" density="workspace" className="fee-qr-desk" aria-labelledby="fee-qr-title">
         <h2 id="fee-qr-title">当前付款二维码</h2>
         {settings.isPending ? <LoadingState/> : settings.isError ? <ErrorState message={errorMessage(settings.error)} onRetry={() => void settings.refetch()}/> : settings.data?.hasPaymentQr ? <>
           <FeeImage path="/api/fees/payment-qr" version={settings.data.updatedAt} sessionKey={user.id} alt="班费付款二维码" className="fee-qr-image"/>
           <p className="fee-hint mt-4">请使用微信扫码完成付款，再提交支付成功截图。</p>
         </> : <EmptyState illustration="activity" title="管理员尚未设置付款二维码" description="请等待管理员设置付款码，或联系班委。"/>}
-      </section>
-      <section className="fee-submission-desk" aria-labelledby="fee-submit-title">
+      </LiquidGlass>
+      <LiquidGlass as="section" density="workspace" className="fee-submission-desk" aria-labelledby="fee-submit-title">
         <h2 id="fee-submit-title">我的缴费凭证</h2>
         {mine.isPending ? <LoadingState/> : mine.isError ? <ErrorState message={errorMessage(mine.error)} onRetry={() => void mine.refetch()}/> : <>
           {submission ? <div className="fee-receipt">
@@ -82,7 +83,7 @@ export default function FeesPage() {
           {message && <p className="fee-success" role="status">{message}</p>}
           {error && <p className="fee-error" role="alert">{error}</p>}
         </>}
-      </section>
+      </LiquidGlass>
     </div>
     <FeeProofDialog submission={viewProof && submission ? submission : null} sessionKey={user.id} onClose={() => setViewProof(false)}/>
   </PageShell>;

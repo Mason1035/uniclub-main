@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-classhub-design="mindmarket">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -7,6 +7,9 @@
     <!-- Critical entry styles live here so the brand layer paints before the app bundle. -->
     <style>
       .classhub-preloader { display: none; }
+      /* Anonymous prerender must not flash login UI ahead of the cached session. */
+      html[data-classhub-session-pending] [data-auth-guest] { visibility: hidden; }
+      .mm-auth-placeholder > * { visibility: hidden; }
       html[data-classhub-preloader] { overflow: hidden !important; scrollbar-gutter: stable; }
       html[data-classhub-preloader] body { overflow: hidden !important; touch-action: none; }
       html[data-classhub-preloader] .classhub-preloader {
@@ -43,6 +46,13 @@
     <script>
       (() => {
         const root = document.documentElement;
+        try {
+          if (localStorage.getItem('token') || sessionStorage.getItem('authToken') || localStorage.getItem('authToken')) {
+            root.setAttribute('data-classhub-session-pending', '');
+            // Restore usable public links even if the application chunk fails.
+            setTimeout(() => root.removeAttribute('data-classhub-session-pending'), 10000);
+          }
+        } catch { /* Visitors with storage disabled keep the ordinary public shell. */ }
         let seen = false;
         try { seen = sessionStorage.getItem('classhub-preloader-seen') === '1'; } catch { /* Storage can be unavailable in private mode. */ }
         const boot = window.__classhubPreloader = {

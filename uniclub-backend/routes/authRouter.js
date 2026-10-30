@@ -5,7 +5,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const authenticateToken = require('../middleware/auth');
 const { authLimit, passwordChangeLimit } = require('../middleware/rateLimit');
-const { validatePasswordChange } = require('../utils/accountSettingsPolicy');
+const { roleInfo } = require('../utils/roles');
+const { validatePasswordChange, selfProfile } = require('../utils/accountSettingsPolicy');
 
 const authRouter = express.Router();
 
@@ -155,6 +156,8 @@ authRouter.post('/signup-step3', authLimit, async (req, res) => {
       uniqueId: normalizedUniqueId,
       passwordHash,
       isEnrolled: true,
+      role: 'student',
+      isAdmin: false,
     });
 
     res.json({ success: true, message: '注册成功，请登录。' });
@@ -191,7 +194,7 @@ authRouter.post('/login', authLimit, async (req, res) => {
         name: user.name,
         displayName: user.displayName || null,
         uniqueId: user.uniqueId,
-        isAdmin: user.isAdmin === true,
+        ...roleInfo(user),
       },
     });
   } catch (error) {
@@ -204,17 +207,8 @@ authRouter.post('/login', authLimit, async (req, res) => {
 // GET /api/auth/validate
 authRouter.get('/validate', authenticateToken, async (req, res) => {
   try {
-    // Resolve admin status from the database so the client can gate admin UI.
-    // A lookup failure must never invalidate an otherwise valid token.
-    let isAdmin = false;
-    try {
-      const user = await User.findById(req.user.userId).select('isAdmin');
-      isAdmin = Boolean(user && user.isAdmin === true);
-    } catch (lookupError) {
-      console.warn('⚠️ Could not resolve isAdmin during validation:', lookupError.message);
-    }
-
-    res.json({ valid: true, user: { ...req.user, isAdmin } });
+    res.set('Cache-Control', 'private, no-store');
+    res.json({ valid: true, user: req.user });
   } catch (error) {
     console.error('❌ Error in token validation:', error);
     res.status(500).json({ error: 'Server error during validation.' });
@@ -226,7 +220,9 @@ authRouter.get('/validate', authenticateToken, async (req, res) => {
 authRouter.get('/me', authenticateToken, async (req, res) => {
   res.set('Cache-Control', 'private, no-store');
   try {
-    const user = await User.findById(req.user.userId);
+    const user = await User.findById(req.user.userId)
+      .select('_id name email displayName uniqueId role isAdmin profile.bio profile.location profile.website profile.interests profile.avatar.contentType profile.avatar.uploadedAt')
+      .lean();
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -238,14 +234,14 @@ authRouter.get('/me', authenticateToken, async (req, res) => {
         name: user.name,
         displayName: user.displayName || null,
         uniqueId: user.uniqueId,
-        avatar: user.profile?.avatar || null,
+        avatarUrl: selfProfile(user).avatarUrl,
         profile: {
           bio: user.profile?.bio || '',
           location: user.profile?.location || '',
           website: user.profile?.website || '',
           interests: user.profile?.interests || []
         },
-        isAdmin: user.isAdmin === true
+        ...roleInfo(user)
       }
     });
   } catch (error) {

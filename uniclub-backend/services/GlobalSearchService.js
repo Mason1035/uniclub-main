@@ -10,6 +10,7 @@ const AiSettings = require('../models/AiSettings');
 const Roster = require('../models/EnrolledUser');
 const { publicFilter: activityFilter, typeLabel } = require('../utils/activityPolicy');
 const { visibilityFilter } = require('../utils/dailyNewsVisibility');
+const { hasPermission } = require('../utils/roles');
 
 const MAX_QUERY_LENGTH = 200;
 const MAX_RESULTS = 12;
@@ -140,24 +141,26 @@ function createSearchService(models) {
     if (!userId) throw new Error('Authentication required');
     if (!parseQuery(value).full) return rankDocuments([], value, limit);
     const [account, follows] = await Promise.all([
-      models.User.findById(userId).select('isEnrolled uniqueId isAdmin').lean(),
+      models.User.findById(userId).select('isEnrolled uniqueId role isAdmin').lean(),
       models.Follow.find({ followerId: userId, status: 'accepted' }).select('followingId').lean(),
     ]);
     if (!account) throw new Error('Account unavailable');
-    const newsFilter = await visibilityFilter(now, models.AiSettings || null);
-    // Activity visibility follows the live roster, including rostered admins.
-    const activityMember = models.Roster
-      ? account.isAdmin === true || account.isEnrolled === true && !!await models.Roster.exists({ uniqueId: account.uniqueId })
-      : account.isEnrolled === true; // Legacy dependency-injected search fixtures.
-    const eventFilter = activityMember ? activityFilter(now) : { _id: { $in: [] } };
+    const staff = hasPermission(account, 'content:manage');
+    const newsFilter = staff ? {} : await visibilityFilter(now, models.AiSettings || null);
+    // Content managers can find drafts without membership. Member-only access
+    // still follows the live roster, and social privacy is evaluated separately.
+    const activityMember = staff || (models.Roster
+      ? account.isEnrolled === true && !!await models.Roster.exists({ uniqueId: account.uniqueId })
+      : account.isEnrolled === true); // Legacy dependency-injected search fixtures.
+    const eventFilter = staff ? { deletedAt: null } : activityMember ? activityFilter(now) : { _id: { $in: [] } };
     const sources = [
-      ['announcement', models.Announcement, { isPublished: true, publishedAt: { $lte: now },
+      ['announcement', models.Announcement, staff ? {} : { isPublished: true, publishedAt: { $lte: now },
         $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }] }, 'title body publishedAt createdAt'],
       ['news', models.News, newsFilter,
         'title excerpt content categories summary.keyPoints summary.quickSummary publishedAt createdAt'],
       ['event', models.Event, eventFilter, 'title description category tags location.address location.room eventType createdAt'],
       ['pastEvent', models.PastEvent, {}, 'title subtitle body category tags date createdAt'],
-      ['resource', models.Resource, { status: 'approved' }, 'title description file.originalName category tags type createdAt'],
+      ['resource', models.Resource, staff ? {} : { status: 'approved' }, 'title description file.originalName category tags type createdAt'],
       ['social', models.SocialPost, socialVisibility(userId, account.isEnrolled, follows.map(item => item.followingId)),
         'content projectData.title projectData.description projectData.technologies poll.question hashtags createdAt'],
     ];

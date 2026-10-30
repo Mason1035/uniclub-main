@@ -162,6 +162,8 @@ const layoutFixtureUrl = moduleUrl(`
   }
   export const useUser = () => fixture.user;
   export const useAuth = () => fixture.auth;
+  export const useTheme = () => ({ isDarkMode: false });
+  export const useMindMarketDesign = () => true;
   export const usePopup = () => ({ showUserProfile: false, openUserProfile() {}, closeUserProfile() {} });
   export const useLocation = () => fixture.location;
   export const useNavigate = () => (to, options) => { fixture.navigations.push({ to, options }); };
@@ -185,9 +187,11 @@ function fixtureHooks(source, dependency, mockedNames) {
     });
 }
 const layoutWithHookFixtures = fixtureHooks(fixtureHooks(layoutSource, 'react',
-  ['useEffect', 'useLayoutEffect', 'useRef', 'useState']), 'react-router-dom', ['useLocation', 'useNavigate']);
+  ['useEffect', 'useRef', 'useState']), 'react-router-dom', ['useLocation', 'useNavigate']);
 const layoutUrl = moduleUrl(transpile(`import { document } from ${JSON.stringify(layoutFixtureUrl)};\n${layoutWithHookFixtures}`)
-  .replace(/(['"])\.\.\/context\/(?:userContextState|authContextState|popupContextState)\1/g, JSON.stringify(layoutFixtureUrl))
+  .replace(/(['"])\.\.\/context\/(?:userContextState|authContextState|popupContextState|themeContextState)\1/g, JSON.stringify(layoutFixtureUrl))
+  .replace(/(['"])\.\.\/design\/mindmarket\/DesignContext\1/g, JSON.stringify(layoutFixtureUrl))
+  .replace(/(['"])\.\/AppearanceToggle\1/g, JSON.stringify(pageUrl))
   .replace(/(['"])\.\.\/context\/searchContextState\1/g, JSON.stringify(contextUrl))
   .replace(/(['"])\.\/SiteHeader\1/g, JSON.stringify(headerUrl))
   .replace(/(['"])\.\/ui\/dialog\1/g, JSON.stringify(dialogUrl))
@@ -244,7 +248,7 @@ test('guest 404 search preserves the auth return URL while known member pages re
   const fixture = layoutFixture(false, location);
   const tree = Layout({ children: '404 content', notFound: true });
   assert.equal(tree.type, SearchContext.Provider);
-  assert.ok(findElement(tree, element => element.type === 'div' && element.props.className === 'site-shell'));
+  assert.ok(findElement(tree, element => element.type === 'div' && element.props.className?.split(' ').includes('site-shell')));
   const header = findElement(tree, element => element.type === SiteHeader);
   assert.equal(header.props.isAuthenticated, false);
   assert.equal(tree.props.value.openSearch, header.props.onSearch);
@@ -258,4 +262,21 @@ test('guest 404 search preserves the auth return URL while known member pages re
   assert.equal(protectedPage.props.to, '/auth');
   assert.equal(protectedPage.props.replace, true);
   assert.deepEqual(protectedPage.props.state, { from: '/news?from=mail#top' });
+});
+
+
+test('guests can browse resource lists and valid details, while account and upload pages remain protected', () => {
+  for (const pathname of ['/resources', '/resources/', `/resource/${id}`, `/RESOURCE/${id}/`]) {
+    layoutFixture(false, { pathname, search: '', hash: '' });
+    const page = Layout({ children: 'public resource' });
+    assert.equal(page.type, SearchContext.Provider, pathname);
+    assert.equal(findElement(page, element => element.type === 'main').props.children, 'public resource');
+  }
+  for (const pathname of ['/settings', '/settings/', '/quantification', '/saved-posts', '/notifications']) {
+    layoutFixture(false, { pathname, search: '?from=guest', hash: '' });
+    const page = Layout({ children: 'private content' });
+    assert.equal(page.type, Navigate, pathname);
+    assert.equal(page.props.to, '/auth');
+    assert.equal(page.props.state.from, pathname + '?from=guest');
+  }
 });

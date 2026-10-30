@@ -27,6 +27,7 @@ class DailyNewsError extends AiError {
 // prompts. The same safe mapping is used by background jobs and admin routes.
 function errorForDailyNews(error) {
   if (error instanceof DailyNewsError) return error;
+  if (error instanceof AiError && ['AI_QUOTA_EXCEEDED','AI_QUOTA_UNAVAILABLE'].includes(error.code)) return error;
   if (error?.code === 'LOST_LEASE') return new DailyNewsError('ALREADY_RUNNING');
   if (error?.code === 'PROVIDER_TIMEOUT') return new DailyNewsError('AI_TIMEOUT');
   if (['NOT_CONFIGURED', 'MASTER_KEY_UNAVAILABLE', 'SECRET_UNREADABLE', 'INVALID_API_KEY', 'INSUFFICIENT_BALANCE',

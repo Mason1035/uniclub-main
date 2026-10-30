@@ -416,3 +416,30 @@ test('legacy administrator ID uses the existing password and role', async () => 
   assert.equal(result.body.user.isAdmin, true);
   assert.equal(jwt.verify(result.body.token, process.env.JWT_SECRET).tokenVersion, 8);
 });
+
+
+test('guests read only approved resources and receive usable published file links', async () => {
+  resources[item].file = { type: 'upload', url: 'https://example.test/handout.pdf', originalName: 'handout.pdf' };
+  resources.bbbbbbbbbbbbbbbbbbbbbbbb = { _id: 'bbbbbbbbbbbbbbbbbbbbbbbb', title: 'Not reviewed', status: 'pending', uploadedBy: member };
+  const list = await request('GET', '/api/resources?status=approved');
+  assert.equal(list.status, 200);
+  assert.deepEqual(list.body.resources.map(row => row._id), [item]);
+  const detail = await request('GET', '/api/resources/' + item);
+  assert.equal(detail.status, 200);
+  assert.equal(detail.body.resource.file.url, 'https://example.test/handout.pdf');
+  assert.equal((await request('GET', '/api/resources/bbbbbbbbbbbbbbbbbbbbbbbb')).status, 404);
+  assert.equal(calls.length, 0);
+});
+
+test('public resource access does not permit anonymous resource edits or per-user records', async () => {
+  for (const [method, path, body] of [
+    ['POST', '/api/resources', resourceBody],
+    ['PUT', '/api/resources/' + item, { title: 'Changed' }],
+    ['DELETE', '/api/resources/' + item],
+    ['POST', '/api/resources/' + item + '/download'],
+    ['POST', '/api/resources/' + item + '/view'],
+    ['POST', '/api/users/avatar', {}],
+    ['PUT', '/api/users/profile', { displayName: 'Guest' }],
+  ]) assert.equal((await request(method, path, undefined, body)).status, 401, method + ' ' + path);
+  assert.equal(calls.length, 0);
+});

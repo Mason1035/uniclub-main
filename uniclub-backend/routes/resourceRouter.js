@@ -5,7 +5,7 @@ const Resource = require('../models/Resource');
 const Comment = require('../models/Comment');
 const UserEngagement = require('../models/UserEngagement');
 const authenticateToken = require('../middleware/auth');
-const { isAdminUser } = require('../middleware/admin');
+const { isStaffUser } = require('../middleware/admin');
 const mongoose = require('mongoose');
 const { resourceFields, pickFields } = require('../utils/contentPolicy');
 const resourceStatuses = ['pending', 'approved', 'rejected', 'archived'];
@@ -178,16 +178,16 @@ router.get('/:id', authenticateIfPresent, async (req, res) => {
 });
 
 // POST /api/resources - create new resource (authenticated users only)
-// Member submissions start as 'pending'; an admin creating from the console can
+// Member submissions start as 'pending'; a content manager creating from the console can
 // publish directly by sending status: 'approved'.
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const admin = await isAdminUser(req.user.userId);
-    if (!admin && ((req.body.status !== undefined && req.body.status !== 'pending') ||
+    const staff = await isStaffUser(req.user.userId);
+    if (!staff && ((req.body.status !== undefined && req.body.status !== 'pending') ||
         reviewFields.some((field) => Object.hasOwn(req.body, field)))) {
-      return res.status(403).json({ error: 'Only an admin can set resource review fields' });
+      return res.status(403).json({ error: 'Only a content manager can set resource review fields' });
     }
-    const status = admin ? (req.body.status ?? 'pending') : 'pending';
+    const status = staff ? (req.body.status ?? 'pending') : 'pending';
     if (!resourceStatuses.includes(status)) {
       return res.status(400).json({ error: 'Invalid resource status' });
     }
@@ -196,7 +196,7 @@ router.post('/', authenticateToken, async (req, res) => {
       uploadedBy: req.user.userId,
       status,
       isApproved: status === 'approved',
-      isFeatured: admin && status === 'approved' && req.body.isFeatured === true,
+      isFeatured: staff && status === 'approved' && req.body.isFeatured === true,
       ...(status === 'approved' && { approvedBy: req.user.userId, approvedAt: new Date() })
     };
     
@@ -215,7 +215,7 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
-// PUT /api/resources/:id - update resource (uploader OR admin)
+// PUT /api/resources/:id - update resource (uploader OR staff)
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -227,27 +227,27 @@ router.put('/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Resource not found' });
     }
     
-    const admin = await isAdminUser(req.user.userId);
+    const staff = await isStaffUser(req.user.userId);
     const isUploader = resource.uploadedBy.toString() === req.user.userId;
-    if (!isUploader && !admin) {
-      return res.status(403).json({ error: 'Only the uploader or an admin can update this resource' });
+    if (!isUploader && !staff) {
+      return res.status(403).json({ error: 'Only the uploader or a content manager can update this resource' });
     }
-    if (!admin && (Object.hasOwn(req.body, 'status') ||
+    if (!staff && (Object.hasOwn(req.body, 'status') ||
         reviewFields.some((field) => Object.hasOwn(req.body, field)))) {
-      return res.status(403).json({ error: 'Only an admin can set resource review fields' });
+      return res.status(403).json({ error: 'Only a content manager can set resource review fields' });
     }
     const updates = pickFields(req.body, resourceFields);
     if (!Object.keys(updates).length && !Object.hasOwn(req.body, 'status') &&
-        !(admin && Object.hasOwn(req.body, 'isFeatured'))) {
+        !(staff && Object.hasOwn(req.body, 'isFeatured'))) {
       return res.status(400).json({ error: 'No supported fields provided' });
     }
     // Any member edit must be reviewed again before becoming public.
-    updates.status = admin ? (req.body.status ?? resource.status) : 'pending';
+    updates.status = staff ? (req.body.status ?? resource.status) : 'pending';
     if (!resourceStatuses.includes(updates.status)) {
       return res.status(400).json({ error: 'Invalid resource status' });
     }
     updates.isApproved = updates.status === 'approved';
-    updates.isFeatured = updates.isApproved && admin &&
+    updates.isFeatured = updates.isApproved && staff &&
       (req.body.isFeatured === undefined ? resource.isFeatured === true : req.body.isFeatured === true);
     const update = { $set: updates };
     if (updates.isApproved && Object.hasOwn(req.body, 'status')) {
@@ -272,7 +272,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// DELETE /api/resources/:id - delete resource (uploader OR admin)
+// DELETE /api/resources/:id - delete resource (uploader OR staff)
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -285,8 +285,8 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
     
     const isUploader = resource.uploadedBy.toString() === req.user.userId;
-    if (!isUploader && !(await isAdminUser(req.user.userId))) {
-      return res.status(403).json({ error: 'Only the uploader or an admin can delete this resource' });
+    if (!isUploader && !(await isStaffUser(req.user.userId))) {
+      return res.status(403).json({ error: 'Only the uploader or a content manager can delete this resource' });
     }
     
     await Resource.findByIdAndDelete(req.params.id);

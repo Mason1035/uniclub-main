@@ -20,7 +20,7 @@ class RosterService {
     if (dryRun) return { action: existing ? 'updated' : 'created', accountCreated: !account };
     if (!account) {
       try {
-        account = await this.users.create({ ...entry, passwordHash: await this.hashPassword(entry.uniqueId), isEnrolled: true, isAdmin: false });
+        account = await this.users.create({ ...entry, passwordHash: await this.hashPassword(entry.uniqueId), isEnrolled: true, role: 'student', isAdmin: false });
         accountCreated = true;
       } catch (e) {
         if (e.code !== 11000) throw e;

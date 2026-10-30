@@ -1,0 +1,28 @@
+const assert = require('node:assert/strict');
+const Module = require('node:module');
+const { createRequire } = Module;
+const root = require('node:path').resolve(__dirname, '..');
+const req = createRequire(root + '/package.json');
+const { JSDOM } = req('./uniclub-backend/node_modules/jsdom');
+const dom = new JSDOM('<div id="root"></div>', { url: 'http://isolated.test/admin/ai', pretendToBeVisual: true });
+for (const key of ['window', 'document', 'HTMLElement', 'Element', 'Event', 'MouseEvent']) global[key] = dom.window[key];
+Object.defineProperty(global, 'navigator', { value: dom.window.navigator, configurable: true });
+global.IS_REACT_ACT_ENVIRONMENT = true;
+let requests = [], waiting = [];
+global.__usageApi = { getAssistantUsage: (params, signal) => { requests.push({params,signal}); return new Promise((resolve,reject)=>waiting.push({resolve,reject})); } };
+const fixture = {users:[{userId:'fixture',name:'测试成员',email:'example@example.com',role:'student',promptTokens:100,completionTokens:20,totalTokens:120,requests:2,unreportedRequests:1,webSearchRequests:1,lastUsedAt:'2026-10-27T01:00:00Z'}],totals:{promptTokens:100,completionTokens:20,totalTokens:120,requests:2,unreportedRequests:1,webSearchRequests:1},pagination:{page:1,limit:20,total:1,totalPages:1}};
+(async()=>{
+ const result=await req('esbuild').build({entryPoints:[root+'/src/pages/admin/ai/AssistantUsage.tsx'],bundle:true,platform:'node',format:'cjs',write:false,packages:'external',jsx:'automatic',plugins:[{name:'usage-boundary',setup(build){build.onResolve({filter:/^\.\/usageApi$/},()=>({path:'api',namespace:'memory'}));build.onLoad({filter:/.*/,namespace:'memory'},()=>({contents:'export const {getAssistantUsage}=globalThis.__usageApi;',loader:'js'}));}}]});
+ const compiled=new Module(__filename,module);compiled.filename=__filename;compiled.paths=[root+'/node_modules'];compiled._compile(result.outputFiles[0].text,__filename);
+ const React=req('react'),{act}=React,{createRoot}=req('react-dom/client');const host=createRoot(document.getElementById('root'));
+ await act(async()=>host.render(React.createElement(compiled.exports.default)));
+ assert.equal(requests.length,0);const toggle=document.querySelector('[aria-expanded]');
+ await act(async()=>toggle.click());assert.equal(requests.length,1);assert.equal(requests[0].params.limit,20);
+ await act(async()=>waiting.shift().resolve(fixture));assert.match(document.body.textContent,/测试成员/);assert.match(document.body.textContent,/120/);assert.match(document.body.textContent,/未完整上报/);
+ const refresh=()=>document.querySelector('[aria-label="刷新成员 AI 用量"]');await act(async()=>refresh().click());
+ await act(async()=>waiting.shift().reject(new Error('simulated secret response')));assert.match(document.querySelector('[role="alert"]').textContent,/暂时无法读取/);assert.ok(!document.body.textContent.includes('simulated secret'));assert.match(document.body.textContent,/测试成员/);
+ await act(async()=>refresh().click());const signal=requests.at(-1).signal;
+ await act(async()=>toggle.click());assert.equal(signal.aborted,true);await act(async()=>waiting.shift().resolve(fixture));
+ assert.equal(document.querySelector('table'),null);await act(async()=>host.unmount());dom.window.close();
+ console.log('PASS assistant usage: lazy admin read, exact totals, safe error with previous snapshot, close abort and no late render.');
+})().catch(error=>{console.error(error);process.exitCode=1;});

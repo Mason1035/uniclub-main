@@ -5,7 +5,7 @@ const User = require('../models/User');
 const Comment = require('../models/Comment');
 const authenticateToken = require('../middleware/auth');
 const requireAdmin = require('../middleware/admin');
-const { isAdminUser } = require('../middleware/admin');
+const { requireStaff, isStaffUser } = require('../middleware/admin');
 const { curationLimit } = require('../middleware/rateLimit');
 const NewsCurationService = require('../services/NewsCurationService');
 const { Readability } = require('@mozilla/readability');
@@ -159,12 +159,12 @@ router.post('/', authenticateToken, async (req, res) => {
       });
     }
     
-    const admin = await isAdminUser(req.user.userId);
-    if (!admin && ((req.body.status !== undefined && req.body.status !== 'pending') ||
+    const staff = await isStaffUser(req.user.userId);
+    if (!staff && ((req.body.status !== undefined && req.body.status !== 'pending') ||
         ['isFeatured', 'isTrending', 'publishedAt'].some((field) => Object.hasOwn(req.body, field)))) {
-      return res.status(403).json({ error: 'Only an admin can approve or feature news' });
+      return res.status(403).json({ error: 'Only a content manager can approve or feature news' });
     }
-    const status = admin ? (req.body.status ?? 'approved') : 'pending';
+    const status = staff ? (req.body.status ?? 'approved') : 'pending';
     if (!['draft', 'pending', 'approved', 'archived'].includes(status)) {
       return res.status(400).json({ error: 'Invalid news status' });
     }
@@ -186,8 +186,8 @@ router.post('/', authenticateToken, async (req, res) => {
           .digest('hex'),
       status,
       ...(status === 'approved' && { publishedAt: req.body.publishedAt || new Date() }),
-      isFeatured: admin && status === 'approved' && req.body.isFeatured === true,
-      isTrending: admin && status === 'approved' && req.body.isTrending === true,
+      isFeatured: staff && status === 'approved' && req.body.isFeatured === true,
+      isTrending: staff && status === 'approved' && req.body.isTrending === true,
       likes: 0,
       saves: 0,
       shares: 0,
@@ -208,8 +208,8 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
-// PUT /api/news/:id - update an article (admin only, ClassHub console)
-router.put('/:id', requireAdmin, async (req, res) => {
+// PUT /api/news/:id - update an article (content managers, ClassHub console)
+router.put('/:id', requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -246,8 +246,8 @@ router.put('/:id', requireAdmin, async (req, res) => {
   }
 });
 
-// DELETE /api/news/:id - delete an article (admin only, ClassHub console)
-router.delete('/:id', requireAdmin, async (req, res) => {
+// DELETE /api/news/:id - delete an article (content managers, ClassHub console)
+router.delete('/:id', requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {

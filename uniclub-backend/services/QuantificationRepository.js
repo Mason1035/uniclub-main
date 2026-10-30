@@ -17,7 +17,7 @@ class QuantificationRepository {
   getCollection(id) { return Collection.findById(id).lean(); }
   createCollection(data) { return Collection.create(data); }
   updateCollection(id, data) { return Collection.findByIdAndUpdate(id, { $set: data }, { new: true, runValidators: true }).lean(); }
-  getUser(id) { return User.findById(id).select('name email uniqueId isAdmin').lean(); }
+  getUser(id) { return User.findById(id).select('name email uniqueId role isAdmin').lean(); }
   getRoster() { return Roster.find({}).select('name email uniqueId').lean(); }
   getUsers() { return User.find({}).select('name email uniqueId').lean(); }
   getSubmission(user, collection) { return Submission.findOne({ user, collectionId: collection }).lean(); }

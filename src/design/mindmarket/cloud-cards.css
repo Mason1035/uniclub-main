@@ -1,0 +1,120 @@
+/* Only the homepage business field gets clouds; all source cards remain live HTML. */
+:root[data-classhub-design='mindmarket'] .mm-home-clouds {
+  position:relative;isolation:isolate;padding-block:.5rem 3rem;
+  background:radial-gradient(ellipse at 13% 18%,#e8f7ca35,transparent 44%),radial-gradient(ellipse at 88% 73%,#c0e9a445,transparent 45%),#8ed462;
+  --ink:218 24% 17%;--ink-muted:217 12% 41%;--line:210 18% 84%;--action:147 36% 25%;--ring:147 36% 25%;
+}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-business-heading {padding-top:2.5rem;}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card-grid {
+  position:relative;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;
+  gap:2rem 1.4rem;padding-top:2rem;padding-bottom:3rem;
+}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .mm-cloud-card {
+  position:relative;isolation:isolate;min-width:0;overflow:visible;
+  padding:72px 48px 64px;min-height:340px;gap:1.15rem;
+  border:0!important;border-radius:0;background:transparent!important;box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+  color:hsl(var(--ink));--cloud-shadow:#304f3526;--cloud-period:9s;--cloud-delay:-2s;
+}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card {
+  grid-template-columns:clamp(4.5rem,7vw,6.5rem) minmax(0,1fr);
+}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card--wide {grid-column:1/-1;grid-template-columns:clamp(8rem,15vw,12rem) minmax(0,1fr);min-height:310px;}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .mm-cloud-card::before {content:none!important;}
+.mm-home-clouds .mm-cloud-surface {z-index:0;transition:transform .35s ease;}
+.mm-home-clouds .mm-cloud-surface > svg {filter:drop-shadow(0 9px 12px #304f3510);animation:mm-cloud-drift var(--cloud-period,9s) ease-in-out var(--cloud-delay,-2s) infinite;}
+.mm-home-clouds .mm-cloud-shadow {opacity:.64;transition:opacity .35s ease;}
+.mm-home-clouds .mm-cloud-back {opacity:.8;transition:opacity .35s ease;}
+.mm-home-clouds .mm-cloud-card > :not(.mm-cloud-surface) {position:relative;z-index:1;min-width:0;}
+.mm-home-clouds .home-card--activity {--cloud-period:10s;--cloud-delay:-5s;}
+.mm-home-clouds .home-card--resource {--cloud-period:11s;--cloud-delay:-3s;}
+.mm-home-clouds .home-card--news {--cloud-period:9.5s;--cloud-delay:-6s;}
+.mm-home-clouds .home-card--pulse {--cloud-period:10.5s;--cloud-delay:-1s;}
+.mm-home-clouds .home-card--gallery {--cloud-period:12s;--cloud-delay:-4s;}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card__content {display:block;grid-column:auto;}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds :is(.home-card__heading,.home-card__body) {grid-column:auto;}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card__art {align-self:center;}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card__art > .mm-rive-scene {max-width:12rem;margin-inline:auto;}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card__heading {align-items:center;gap:.65rem 1rem;margin-bottom:1.2rem;}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card__heading h2 {font-size:clamp(1.4rem,2.1vw,2rem);font-weight:600;line-height:1.35;letter-spacing:-.04em;}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card__link {min-height:44px;font-size:.8125rem;white-space:nowrap;}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card--wide .home-card__heading h2 {font-size:clamp(1.8rem,3vw,2.6rem);}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card__body {padding-top:0;border:0;overflow-wrap:anywhere;}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card :is(.content-state,.empty-state,.glass-material,.glass-nested) {
+  background:transparent!important;box-shadow:none!important;border:0!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card .content-state {padding:0;min-height:auto;}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card .empty-state {min-height:10rem;padding:.5rem 0;}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card .empty-state h3 {font-size:1.0625rem;}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card .ed-button.secondary {color:hsl(var(--ink));border-color:hsl(var(--line));}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card .ed-button.secondary:hover {background:#e5eedc;color:#243d2f;}
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .mm-cloud-card--brief {grid-column:1/-1;min-height:260px;padding:62px 54px 58px;--cloud-period:11s;}
+.mm-home-clouds .mm-home-brief__heading {margin-bottom:1.25rem;}
+.mm-home-clouds .mm-home-brief__heading h2 {font-size:1.75rem;font-weight:600;}
+.mm-home-clouds .mm-home-brief__items {gap:1rem;}
+.mm-home-clouds .mm-home-brief__items > div {min-width:0;padding:.85rem 1rem;border:0;border-radius:1.25rem;background:linear-gradient(150deg,#ffffffa6,#fffefa6b);box-shadow:inset 0 1px 2px #fff,0 5px 12px #526c3c08;}
+.mm-home-clouds .mm-home-brief__items > div+div {border-left:0;padding-left:1rem;}
+.mm-home-clouds .mm-home-brief__items a {min-height:5.5rem;}
+.mm-home-clouds .mm-home-brief__items strong {font-size:1rem;line-height:1.45;}
+.mm-home-clouds .mm-cloud-card :is(a,button):focus-visible {outline:2px solid hsl(var(--ring));outline-offset:4px;}
+@keyframes mm-cloud-drift {0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+@media(hover:hover) and (pointer:fine){
+  .mm-home-clouds .mm-cloud-card:hover > .mm-cloud-surface {transform:translateY(-2px);}
+  .mm-home-clouds .mm-cloud-card:hover > .mm-cloud-surface > svg {animation-play-state:paused;}
+  .mm-home-clouds .mm-cloud-card:hover .mm-cloud-shadow {opacity:.86;}
+  .mm-home-clouds .mm-cloud-card:hover .mm-cloud-back {opacity:.95;}
+}
+.mm-home-clouds .mm-cloud-card:focus-within > .mm-cloud-surface > svg {animation-play-state:paused;}
+:root.dark[data-classhub-design='mindmarket'] .mm-home-clouds {
+  background:radial-gradient(ellipse at 15% 10%,#47664770,transparent 50%),#263d2c;
+  --ink:48 25% 93%;--ink-muted:135 12% 76%;--line:140 12% 37%;--action:100 47% 77%;--ring:100 47% 77%;
+}
+:root.dark[data-classhub-design='mindmarket'] .mm-home-clouds .mm-cloud-card {
+  --cloud-top:#435650;--cloud-bottom:#30423c;--cloud-tint:#6f9395;--cloud-back:#517266;--cloud-shadow:#091a1b55;
+}
+:root.dark[data-classhub-design='mindmarket'] .mm-home-clouds .home-card--activity {--cloud-top:#5d5845;--cloud-bottom:#414433;--cloud-tint:#929471;}
+:root.dark[data-classhub-design='mindmarket'] .mm-home-clouds .home-card--resource {--cloud-top:#435b62;--cloud-bottom:#2e454e;--cloud-tint:#7093a8;}
+:root.dark[data-classhub-design='mindmarket'] .mm-home-clouds .home-card--pulse {--cloud-top:#574b5f;--cloud-bottom:#3f394c;--cloud-tint:#96839b;}
+:root.dark[data-classhub-design='mindmarket'] .mm-home-clouds .mm-home-brief__items > div {background:linear-gradient(145deg,#ffffff0c,#ffffff05);box-shadow:inset 0 1px 1px #ffffff12,0 6px 12px #00000009;}
+@media(max-width:1100px){
+  :root[data-classhub-design='mindmarket'] .mm-home-clouds .mm-cloud-card {padding:68px 36px 60px;}
+  :root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card {grid-template-columns:4.25rem minmax(0,1fr);gap:1rem;}
+  :root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card--wide {grid-template-columns:7rem minmax(0,1fr);}
+  :root[data-classhub-design='mindmarket'] .mm-home-clouds .mm-cloud-card--brief {padding-inline:40px;}
+}
+@media(max-width:850px){
+  :root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card-grid {grid-template-columns:minmax(0,1fr);gap:1.25rem;padding-inline:1rem;}
+  :root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card {grid-template-columns:5rem minmax(0,1fr);min-height:290px;}
+  :root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card--wide {grid-template-columns:6rem minmax(0,1fr);}
+  .mm-home-clouds .mm-home-brief__items {gap:.65rem;}
+  .mm-home-clouds .mm-home-brief__items > div {padding:.75rem;}
+  .mm-home-clouds .mm-home-brief__items > div+div {padding-left:.75rem;}
+}
+@media(max-width:639px){
+  :root[data-classhub-design='mindmarket'] .mm-home-clouds .home-business-heading {padding-inline:1.5rem;}
+  :root[data-classhub-design='mindmarket'] .mm-home-clouds .mm-cloud-card {padding:62px 30px 56px;gap:.85rem;min-height:0;}
+  :root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card,
+  :root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card--wide {grid-template-columns:1fr;}
+  :root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card__art {position:absolute;top:44px;right:30px;width:4rem;height:4rem;opacity:.96;}
+  :root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card__heading {min-height:5rem;padding-right:4.5rem;display:block;}
+  :root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card__heading h2 {font-size:1.5rem;}
+  :root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card__heading .home-card__link {margin-top:.35rem;display:inline-flex;align-items:center;}
+  :root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card__content {grid-column:1;}
+  .mm-home-clouds .mm-home-brief__heading {gap:.5rem;align-items:center;}
+  .mm-home-clouds .mm-home-brief__heading h2 {font-size:1.5rem;}
+  .mm-home-clouds .mm-home-brief__heading > a {font-size:.75rem;}
+  .mm-home-clouds .mm-home-brief__items {grid-template-columns:1fr;gap:.6rem;}
+  .mm-home-clouds .mm-home-brief__items > div {padding:.75rem 1rem;}
+  .mm-home-clouds .mm-home-brief__items > div+div {border-top:0;padding-left:1rem;}
+  .mm-home-clouds .mm-home-brief__items a {min-height:0;grid-template-columns:5.5rem minmax(0,1fr);}
+}
+@media(prefers-reduced-motion:reduce){
+  .mm-home-clouds .mm-cloud-surface,.mm-home-clouds .mm-cloud-shadow,.mm-home-clouds .mm-cloud-back {transition:none;transform:none!important;}
+  .mm-home-clouds .mm-cloud-surface > svg {animation:none;transform:none;}
+}
+@media(forced-colors:active){
+  :root[data-classhub-design='mindmarket'] .mm-home-clouds {background:Canvas;}
+  :root[data-classhub-design='mindmarket'] .mm-home-clouds .mm-cloud-card {border:1px solid CanvasText!important;background:Canvas!important;padding:1.5rem;color:CanvasText;}
+  .mm-home-clouds .mm-cloud-surface {display:none;}
+}

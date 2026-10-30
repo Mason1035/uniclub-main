@@ -228,7 +228,10 @@ test('admin and authenticated Cron call the same injected service; confirmation 
     async dryRun() { calls.push({ kind: 'dry-run' }); return { persist: false }; },
   };
   const app = express(); app.use(express.json());
-  app.use('/api/admin/ai/daily-news', createDailyNewsRouter({ service }));
+  let quotaDenied=false;
+  const quota={async assertAvailable(userId){assert.equal(String(userId),String(adminId));if(quotaDenied)throw new (require('../utils/aiSecret').AiError)('AI_QUOTA_EXCEEDED','额度不足',429);}};
+  const withUsage=async(owner,run,options)=>{await quota.assertAvailable(owner);return require('./fixtures/assistantUsageScope').passthroughUsage(owner,run,options);};
+  app.use('/api/admin/ai/daily-news', createDailyNewsRouter({ service, quota, withUsage }));
   app.use('/api/cron', createCronRouter({ service }));
   const server = await new Promise(resolve => { const value = app.listen(0, '127.0.0.1', () => resolve(value)); });
   const url = `http://127.0.0.1:${server.address().port}`;
@@ -255,6 +258,13 @@ test('admin and authenticated Cron call the same injected service; confirmation 
     assert.equal((await request('/api/cron/news-curation', { authorization: 'Bearer isolated-cron-secret' })).status, 200);
     assert.deepEqual(calls.map(call => call.kind), ['run', 'tick', 'tick']);
     assert.equal(calls[0].options.wait, false); assert.equal(calls[1].options.wait, true);
+    quotaDenied=true;
+    const beforeBlocked=calls.length;
+    for(const endpoint of ['/run','/dry-run']) {
+      const denied=await request('/api/admin/ai/daily-news'+endpoint,{user:adminId,method:'POST',body:{confirm:true}});
+      assert.equal(denied.status,429);assert.equal(denied.body.code,'AI_QUOTA_EXCEEDED');
+    }
+    assert.equal(calls.length,beforeBlocked,'no manual job or preview may start after the personal cap');
     service.tick = async () => ({ started: true, job: { status: 'failed', errorCode: 'SEARCH_UNAVAILABLE', errorMessage: '联网搜索失败' } });
     const failed = await request('/api/cron/daily-news', { authorization: 'Bearer isolated-cron-secret' });
     assert.equal(failed.body.success, false); assert.equal(failed.body.code, 'SEARCH_UNAVAILABLE');

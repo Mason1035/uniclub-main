@@ -40,7 +40,7 @@ function removePreferences(): void {
       const storage = window[area];
       const keys = Array.from({ length: storage.length }, (_, index) => storage.key(index));
       for (const key of keys) {
-        if (key && (['theme', 'userProfileImage'].includes(key) ||
+        if (key && (['theme', 'userProfileImage', 'classhub.home.appearance'].includes(key) ||
           ['classhub:view:', 'classhub:scroll:', 'classhub:pet-position:'].some(prefix => key.startsWith(prefix)))) {
           storage.removeItem(key);
         }

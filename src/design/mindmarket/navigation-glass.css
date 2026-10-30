@@ -1,0 +1,112 @@
+/* Interpolate the added blur even when the liquid lens uses an SVG URL. */
+@property --mm-navigation-frost {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+/* A single original ClassHub glass surface spans the header and its open panel.
+   Neither child paints a second backdrop or a rounded corner at the join. */
+:root[data-classhub-design='mindmarket'] .mm-navigation-glass {
+  --mm-navigation-fill: rgb(255 255 255 / .18);
+  --mm-navigation-frost: 0px;
+  --mm-navigation-lens: var(--home-glass-lens, blur(3px));
+  position: relative; height: var(--mm-navigation-height, auto); min-width: 0;
+  /* The tint and frost follow the same 200 ms expansion and collapse. */
+  transition: height .2s ease-out, background-color .2s ease-out, --mm-navigation-frost .2s ease-out;
+  border: 0; border-radius: 16px; corner-shape: round; overflow: hidden;
+  background: var(--mm-navigation-fill); color: #262727;
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / .7), inset 0 -1px 2px rgb(83 95 113 / .1), 0 12px 28px -12px rgb(28 34 48 / .18);
+  -webkit-backdrop-filter: var(--mm-navigation-lens) blur(var(--mm-navigation-frost)) saturate(1.12);
+  backdrop-filter: var(--mm-navigation-lens) blur(var(--mm-navigation-frost)) saturate(1.12);
+}
+/* Override the legacy light-mode hover rule as well as the resting material. */
+:root[data-classhub-design='mindmarket'] .mm-navigation-glass:is(:hover,:focus-within) {
+  -webkit-backdrop-filter:var(--mm-navigation-lens) blur(var(--mm-navigation-frost)) saturate(1.12);
+  backdrop-filter:var(--mm-navigation-lens) blur(var(--mm-navigation-frost)) saturate(1.12);
+}
+/* One continuous frosted surface keeps the page headline out of menu copy. */
+:root[data-classhub-design='mindmarket'] .mm-navigation-glass[data-expanded='true'] {
+  --mm-navigation-fill:rgb(250 253 255 / .82);
+  --mm-navigation-frost:28px;
+  /* The open reading surface uses Gaussian blur, without SVG refraction. */
+  --mm-navigation-lens:blur(0px);
+}
+:root[data-classhub-design='mindmarket'] .mm-navigation-glass .mm-header-bar {
+  position: relative; z-index: 1; background: transparent; border: 0; border-radius: 0;
+}
+:root[data-classhub-design='mindmarket'] .mm-navigation-glass .mm-desktop-dropdown {
+  top: var(--mm-navigation-bar-height,76px); left: 0; right: 0;
+  animation:mm-glass-dropdown-in .2s ease-out both;
+  background: transparent; border: 0; border-radius: 0; box-shadow: none;
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+:root[data-classhub-design='mindmarket'] .mm-navigation-glass .mm-desktop-dropdown--more {width:auto;}
+:root[data-classhub-design='mindmarket'] .mm-navigation-glass .mm-desktop-dropdown--more .mm-dropdown-links {grid-template-columns:repeat(3,minmax(0,1fr));}
+:root[data-classhub-design='mindmarket'] .mm-navigation-glass .mm-dropdown-promo {background:rgb(237 243 231 / .22);}
+:root[data-classhub-design='mindmarket'] .mm-navigation-glass .mm-header-cta {background:rgb(245 243 235 / .24);}
+:root[data-classhub-design='mindmarket'] .mm-navigation-glass .mm-header-cta:hover {background:rgb(214 234 199 / .4);}
+:root[data-classhub-design='mindmarket'] .mm-mobile-panel {
+  background:rgb(247 247 240 / .82);
+  -webkit-backdrop-filter:blur(18px) saturate(1.12);backdrop-filter:blur(18px) saturate(1.12);
+  box-shadow:inset 0 1px 1px rgb(255 255 255 / .7),0 18px 48px rgb(28 34 48 / .16);
+  border:1px solid rgb(255 255 255 / .5);
+}
+:root.dark[data-classhub-design='mindmarket'] .mm-navigation-glass {
+  --mm-navigation-fill:rgb(30 40 30 / .26);color:#f5f1e4;
+  box-shadow:inset 0 1px 1px rgb(235 245 255 / .2),inset 0 -1px 2px rgb(0 0 0 / .16),0 12px 28px -12px rgb(0 0 0 / .32);
+}
+:root.dark[data-classhub-design='mindmarket'] .mm-navigation-glass[data-expanded='true'] {--mm-navigation-fill:rgb(28 38 33 / .88);}
+:root.dark[data-classhub-design='mindmarket'] .mm-navigation-glass .mm-header-bar,
+:root.dark[data-classhub-design='mindmarket'] .mm-navigation-glass .mm-desktop-dropdown {background:transparent;}
+:root.dark[data-classhub-design='mindmarket'] .mm-navigation-glass .mm-dropdown-promo,
+:root.dark[data-classhub-design='mindmarket'] .mm-navigation-glass .mm-header-cta {background:rgb(68 81 60 / .32);}
+:root.dark[data-classhub-design='mindmarket'] .mm-navigation-glass .mm-header-cta:hover {background:rgb(83 105 70 / .5);}
+:root.dark[data-classhub-design='mindmarket'] .mm-navigation-glass .mm-menu-link {border-color:rgb(245 241 228 / .17);}
+:root.dark[data-classhub-design='mindmarket'] .mm-mobile-panel {background:rgb(30 40 30 / .88);border-color:rgb(235 245 255 / .18);}
+@media(max-width:999px){
+  :root[data-classhub-design='mindmarket'] .mm-navigation-glass {border-radius:12px;}
+  :root[data-classhub-design='mindmarket'] .mm-navigation-glass .mm-header-bar {border-radius:0;}
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  :root[data-classhub-design='mindmarket'] :is(.mm-navigation-glass,.mm-mobile-panel) {background:#f4f2eb;}
+  :root.dark[data-classhub-design='mindmarket'] :is(.mm-navigation-glass,.mm-mobile-panel) {background:#30392e;}
+}
+@media(prefers-reduced-transparency:reduce),(prefers-contrast:more){
+  :root[data-classhub-design='mindmarket'] .mm-navigation-glass,
+  :root[data-classhub-design='mindmarket'] .mm-mobile-panel {background:#f4f2eb;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none;}
+  :root.dark[data-classhub-design='mindmarket'] .mm-navigation-glass,
+  :root.dark[data-classhub-design='mindmarket'] .mm-mobile-panel {background:#30392e;}
+  :root[data-classhub-design='mindmarket'] .mm-navigation-glass > .glass-decoration {display:none;}
+}
+@media(forced-colors:active){
+  :root[data-classhub-design='mindmarket'] .mm-navigation-glass,
+  :root[data-classhub-design='mindmarket'] .mm-mobile-panel {background:Canvas;color:CanvasText;outline:1px solid CanvasText;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none;}
+  :root[data-classhub-design='mindmarket'] .mm-navigation-glass > .glass-decoration {display:none;}
+}
+
+/* Content follows the continuous shell instead of popping in at full height. */
+@keyframes mm-glass-dropdown-in {
+  from {opacity:0;transform:translateY(-10px);}
+  to {opacity:1;transform:translateY(0);}
+}
+@media(prefers-reduced-motion:reduce){
+  :root[data-classhub-design='mindmarket'] .mm-navigation-glass {transition:none;}
+  :root[data-classhub-design='mindmarket'] .mm-navigation-glass .mm-desktop-dropdown {animation:none;}
+}
+
+/* Each of the three Rive figures stays wholly inside its promotional card. */
+:root[data-classhub-design='mindmarket'] .mm-navigation-glass .mm-dropdown-promo > div {
+  right:2%;top:8%;bottom:8%;width:48%;pointer-events:none;
+}
+:root[data-classhub-design='mindmarket'] .mm-navigation-glass .mm-dropdown-promo > p {max-width:50%;}
+/* Match the other header icons; a keyboard focus outline still appears on demand. */
+:root[data-classhub-design='mindmarket'] .mm-header .mm-appearance,
+:root[data-classhub-design='mindmarket'] .mm-mobile-panel .mm-appearance {
+  border:0;box-shadow:none;background:transparent;
+}
+
+/* The account action shows the live user avatar without any pointer animation. */
+.mm-header-cta .mm-cta-face {display:grid;place-items:center;flex-shrink:0;background:transparent;}
+.mm-header-cta .mm-cta-face > img {display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit;pointer-events:none;}
+.mm-header-cta .mm-cta-face > svg {width:22px;height:22px;}

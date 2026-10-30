@@ -11,7 +11,7 @@ import { invalidateCommentCounters } from '../src/lib/commentCounters';
 import { useEngagement } from '../src/hooks/useEngagement';
 import api from '../src/lib/axios';
 
-const identity = (id: string, profile = true) => ({ user: { id, name: id, email: '', uniqueId: id, isAdmin: false,
+const identity = (id: string, profile = true) => ({ user: { id, name: id, email: '', uniqueId: id, isAdmin: false, role: 'student', permissions: [],
   avatar: { data: 'data:image/webp;base64,avatar', contentType: 'image/webp' },
   ...(profile ? { profile: { bio: id, location: '', website: '', interests: [] } } : {}) } });
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -75,27 +75,17 @@ test('a current unauthorized response clears the session and a failed request ca
   assert.equal((await loadCurrentUser('expired-token')).id, 'renewed');
 });
 
-test('only an older backend without profile makes the compatibility read', async () => {
-  localStorage.setItem('token', 'legacy-token');
+test('a missing optional profile uses defaults without another identity endpoint', async () => {
+  localStorage.setItem('token', 'profileless-token');
   const calls: string[] = [];
   globalThis.fetch = async url => {
     calls.push(String(url));
-    return url === '/api/auth/me' ? json(identity('legacy', false))
-      : json({ success: true, user: identity('legacy').user });
+    return json(identity('member', false));
   };
-  const current = await loadCurrentUser('legacy-token');
-  assert.equal(current.profile.bio, 'legacy');
-  assert.deepEqual(calls, ['/api/auth/me', '/api/users/me']);
-});
-
-test('an unavailable legacy profile endpoint does not invalidate verified identity', async () => {
-  localStorage.setItem('token', 'legacy-offline');
-  globalThis.fetch = async url => {
-    if (url === '/api/auth/me') return json(identity('legacy', false));
-    throw new Error('profile offline');
-  };
-  assert.equal((await loadCurrentUser('legacy-offline')).id, 'legacy');
-  assert.equal(localStorage.getItem('token'), 'legacy-offline');
+  const current = await loadCurrentUser('profileless-token');
+  assert.deepEqual(current.profile, { bio: '', location: '', website: '', interests: [] });
+  assert.deepEqual(calls, ['/api/auth/me']);
+  assert.equal(localStorage.getItem('token'), 'profileless-token');
 });
 
 test('comment changes invalidate only their matching stats and legacy count cache', () => {

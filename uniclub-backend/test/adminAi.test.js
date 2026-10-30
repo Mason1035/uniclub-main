@@ -1,3 +1,4 @@
+const {passthroughUsage}=require('./fixtures/assistantUsageScope');
 const { test, before, after, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 const express = require('express');
@@ -55,7 +56,7 @@ const call = async (path, method = 'GET', body, id = admin, accept) => {
 };
 before(async () => {
   const app = express(); app.use(express.json({ limit: '10mb' }));
-  app.use('/api/admin/ai', requireAdmin, createAiRouter({ assistant }));
+  app.use('/api/admin/ai', requireAdmin, createAiRouter({ withUsage:passthroughUsage, assistant }));
   app.use('/api/admin/announcements', requireAdmin, require('../routes/admin/announcements'));
   app.use('/api/events', require('../routes/eventRouter'));
   app.use('/api/news', require('../routes/newsRouter'));
@@ -184,7 +185,7 @@ test('generation concurrency, absolute timeout and cleanup release the admin slo
     return { success: true, answer: '完成', structured: null, publishType: null };
   } };
   const app = express(); app.use(express.json());
-  app.use('/ai', requireAdmin, createAiRouter({ assistant: timeoutAssistant, requestTimeoutMs: 200 }));
+  app.use('/ai', requireAdmin, createAiRouter({ withUsage:passthroughUsage, assistant: timeoutAssistant, requestTimeoutMs: 200 }));
   const isolated = await new Promise(resolve => { const s = app.listen(0, '127.0.0.1', () => resolve(s)); });
   try {
     const url = `http://127.0.0.1:${isolated.address().port}/ai/generate`;

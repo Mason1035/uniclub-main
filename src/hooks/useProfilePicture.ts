@@ -5,10 +5,10 @@ export const useProfilePicture = () => {
 
   // Simple function to get avatar URL
   const getAvatarUrl = (): string | null => {
-    // Only return Base64 data URLs, reject any file paths
+    // Accept the versioned same-origin avatar endpoint and legacy Base64 uploads.
     if (user?.profileImage && 
         typeof user.profileImage === 'string' && 
-        user.profileImage.startsWith('data:')) {
+        (user.profileImage.startsWith('data:image/') || /^\/api\/users\/avatar\//.test(user.profileImage))) {
       return user.profileImage;
     }
     return null;

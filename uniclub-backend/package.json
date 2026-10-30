@@ -17,7 +17,8 @@
     "reset-resource-counts": "node scripts/resetResourceCounts.js",
     "admin:password": "node scripts/rotateAdminPassword.js",
     "ai:init-secret": "node scripts/init-ai-secret.js",
-    "test:ai": "node --test test/adminAi.test.js"
+    "test:ai": "node --test test/adminAi.test.js",
+    "test:roles": "node --test test/roles.test.js test/activityStaff.test.js test/businessStaff.test.js"
   },
   "keywords": [],
   "author": "",

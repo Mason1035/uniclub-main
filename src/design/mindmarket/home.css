@@ -1,0 +1,53 @@
+/* Only the trusted source composition is reset; ClassHub's business nodes stay React components. */
+.mm-reference { position: relative; isolation: isolate; width:100%; color:#2c2e2a; background:#8ed462; font-family:'MindMarket Inter','ClassHub Han Sans',sans-serif; line-height:1.5; --font-sans:'MindMarket Inter','ClassHub Han Sans',sans-serif; }
+.mm-reference .c-hero-home_title { font-family:'MindMarket Inter','ClassHub Han Sans',sans-serif; font-weight:500; }
+.mm-reference .c-hero-home_tagline { font-family:'MindMarket Inter','ClassHub Han Sans',sans-serif; font-size:clamp(1.2rem,2.5vw,2rem);font-weight:400;letter-spacing:-.02em; }
+.mm-reference .c-tile-animated_title {font-family:'MindMarket Inter','ClassHub Han Sans',sans-serif;letter-spacing:-.04em;line-height:1.25;}
+.mm-reference .c-tile-animated_description {line-height:1.75;}
+.mm-reference c-rive { display:contents; }
+.mm-reference c-rive canvas { display:block; }
+
+.mm-reference .c-hero-home_inner .anim-first-hit {transform:none;}
+.mm-reference .c-homepage-timeline_end {pointer-events:none;}
+html[data-classhub-design='mindmarket'] .home-page { width:100%;padding:0;overflow:clip; }
+html[data-classhub-design='mindmarket'] .site-shell {padding-top:0;}
+:root[data-classhub-design='mindmarket']:not([data-classhub-page='home']):not([data-classhub-page='about']) .site-main {padding-top:clamp(8.5rem,11vw,11rem);}
+html[data-classhub-design='mindmarket'][data-classhub-page='home'] .site-main,
+html[data-classhub-design='mindmarket'][data-classhub-page='about'] .site-main {max-width:none;width:100%;padding:0;}
+html[data-classhub-design='mindmarket'] .home-business-heading {max-width:80rem;margin:0 auto;padding:5rem var(--page-gutter) 0;}
+html[data-classhub-design='mindmarket'] .home-business-heading h2 {font:500 clamp(2.2rem,5vw,5rem)/1.1 var(--font-ui);letter-spacing:-.055em;max-width:15ch;margin:1.25rem 0;}
+html[data-classhub-design='mindmarket'] .home-business-heading p {color:hsl(var(--ink-muted));}
+.mm-eyebrow {font:500 .75rem/1.4 'MindMarket Inter','ClassHub Han Sans',sans-serif;letter-spacing:.12em;}
+.mm-home-callout {position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;background:#8ed462;color:#2c2e2a;min-height:44rem;margin:3rem 1.5rem;border-radius:2rem;}
+.mm-home-callout__copy {position:relative;z-index:2;margin-left:48%;padding:6rem 4rem 6rem 1rem;max-width:48rem;}
+.mm-home-callout h2 {font:500 clamp(2rem,3.6vw,4.25rem)/1.15 var(--font-ui);letter-spacing:-.05em;margin:2rem 0;}
+.mm-home-callout__copy > p:not(.mm-eyebrow) {max-width:30rem;line-height:1.75;}
+/* Bound the Rive canvas to the card: Contain can then keep her head and feet visible at any width. */
+.mm-home-callout__character {position:absolute;left:0;bottom:0;width:48%;height:100%;aspect-ratio:auto;z-index:1;pointer-events:none;}
+.mm-pill {display:inline-flex;align-items:center;justify-content:space-between;gap:2rem;background:#2c2e2a;color:white;border-radius:999px;min-height:3.5rem;padding:.9rem 1.5rem;margin-top:2rem;transition:background .25s,transform .35s;}
+.mm-pill:hover {background:#44483e;transform:translateY(-3px);}
+.mm-pill:focus-visible {outline:2px solid #2c2e2a;outline-offset:5px;}
+@media(max-width:999px){
+ .mm-home-callout{min-height:0;margin:1.5rem .75rem;flex-direction:column;align-items:stretch;}
+ .mm-home-callout__copy{margin-left:0;padding:3rem 1.5rem 1rem;}
+ .mm-home-callout__character{position:relative;width:100%;height:clamp(18rem,70vw,30rem);left:auto;bottom:auto;flex-shrink:0;}
+ html[data-classhub-design='mindmarket'] .home-business-heading {padding-top:3rem;}
+}
+@media(prefers-reduced-motion:reduce){
+ .mm-reference .c-tile-animated_bg {transform:none;transition:none;}
+ .mm-reference .c-tile-animated_title,.mm-reference .c-tile-animated_description,.mm-reference .c-tile-animated_cta {opacity:1!important;transform:none!important;transition:none!important;}
+ .mm-pill {transition:none;}
+}
+
+/* Keep the real h1 visible at the mobile breakpoint as well as desktop. */
+@media(max-width:999px){
+ .mm-reference .c-hero-home {position:relative;}
+ .mm-reference .c-hero-home .c-hero-home_inner.-sticky {display:block;position:absolute;inset:0;}
+ .mm-reference .c-hero-home .c-hero-home_inner:not(.-sticky) {opacity:0;pointer-events:none;}
+}
+
+/* Each headline line shares the page center, independent of its text width. */
+.mm-reference .c-hero-home_content {width:100%;padding-inline:clamp(1rem,3vw,3rem);align-items:center;}
+.mm-reference .c-hero-home_content > div {width:100%;min-width:0;}
+.mm-reference .c-hero-home_title {display:flex;flex-direction:column;align-items:center;width:100%;margin:0;text-align:center;}
+.mm-reference .c-hero-home_title .mm-hero-line {width:max-content;max-width:none;text-align:center;}

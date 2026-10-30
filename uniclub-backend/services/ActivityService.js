@@ -4,6 +4,7 @@ const User = require('../models/User');
 const Roster = require('../models/EnrolledUser');
 const RSVP = require('../models/EventRSVP');
 const policy = require('../utils/activityPolicy');
+const { hasPermission } = require('../utils/roles');
 const LEDGER_SELECT = '+registrations +registrationVersion +registrationSchemaVersion +activityV2MigrationBackup +mediaRefs +mediaTombstones';
 const same = (a, b) => String(a) === String(b);
 const oid = value => {
@@ -45,10 +46,13 @@ class ActivityService {
     this.events = EventModel; this.users = UserModel; this.roster = RosterModel; this.rsvps = RSVPModel; this.now = now;
   }
   async account(userId, { admin = false, member = false } = {}) {
-    const account = await this.users.findById(oid(userId)).select('name uniqueId isAdmin isEnrolled profile.avatar.contentType').lean();
+    const account = await this.users.findById(oid(userId)).select('name uniqueId role isAdmin isEnrolled profile.avatar.contentType').lean();
     if (!account) throw policy.fail('登录账号不存在。', 401, 'ACCOUNT_UNAVAILABLE');
-    if (admin && account.isAdmin !== true) throw policy.fail('需要管理员权限。', 403, 'ADMIN_REQUIRED');
-    if (member || account.isAdmin !== true) {
+    const staff = hasPermission(account, 'content:manage');
+    // `admin` retains the existing management-view API contract. It grants no
+    // identity claim; personal registration still requires a live roster entry.
+    if (admin && !staff) throw policy.fail('需要内容管理权限。', 403, 'STAFF_REQUIRED');
+    if (member || !staff) {
       const belongs = account.isEnrolled === true && !!await this.roster.exists({ uniqueId: account.uniqueId });
       if (!belongs) throw policy.fail('仅当前班级成员可以访问活动。', 403, 'MEMBERSHIP_REQUIRED');
     }
@@ -62,7 +66,7 @@ class ActivityService {
   async readableEvent(id, userId) {
     const account = await this.account(userId);
     const event = await this.rawEvent(id);
-    if (account.isAdmin !== true && (event.deletedAt || (event.status !== 'published' && !(['completed', 'archived'].includes(event.status) && policy.phaseOf(event, this.now()) === 'ENDED')))) throw policy.fail('找不到已公开活动。', 404, 'NOT_FOUND');
+    if (!hasPermission(account, 'content:manage') && (event.deletedAt || (event.status !== 'published' && !(['completed', 'archived'].includes(event.status) && policy.phaseOf(event, this.now()) === 'ENDED')))) throw policy.fail('找不到已公开活动。', 404, 'NOT_FOUND');
     if (event.registrationSchemaVersion !== 1) {
       const ledger = await this.legacyLedger(event);
       event.approvedCount = ledger.filter(row => row.status === 'APPROVED').length;
@@ -124,7 +128,7 @@ class ActivityService {
   async list(userId, query = {}, { admin = false } = {}) {
     const account = await this.account(userId, { admin });
     if (!admin && query.status && !['all', 'published', 'completed', 'archived'].includes(query.status)) {
-      if (!account.isAdmin) throw policy.fail('需要管理员权限。', 403, 'ADMIN_REQUIRED');
+      if (!hasPermission(account, 'content:manage')) throw policy.fail('需要内容管理权限。', 403, 'STAFF_REQUIRED');
       admin = true;
     }
     const now = this.now(); const { page, limit, skip } = policy.paginationOf(query);
@@ -137,7 +141,7 @@ class ActivityService {
       if (view === 'past') and.push({ endDate: { $lte: now } });
     }
     if (query.status && query.status !== 'all') {
-      if (!admin && !['published', 'completed', 'archived'].includes(query.status)) throw policy.fail('需要管理员权限。', 403, 'ADMIN_REQUIRED');
+      if (!admin && !['published', 'completed', 'archived'].includes(query.status)) throw policy.fail('需要内容管理权限。', 403, 'STAFF_REQUIRED');
       if (!policy.meta.statuses.includes(query.status)) throw policy.fail('活动状态无效。');
       and.push({ status: query.status });
     }

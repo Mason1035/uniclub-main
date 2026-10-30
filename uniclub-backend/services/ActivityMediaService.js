@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const ActivityMedia = require('../models/ActivityMedia');
 const Event = require('../models/Event');
 const User = require('../models/User');
+const { hasPermission } = require('../utils/roles');
 const StorageSettings = require('./QuantificationStorageSettings');
 const ActivityMediaStorage = require('./storage/ActivityMediaStorage');
 const { MAX_PHOTOS, MIME_EXTENSIONS, validId, fail, assertFields, validateUpload, verifyImage } = require('../utils/activityMediaPolicy');
@@ -31,8 +32,8 @@ class ActivityMediaService {
     return this.activityService().readableEvent(activityId, userId);
   }
   async adminEvent(activityId, userId) {
-    const user = await this.users.findById(userId).select('isAdmin');
-    if (user?.isAdmin !== true) fail(403, '只有管理员可以管理活动图片。', 'ADMIN_REQUIRED');
+    const user = await this.users.findById(userId).select('role isAdmin');
+    if (!hasPermission(user, 'content:manage')) fail(403, '需要内容管理权限才能管理活动图片。', 'STAFF_REQUIRED');
     return this.readableEvent(activityId, userId);
   }
   assertStorage(storage) { if (!storage.describe().configured) fail(503, '活动图片存储尚未完成安全配置，请联系管理员。', 'ACTIVITY_STORAGE_UNCONFIGURED'); }

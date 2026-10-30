@@ -1,0 +1,62 @@
+.mm-module-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border-width: 0; }
+
+.mm-marquee { --mm-rail-ink: var(--mm-charcoal, #2c2e2a); --mm-rail-paper: var(--mm-cream, #f5f1e4); position: relative; width: 100%; padding: clamp(24px,4vw,58px) 0 60px; overflow: hidden; background: var(--mm-rail-paper); color: var(--mm-rail-ink); border-block: 1px solid currentColor; }
+.mm-marquee__viewport { width: 100%; overflow: hidden; }
+.mm-marquee__track { display: flex; width: max-content; }
+.mm-marquee[data-running='true'] .mm-marquee__track { will-change: transform; }
+.mm-marquee__group { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-around; gap: clamp(35px,4vw,65px); padding-right: clamp(35px,4vw,65px); min-width: 100vw; }
+.mm-marquee__item { display: inline-flex; align-items: center; gap: clamp(35px,4vw,65px); color: inherit; text-decoration: none; white-space: nowrap; font-family: var(--font-ui); font-size: clamp(27px,3.7vw,59px); font-weight: 500; letter-spacing: -.055em; line-height: 1.2; }
+.mm-marquee__item > span:first-child { position: relative; }
+.mm-marquee__item > span:first-child::after { content: ''; position: absolute; inset: auto 0 -4px; height: 2px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .3s ease; }
+.mm-marquee__item:hover > span:first-child::after { transform: scaleX(1); }
+.mm-marquee__flower { display: inline-block; color: var(--mm-coral,#ff705d); font-size: 1.25em; font-weight: 400; }
+.mm-marquee__item:nth-child(3n+2) .mm-marquee__flower { color: var(--mm-blue,#2ba0ff); }
+.mm-marquee__item:nth-child(3n) .mm-marquee__flower { color: #83ae4d; }
+.mm-marquee__item:focus-visible { outline: 2px solid currentColor; outline-offset: 7px; }
+.mm-marquee__pause { position: absolute; right: 12px; bottom: 7px; display: grid; place-items: center; min-width: 44px; min-height: 44px; padding: 7px; color: inherit; border: 1px solid currentColor; border-radius: 50%; background: var(--mm-rail-paper); cursor: pointer; transition: background .2s; }
+.mm-marquee__pause:hover { background: var(--mm-green,#8ed462); }
+.mm-marquee__pause:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+.mm-carousel { --mm-carousel-gap: 16px; --mm-carousel-target-per-view: 1.05; --mm-carousel-per-view: min(var(--mm-carousel-target-per-view), var(--mm-carousel-item-count, 1)); --mm-carousel-ink: var(--mm-charcoal,#2c2e2a); position: relative; width: 100%; min-width: 0; color: var(--mm-carousel-ink); }
+.mm-carousel__viewport { overflow: hidden; min-width: 0; border-radius: 4px; touch-action: pan-y pinch-zoom; }
+.mm-carousel__viewport:focus-visible { outline: 2px solid currentColor; outline-offset: 7px; }
+.mm-carousel__track { display: flex; align-items: stretch; gap: var(--mm-carousel-gap); backface-visibility: hidden; }
+.mm-carousel__slide { flex: 0 0 calc((100% - (var(--mm-carousel-per-view) - 1) * var(--mm-carousel-gap)) / var(--mm-carousel-per-view)); min-width: 0; position: relative; }
+.mm-carousel__slide > * { min-width: 0; height: 100%; }
+.mm-carousel__controls { display: flex; align-items: center; gap: 23px; margin-top: 30px; }
+.mm-carousel__progress { flex: 1; min-width: 30px; height: 2px; overflow: hidden; background: color-mix(in srgb, currentColor 20%, transparent); }
+.mm-carousel__progress > span { display: block; height: 100%; background: currentColor; transform-origin: left; transition: transform 600ms cubic-bezier(.22,1,.36,1), width 600ms cubic-bezier(.22,1,.36,1); }
+.mm-carousel__position { font: 500 12px/1.5 var(--font-ui); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mm-carousel__arrows { display: flex; gap: 10px; }
+.mm-carousel__arrow { position: relative; width: 50px; height: 50px; display: grid; place-items: center; flex-shrink: 0; border: 1px solid currentColor; border-radius: 50%; padding: 0; background: transparent; color: inherit; cursor: pointer; transition: background .3s, opacity .3s, transform .3s; }
+.mm-carousel__arrow svg { transition: transform .3s; }
+.mm-carousel__arrow:enabled:hover { background: var(--mm-green,#8ed462); }
+.mm-carousel__arrow:enabled:hover:first-child svg { transform: translateX(-3px); }
+.mm-carousel__arrow:enabled:hover:last-child svg { transform: translateX(3px); }
+.mm-carousel__arrow:disabled { opacity: .25; cursor: default; }
+.mm-carousel__arrow:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+:root.dark .mm-marquee { --mm-rail-paper: var(--mm-charcoal,#2c2e2a); --mm-rail-ink: var(--mm-cream,#f5f1e4); }
+:root.dark .mm-carousel { --mm-carousel-ink: var(--mm-cream,#f5f1e4); }
+:root.dark .mm-marquee__pause:hover, :root.dark .mm-carousel__arrow:enabled:hover { background: #50663d; }
+@media (min-width:700px) { .mm-carousel { --mm-carousel-target-per-view: 1.5; } }
+@media (min-width:1000px) { .mm-carousel { --mm-carousel-target-per-view: 2; } }
+@media (min-width:1200px) { .mm-carousel { --mm-carousel-target-per-view: 3; } }
+@media (max-width:699px) {
+  .mm-marquee { padding-block: 28px 60px; }
+  .mm-marquee__group { gap: 30px; padding-right: 30px; }
+  .mm-marquee__item { gap: 30px; font-size: 30px; }
+  .mm-marquee__pause { min-width: 44px; min-height: 44px; right: 8px; bottom: 8px; }
+  .mm-carousel__controls { margin-top: 22px; gap: 16px; }
+  .mm-carousel__arrow { width: 44px; height: 44px; }
+  .mm-carousel__arrows { gap: 8px; }
+  .mm-carousel__position { font-size: 11px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .mm-marquee { padding-block: clamp(24px,4vw,58px); }
+  .mm-marquee__track { width: 100%; transform: none !important; }
+  .mm-marquee__group { flex-wrap: wrap; justify-content: center; gap: 20px 28px; padding: 0 20px; min-width: 0; width: 100%; }
+  .mm-marquee__group--clone, .mm-marquee__pause { display: none; }
+  .mm-marquee__item { font-size: clamp(20px,3vw,40px); gap: 28px; }
+  .mm-marquee__item:last-child .mm-marquee__flower { display: none; }
+  .mm-marquee *, .mm-carousel * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}

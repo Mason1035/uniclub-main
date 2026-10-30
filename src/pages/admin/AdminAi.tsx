@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Toaster } from '@/components/ui/sonner';
 import { AdminButton, Field, Modal, PageHeader, Panel, TextArea, TextInput } from './components';
 import KeySettings from './ai/KeySettings';
+import AssistantUsage from './ai/AssistantUsage';
 import DailyNewsSettings from './ai/DailyNewsSettings';
 import PublishEditor from './ai/PublishEditor';
 import Answer from './ai/Answer';
@@ -148,8 +149,8 @@ export default function AdminAi() {
     <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"><span className="font-semibold">DeepSeek V4.1 Flash</span><code className="text-xs text-muted-foreground">deepseek-flash</code><span className="text-xs text-muted-foreground" role="status">{status ? status.configured ? tested ? '● 服务可用' : '● 已配置 · 待测试' : '○ 未配置 API Key' : '正在检查配置…'}</span></div>
     {statusError && <div className="mb-4 flex flex-wrap items-center gap-3" role="alert"><p className="text-sm text-destructive">{statusError}</p><AdminButton variant="secondary" onClick={() => { setStatusError(''); void getAiStatus().then(setStatus).catch(e => setStatusError(aiErrorMessage(e))); }}>重新检查</AdminButton></div>}
     <KeySettings settings={status} disabled={running || publishing} onChange={settings => setStatus(current => current ? { ...current, ...settings } : null)} onTested={setTested} />
-    <DailyNewsSettings />
-    <div className="ai-workspace">
+    <AssistantUsage />
+    <div className="ai-workspace mb-6">
       <Panel title="AI 输入工作区" description={active?.description}>
         <fieldset disabled={running || publishing} className="min-w-0 space-y-5">
           <div><p className="mb-2 text-xs font-medium">选择场景</p><div className="ai-scenarios" role="group" aria-label="AI 场景">{scenarios.map(item => <button key={item.key} type="button" className={GLOW_SCENARIOS.has(item.key) ? 'ai-scenario-publish' : undefined} aria-pressed={scenario === item.key} onClick={() => { if (scenario !== item.key) { setScenario(item.key); clearResults(); } }}>{GLOW_SCENARIOS.has(item.key) && <span className="ai-scenario-edge" aria-hidden="true" />}<span className="ai-scenario-label">{item.label}</span></button>)}</div></div>
@@ -176,6 +177,7 @@ export default function AdminAi() {
         </> : <div className="py-12 text-sm leading-7 text-muted-foreground"><p>选择场景，输入要点或上传图片。</p><p>活动、公告、新闻和资源会生成可编辑预览；其他场景显示 AI 回答。</p><p className="mt-4">发布前需要由管理员检查并确认。</p></div>}
       </Panel>
     </div>
+    <DailyNewsSettings />
     <Modal open={Boolean(confirm)} onClose={() => { if (!publishing) setConfirm(null); }} title={confirm ? `发布到${PUBLICATION_LABELS[confirm.draft.kind]}` : '确认发布'} description="确认后将通过 ClassHub 现有发布流程创建一条记录，并对班级成员可见。" width="max-w-lg" footer={<><AdminButton variant="secondary" disabled={publishing} onClick={() => setConfirm(null)}>取消</AdminButton><AdminButton loading={publishing} onClick={() => void publish()}>确认发布</AdminButton></>}>
       {confirm && <dl className="space-y-3 text-sm"><div><dt className="text-muted-foreground">标题</dt><dd className="mt-1 break-words font-medium">{confirm.draft.values.title}</dd></div><div><dt className="text-muted-foreground">栏目</dt><dd className="mt-1">{PUBLICATION_LABELS[confirm.draft.kind]}</dd></div></dl>}{publishError && <p className="mt-4 text-sm text-destructive" role="alert">{publishError}</p>}
     </Modal>

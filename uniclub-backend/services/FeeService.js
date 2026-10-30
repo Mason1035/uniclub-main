@@ -22,10 +22,12 @@ const settingsMetadata = row => ({
 const validateId = id => { if (!/^[a-f\d]{24}$/i.test(id || '')) throw new FeeError(404, '缴费记录不存在。'); };
 
 class FeeService {
-  constructor(repository, { processImage = prepareImage, isAdmin = async () => false, now = () => new Date() } = {}) {
+  constructor(repository, { processImage = prepareImage, canManage, isAdmin = async () => false, now = () => new Date() } = {}) {
     this.repository = repository;
     this.processImage = processImage;
-    this.isAdmin = isAdmin;
+    // The legacy injection name remains accepted by isolated callers. It does
+    // not set account.isAdmin; the live router supplies the content capability.
+    this.canManage = canManage || isAdmin;
     this.now = now;
   }
 
@@ -67,7 +69,7 @@ class FeeService {
   async proof(id, user) {
     validateId(id);
     const meta = await this.repository.submission(id);
-    if (!meta || (String(meta.user) !== String(user) && !await this.isAdmin(user))) {
+    if (!meta || (String(meta.user) !== String(user) && !await this.canManage(user))) {
       throw new FeeError(404, '缴费凭证不存在或无权查看。');
     }
     const row = await this.repository.proof(id);

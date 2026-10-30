@@ -1,3 +1,5 @@
+import { MMBottomNav } from '../design/mindmarket/MMBottomNav';
+import { useMindMarketDesign } from '../design/mindmarket/DesignContext';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { sectionFor } from '../lib/navigationState';
@@ -16,7 +18,7 @@ const moreItems = [
   ['/saved-posts', '我的收藏'], ['/notifications', '通知'], ['/settings', '个人设置'],
 ];
 
-export default function BottomNavigation({ onNavigate }: { onNavigate?: () => void }) {
+function LegacyBottomNavigation({ onNavigate }: { onNavigate?: () => void }) {
   const { pathname } = useLocation();
   const [more, setMore] = useState(false);
   const closeReason = useRef<'navigation' | 'desktop' | null>(null);
@@ -81,4 +83,9 @@ export default function BottomNavigation({ onNavigate }: { onNavigate?: () => vo
       </DialogContent>
     </Dialog>
   </>;
+}
+
+export default function BottomNavigation(props: Parameters<typeof LegacyBottomNavigation>[0]) {
+  const mindmarket = useMindMarketDesign();
+  return mindmarket ? <MMBottomNav {...props}/> : <LegacyBottomNavigation {...props}/>;
 }

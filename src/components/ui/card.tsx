@@ -1,12 +1,15 @@
 import * as React from "react"
 
+import LiquidGlass from "../LiquidGlass"
+
 import { cn } from "@/lib/utils"
 
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div
+  <LiquidGlass
+    density="workspace"
     ref={ref}
     className={cn(
       "rounded-sm border bg-card text-card-foreground ",
@@ -21,7 +24,8 @@ const CardHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div
+  <LiquidGlass
+    density="workspace"
     ref={ref}
     className={cn("flex flex-col space-y-1.5 p-6", className)}
     {...props}
@@ -68,7 +72,8 @@ const CardFooter = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div
+  <LiquidGlass
+    density="workspace"
     ref={ref}
     className={cn("flex items-center p-6 pt-0", className)}
     {...props}

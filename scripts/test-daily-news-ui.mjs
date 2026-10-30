@@ -50,6 +50,8 @@ const fixtureUrl = moduleUrl(`
   export const useGSAP = () => {};
   export const gsap = {};
   export const useHomeScrollReveal = () => {};
+  export const useHomeEntryAnimation = () => false;
+  export const useMindMarketDesign = () => true;
   export const useAuth = () => ({loading:false,user:{id:'member'}});
   export const useUser = () => ({isLoading:false,isAuthenticated:true,user:{uniqueId:'member'}});
   export const listFrom = value => value;
@@ -61,7 +63,7 @@ const fixtureUrl = moduleUrl(`
   export function RefreshCw() { return null; }
   ${['AdminButton', 'Badge', 'ErrorState', 'Field', 'LoadingState', 'Modal', 'Panel', 'SelectInput', 'TextInput', 'Link'].map(name => `export function ${name}() { return null; }`).join('\n')}
 `);
-const inertUrl = moduleUrl('export default function InertPresentation() { return null; }');
+const inertUrl = moduleUrl('export default function InertPresentation() { return null; } export const MMHomeCallout = () => null; export const MMMarquee = () => null; export const MMCarousel = () => null; export const scrollMindMarketTo = () => {};');
 const readSource = relative => readFile(new URL(`../${relative}`, import.meta.url), 'utf8');
 const dailyUrl = moduleUrl(transpile(await readSource('src/pages/admin/ai/dailyNews.ts'))
   .replace(/(['"])(?:@\/lib\/axios|\.\/api)\1/g, JSON.stringify(fixtureUrl)));
@@ -76,8 +78,10 @@ const articleUrl = moduleUrl(transpile(await readSource('src/pages/ArticlePage.t
 const homeWithHooks = (await readSource('src/pages/Homepage.tsx'))
   .replace(/import \{ lazy, Suspense, useEffect, useRef, useState \} from 'react';/, `import {lazy,Suspense} from 'react'; import {useEffect,useRef,useState} from ${JSON.stringify(fixtureUrl)};`);
 const homeUrl = moduleUrl(transpile(homeWithHooks)
+  .replace(/(['"])\.\.\/design\/mindmarket\/DesignContext\1/g, JSON.stringify(fixtureUrl))
+  .replace(/(['"])\.\.\/design\/mindmarket\/(?:MMHomePrelude|MMMarquee|MMCarousel|MMHomeBrief|MMScrollCoordinator)\1/g, JSON.stringify(inertUrl))
   .replace(/^import ['"].*\.css['"];\n/gm, '')
-  .replace(/(['"])(?:@tanstack\/react-query|react-router-dom|@\/lib\/gsap|\.\.\/lib\/(?:axios|contentFormat)|\.\.\/utils\/eventTransform|\.\.\/hooks\/useHomeScrollReveal|\.\.\/context\/(?:authContextState|userContextState))\1/g, JSON.stringify(fixtureUrl))
+  .replace(/(['"])(?:@tanstack\/react-query|react-router-dom|@\/lib\/gsap|\.\.\/lib\/(?:axios|contentFormat|homeEntry)|\.\.\/utils\/eventTransform|\.\.\/hooks\/useHomeScrollReveal|\.\.\/context\/(?:authContextState|userContextState))\1/g, JSON.stringify(fixtureUrl))
   .replace(/(['"])\.\.\/components\/[^'"]+\1/g, JSON.stringify(inertUrl)));
 const [daily, {default:DailyNewsSettings}, {default:ArticlePage}, {default:Homepage}, hooks] =
   await Promise.all([import(dailyUrl), import(settingsUrl), import(articleUrl), import(homeUrl), import(fixtureUrl)]);

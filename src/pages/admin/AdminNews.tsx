@@ -1,3 +1,5 @@
+import { hasPermission } from '../../lib/roles';
+import { useAdminSession } from './adminSession';
 /**
  * 新闻管理 - list / create / edit / delete articles.
  * Reuses: POST /api/news, PUT /api/news/:id, DELETE /api/news/:id,
@@ -74,6 +76,7 @@ const emptyForm = (): NewsForm => ({
 });
 
 const AdminNewsPage: React.FC = () => {
+  const canConfigure = hasPermission(useAdminSession(), 'system:manage');
   const [data, setData] = useState<Paged<AdminNews> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -198,7 +201,7 @@ const AdminNewsPage: React.FC = () => {
             <AdminButton variant="secondary" onClick={() => void load()} loading={loading}>
               刷新
             </AdminButton>
-            <Link className="inline-flex min-h-11 items-center rounded-sm border border-border bg-card px-3.5 py-2 text-sm font-medium hover:bg-accent/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" to="/admin/ai#daily-news">AI 每日新闻</Link>
+            {canConfigure && <Link className="inline-flex min-h-11 items-center rounded-sm border border-border bg-card px-3.5 py-2 text-sm font-medium hover:bg-accent/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" to="/admin/ai#daily-news">AI 每日新闻</Link>}
             <AdminButton onClick={openCreate}>
               <Plus className="h-4 w-4" />
               发布新闻
@@ -247,7 +250,7 @@ const AdminNewsPage: React.FC = () => {
         ) : !data || data.items.length === 0 ? (
           <EmptyState
             title="还没有新闻"
-            description="手动发布一篇，或前往 AI 助手设置每日新闻。"
+            description={canConfigure ? '手动发布一篇，或前往 AI 助手设置每日新闻。' : '点击新建新闻，填写内容并发布。'}
             action={<AdminButton onClick={openCreate}>发布新闻</AdminButton>}
           />
         ) : (

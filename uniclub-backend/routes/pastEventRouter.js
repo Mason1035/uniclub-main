@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const PastEvent = require('../models/PastEvent');
-const requireAdmin = require('../middleware/admin');
+const { requireAdmin, requireStaff } = require('../middleware/admin');
 
 /**
  * 图片以 Base64 存在库里，一条往期活动的「海报 + 相册」可能有几十 MB。
@@ -63,7 +63,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/past-events - Create a new past event (admin only)
-router.post('/', requireAdmin, async (req, res) => {
+router.post('/', requireStaff, async (req, res) => {
   try {
     const { poster, title, subtitle, date, body, category, attendance, tags, link, gallery } = req.body;
     
@@ -184,7 +184,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // PUT /api/past-events/:id - Update a past event (admin only)
-router.put('/:id', requireAdmin, async (req, res) => {
+router.put('/:id', requireStaff, async (req, res) => {
   try {
     const { poster, title, subtitle, date, body, category, attendance, tags, link, gallery } = req.body;
     
@@ -206,7 +206,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
 });
 
 // DELETE /api/past-events/:id - Delete a past event (admin only)
-router.delete('/:id', requireAdmin, async (req, res) => {
+router.delete('/:id', requireStaff, async (req, res) => {
   try {
     const pastEvent = await PastEvent.findByIdAndDelete(req.params.id);
     if (!pastEvent) {

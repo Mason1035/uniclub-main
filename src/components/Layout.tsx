@@ -1,14 +1,17 @@
-import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/userContextState';
 import { usePopup } from '../context/popupContextState';
 import SiteHeader from './SiteHeader';
+import { useMindMarketDesign } from '../design/mindmarket/DesignContext';
 import SiteFooter from './SiteFooter';
 import BottomNavigation from './BottomNavigation';
 import ContentState from './ContentState';
 import { useAuth } from '../context/authContextState';
 import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
 import { SearchContext } from '../context/searchContextState';
+import { useTheme } from '../context/themeContextState';
+import AppearanceToggle from './AppearanceToggle';
 
 const SearchDialog = lazy(() => import('./SearchDialog'));
 const UserProfile = lazy(() => import('./UserProfile'));
@@ -37,9 +40,15 @@ export default function Layout({ children, notFound = false }: { children: React
   const navigate = useNavigate();
   const auth = useAuth();
   const checking = isLoading || auth.loading;
-  const member = !checking && isAuthenticated && !!auth.user;
+  const member = isAuthenticated && !!auth.user;
+  // Cached identity paints public chrome; protected routes still require server verification.
+  const protecting = checking || (!!auth.hasToken && !auth.verified);
   const normalizedPath = pathname.replace(/\/+$/, '').toLowerCase() || '/';
-  const publicPage = notFound || normalizedPath === '/' || normalizedPath === '/privacy' || normalizedPath === '/about';
+  const mindmarket = useMindMarketDesign();
+  const immersiveAbout = normalizedPath === '/about' && !mindmarket;
+  const { isDarkMode: starry } = useTheme();
+  const publicResource = normalizedPath === '/resources' || /^\/resource\/[a-f0-9]{24}$/.test(normalizedPath);
+  const publicPage = notFound || publicResource || normalizedPath === '/' || normalizedPath === '/privacy' || normalizedPath === '/about';
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchActivated, setSearchActivated] = useState(false);
   const [profileActivated, setProfileActivated] = useState(false);
@@ -65,13 +74,6 @@ export default function Layout({ children, notFound = false }: { children: React
   // Keep each dialog mounted after first use so its close/reset/focus lifecycle runs.
   useEffect(() => { if (searchOpen) setSearchActivated(true); }, [searchOpen]);
   useEffect(() => { if (showUserProfile) setProfileActivated(true); }, [showUserProfile]);
-  // Keep the accepted home presentation; shared neutral tokens serve all routes.
-  useLayoutEffect(() => {
-    if (pathname !== '/') return;
-    const root = document.documentElement;
-    root.setAttribute('data-classhub-page', 'home');
-    return () => root.removeAttribute('data-classhub-page');
-  }, [pathname]);
   useEffect(() => {
     const handle = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k' && member) {
@@ -85,13 +87,20 @@ export default function Layout({ children, notFound = false }: { children: React
   }, [member, searchOpen]);
   useEffect(() => { if (!member) setSearchOpen(false); }, [member]);
   if (normalizedPath === '/auth') return <>{children}</>;
-  if (!publicPage && checking) return <div className="site-container py-12"><ContentState loading/></div>;
+  if (!publicPage && protecting) return <div className="site-container py-12"><ContentState loading={!auth.error} error={auth.error} onRetry={() => window.dispatchEvent(new Event('auth:changed'))}/></div>;
   if (!publicPage && !member) return <Navigate to="/auth" replace state={{ from: pathname + search + hash }}/>;
-  return <SearchContext.Provider value={{ openSearch }}><div className="site-shell">
-    <a className="skip-link" href="#main-content">跳到正文</a>
-    <SiteHeader isAuthenticated={member} name={member ? user.displayName || user.name : ''} onSearch={openSearch} onProfile={openProfile}/>
+  const pageContent = <>
     <main id="main-content" tabIndex={-1} className="site-main site-container">{children}</main>
     <SiteFooter/>
+  </>;
+  return <SearchContext.Provider value={{ openSearch }}><div className={`site-shell${mindmarket ? ' mm-shell' : ''}${immersiveAbout ? ' site-shell--about' : ''}${starry ? ' site-shell--starry' : ''}`}>
+    {immersiveAbout && !starry && <div id="about-background-host" aria-hidden="true"/>}
+    {immersiveAbout && <AppearanceToggle className="appearance-toggle--floating"/>}
+    <a className="skip-link" href="#main-content">跳到正文</a>
+    {!immersiveAbout && <SiteHeader isAuthenticated={member} checking={checking} name={member ? user.displayName || user.name : ''} onSearch={openSearch} onProfile={openProfile}/>}
+    {immersiveAbout ? <div id="about-scroll-wrapper"><div id="about-scroll-content">
+      {pageContent}
+    </div></div> : pageContent}
     <BottomNavigation onNavigate={closeUserProfile}/>
     {member && <>
       {(searchOpen || searchActivated) && <Suspense fallback={searchOpen ? <ModalLoading label="搜索" onClose={() => setSearchOpen(false)} restoreFocusRef={searchOpener} isOpenRef={searchOpenRef}/> : null}>

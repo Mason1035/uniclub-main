@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const User = require('../models/User');
 const authenticateToken = require('../middleware/auth');
 const requireAdmin = require('../middleware/admin');
+const { roleInfo } = require('../utils/roles');
 const { avatarUploadLimit } = require('../middleware/rateLimit');
 const multer = require('multer');
 const { resolveUserSettings, validateSettingsPatch } = require('../utils/petSettingsPolicy');
@@ -114,7 +115,7 @@ router.get('/avatar/:userId', async (req, res) => {
     if (!avatar?.data || !['image/jpeg', 'image/png', 'image/webp'].includes(avatar.contentType)) return res.status(404).json({ error: 'Avatar not found' });
     const data = Buffer.from(avatar.data.split(',')[1] || '', 'base64');
     if (!data.length) return res.status(404).json({ error: 'Avatar not found' });
-    res.set({ 'Content-Type': avatar.contentType, 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'public, max-age=3600' });
+    res.set({ 'Content-Type': avatar.contentType, 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'private, max-age=300' });
     res.send(data);
   } catch { res.status(503).json({ error: '头像暂时无法加载。' }); }
 });
@@ -131,8 +132,8 @@ router.get('/ping', (req, res) => res.json({ status: 'ok', message: 'User router
 router.get('/', requireAdmin, async (req, res) => {
   try {
     const { page = 1, limit = 20 } = req.query;
-    const users = await User.find({}, 'name uniqueId isAdmin isVerified profile.avatar.contentType').limit(Number(limit)).skip((Number(page) - 1) * Number(limit)).lean();
-    res.json(users.map(user => ({ id: user._id, name: user.name, uniqueId: user.uniqueId, isAdmin: user.isAdmin === true, isVerified: user.isVerified === true, hasAvatar: Boolean(user.profile?.avatar?.contentType) })));
+    const users = await User.find({}, 'name uniqueId role isAdmin isVerified profile.avatar.contentType').limit(Number(limit)).skip((Number(page) - 1) * Number(limit)).lean();
+    res.json(users.map(user => ({ id: user._id, name: user.name, uniqueId: user.uniqueId, ...roleInfo(user), isVerified: user.isVerified === true, hasAvatar: Boolean(user.profile?.avatar?.contentType) })));
   } catch { res.status(500).json({ error: 'Failed to fetch users' }); }
 });
 module.exports = router;

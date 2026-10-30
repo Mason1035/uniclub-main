@@ -233,3 +233,39 @@ test('removing a roster record preserves the existing login account', async () =
   assert.equal(roster.length, 0);
   assert.equal(users.length, 2);
 });
+
+test('unified directory joins roster and account by student ID and preserves outside accounts', async () => {
+  roster.push({ _id:'aaaaaaaaaaaaaaaaaaaaaaaa', uniqueId:'2023000001', name:'Existing member' });
+  roster.push({ _id:'bbbbbbbbbbbbbbbbbbbbbbbb', uniqueId:'2023000005', name:'Pending member' });
+  const result=await request('GET','/api/admin/members',adminId);
+  assert.equal(result.status,200);assert.equal(result.body.members.length,3);
+  assert.equal(result.body.members.filter(row=>row.uniqueId==='2023000001').length,1);
+  assert.equal(result.body.summary.pending,1);assert.equal(result.body.summary.outside,1);
+  assert.equal(result.body.members.find(row=>row.uniqueId==='2023000005').accountId,null);
+  assert.equal(writes.length,0);
+});
+test('unified directory respects four-role access without widening roster write privileges', async () => {
+  assert.equal((await request('GET','/api/admin/members')).status,401);
+  assert.equal((await request('GET','/api/admin/members',memberId,undefined,{role:'admin'})).status,403);
+  for(const role of ['committee','teacher']){
+    users[1].role=role;
+    assert.equal((await request('GET','/api/admin/members',memberId)).status,200);
+    assert.equal((await request('POST','/api/admin/roster',memberId,{uniqueId:'2023000005',name:'Forbidden'})).status,403);
+    assert.equal((await request('DELETE','/api/admin/roster/aaaaaaaaaaaaaaaaaaaaaaaa',memberId)).status,403);
+  }
+  assert.equal(writes.length,0);
+});
+test('adding/importing and removing through the unified page keeps accounts and identity assignments intact', async () => {
+  assert.equal((await request('POST','/api/admin/roster',adminId,{uniqueId:'2023000005',name:'New member'})).status,201);
+  const added=users.find(row=>row.uniqueId==='2023000005');
+  added.role='committee';added.isAdmin=false;
+  const hash=added.passwordHash;
+  assert.equal((await request('POST','/api/admin/roster/bulk',adminId,{text:'2023000005,New member\n2023000006,Second member'})).status,200);
+  const joined=await request('GET','/api/admin/members?role=committee&membership=enrolled',adminId);
+  assert.equal(joined.status,200);assert.equal(joined.body.members.length,1);
+  const row=joined.body.members[0];assert.equal(row.accountId,added._id);assert.ok(row.rosterId);
+  assert.equal((await request('DELETE','/api/admin/roster/'+row.rosterId,adminId)).status,200);
+  const outside=await request('GET','/api/admin/members?role=committee&membership=outside',adminId);
+  assert.equal(outside.body.members[0].accountId,added._id);
+  assert.equal(added.passwordHash,hash);assert.equal(added.role,'committee');
+});

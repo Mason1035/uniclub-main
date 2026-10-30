@@ -9,7 +9,7 @@ process.env.REQUIRE_ENROLLED_ROSTER = 'false';
 const UserSchema = require('../models/User');
 const { NOTIFICATION_DEFAULTS } = require('../utils/accountSettingsPolicy');
 const a = '111111111111111111111111', b = '222222222222222222222222', admin = '333333333333333333333333';
-let accounts, writes, notices, failDb, simulateRace, server, origin, images;
+let accounts, writes, notices, failDb, simulateRace, server, origin, images, selections;
 const get = (row, path) => path.split('.').reduce((value, key) => value?.[key], row);
 const set = (row, path, value) => { const keys = path.split('.'); const last = keys.pop(); let target = row; for (const key of keys) target = target[key] ||= {}; target[last] = value; };
 const unset = (row, path) => { const keys = path.split('.'); const last = keys.pop(); let target = row; for (const key of keys) target = target?.[key]; if (target) delete target[last]; };
@@ -20,7 +20,7 @@ const matches = (row, filter) => Object.entries(filter).every(([key, value]) => 
   if (value && typeof value === 'object') return Object.hasOwn(value, '$ne') ? actual !== value.$ne : Object.hasOwn(value, '$exists') ? (actual !== undefined) === value.$exists : false;
   return value === null ? actual == null : actual === value;
 });
-const query = value => ({ select() { return this; }, lean() { return this; }, populate() { return this; }, sort() { return this; }, limit() { return this; }, skip() { return this; }, then(resolve, reject) { return (failDb ? Promise.reject(new Error('offline')) : Promise.resolve(value)).then(resolve, reject); } });
+const query = value => ({ select(fields) { selections.push(fields); return this; }, lean() { return this; }, populate() { return this; }, sort() { return this; }, limit() { return this; }, skip() { return this; }, then(resolve, reject) { return (failDb ? Promise.reject(new Error('offline')) : Promise.resolve(value)).then(resolve, reject); } });
 function update(row, changes) {
   for (const [key, value] of Object.entries(changes.$set || {})) set(row, key, value);
   for (const [key, value] of Object.entries(changes.$inc || {})) set(row, key, (get(row, key) || 0) + value);
@@ -53,7 +53,7 @@ before(async () => {
 after(async () => { await new Promise(resolve => server.close(resolve)); });
 beforeEach(() => {
   accounts = Object.fromEntries([a,b,admin].map((id,index) => [id, { _id:id, name:'真实姓名'+index, uniqueId:'AC-'+index, passwordHash:bcrypt.hashSync('Current-2026!',6), tokenVersion:0, isAdmin:id===admin, profile:{bio:''}, settings:{profileVisibility:'private'}, secret:'never-return' }]));
-  accounts[b].email='taken@example.test'; writes=[]; notices=[]; failDb=false;simulateRace=false;
+  accounts[b].email='taken@example.test'; writes=[]; notices=[]; selections=[]; failDb=false;simulateRace=false;
   for (const id of [a,b,admin]) { passwordChangeLimit.resetKey(id);avatarUploadLimit.resetKey(id); }
 });
 const noSecrets = value => { const text=JSON.stringify(value); for (const key of ['passwordHash','secret','tokenVersion','verificationToken','sessionToken']) assert.equal(text.includes('"'+key+'"'),false); };
@@ -61,20 +61,51 @@ test('anonymous account operations are denied', async () => {
   for (const [method,path,body] of [['GET','/api/users/me/settings'],['PUT','/api/users/profile',{bio:'x'}],['PATCH','/api/users/me/email',{email:'a@example.test'}],['POST','/api/auth/change-password',{currentPassword:'x',newPassword:'abcdefgh',confirmPassword:'abcdefgh'}]]) assert.equal((await request(method,path,null,body)).status,401);
   assert.equal(writes.length,0);
 });
-test('shared identity includes only the signed-in profile and one avatar payload', async () => {
+test('shared identity projects only the signed-in profile and a versioned avatar URL', async () => {
   accounts[a].profile = { bio: '本人简介', location: '成都', website: 'https://example.test', interests: ['绘画'],
-    avatar: { data: 'data:image/webp;base64,avatar-bytes', contentType: 'image/webp' }, secret: 'never-return' };
+    avatar: { data: 'data:image/webp;base64,avatar-bytes', contentType: 'image/webp', uploadedAt: new Date('2026-10-27T00:00:00Z') }, secret: 'never-return' };
   const result = await request('GET', '/api/auth/me');
   assert.equal(result.status, 200);
   assert.equal(result.headers.get('cache-control'), 'private, no-store');
   assert.equal(result.data.user.id, a);
   assert.equal(result.data.user.isAdmin, false);
   assert.deepEqual(result.data.user.profile, { bio: '本人简介', location: '成都', website: 'https://example.test', interests: ['绘画'] });
-  assert.equal(result.data.user.avatar.data, accounts[a].profile.avatar.data);
-  assert.equal(JSON.stringify(result.data).split('avatar-bytes').length - 1, 1);
+  assert.equal(result.data.user.avatarUrl, `/api/users/avatar/${a}?v=${encodeURIComponent(String(accounts[a].profile.avatar.uploadedAt))}`);
+  assert.equal(Object.hasOwn(result.data.user, 'avatar'), false);
+  assert.equal(JSON.stringify(result.data).includes('avatar-bytes'), false);
+  const fields = selections.at(-1).split(' ');
+  for (const field of ['_id', 'name', 'email', 'displayName', 'uniqueId', 'role', 'isAdmin', 'profile.bio', 'profile.location', 'profile.website', 'profile.interests', 'profile.avatar.contentType', 'profile.avatar.uploadedAt']) assert.ok(fields.includes(field));
+  for (const field of ['profile', 'profile.avatar', 'profile.avatar.data', 'passwordHash', 'tokenVersion', 'settings', 'socialStats']) assert.equal(fields.includes(field), false);
   noSecrets(result.data);
   assert.equal((await request('GET', '/api/auth/me', null)).status, 401);
   assert.equal(writes.length, 0);
+});
+for (const [role, permissions] of [
+  ['student', []],
+  ['committee', ['backend', 'content:manage']],
+  ['teacher', ['backend', 'content:manage', 'roles:manage']],
+  ['admin', ['backend', 'content:manage', 'roles:manage', 'system:manage', 'roster:manage']],
+]) test(`slim identity preserves the ${role} role and server permissions`, async () => {
+  accounts[a].role = role;
+  accounts[a].isAdmin = role === 'admin';
+  const result = await request('GET', '/api/auth/me');
+  assert.equal(result.status, 200);
+  assert.equal(result.data.user.role, role);
+  assert.equal(result.data.user.isAdmin, role === 'admin');
+  assert.deepEqual(result.data.user.permissions, permissions);
+  assert.equal(result.data.user.avatarUrl, null);
+});
+test('identity size stays small with a 64 KiB avatar fixture', async t => {
+  accounts[a].profile.avatar = { data: `data:image/webp;base64,${Buffer.alloc(64 * 1024, 7).toString('base64')}`, contentType: 'image/webp', size: 64 * 1024, uploadedAt: new Date('2026-10-27T00:00:00Z') };
+  const result = await request('GET', '/api/auth/me');
+  assert.equal(result.status, 200);
+  const { avatarUrl, ...identity } = result.data.user;
+  assert.ok(avatarUrl);
+  const beforeBytes = Buffer.byteLength(JSON.stringify({ user: { ...identity, avatar: accounts[a].profile.avatar } }));
+  const afterBytes = Buffer.byteLength(JSON.stringify(result.data));
+  assert.ok(afterBytes < 2048, `identity was ${afterBytes} bytes`);
+  assert.ok(afterBytes < beforeBytes / 100);
+  t.diagnostic(`64 KiB avatar fixture, uncompressed JSON: ${beforeBytes} -> ${afterBytes} bytes (${((1 - afterBytes / beforeBytes) * 100).toFixed(2)}% smaller)`);
 });
 test('legacy accounts get one safe bundle with nullable metadata and notification defaults', async () => {
   const result=await request('GET','/api/users/me/settings'); assert.equal(result.status,200);noSecrets(result.data);
@@ -135,6 +166,16 @@ test('existing comment notices honor news, activity and material preferences',as
 for(const type of ['image/jpeg','image/png','image/webp'])test('avatar '+type+' is validated, reduced and stored only on the owner',async()=>{
   const form=new FormData();form.append('avatar',new Blob([images[type]],{type}),'avatar');const result=await request('POST','/api/users/avatar',a,form);assert.equal(result.status,200);assert.equal(result.data.avatar.contentType,'image/webp');const bytes=Buffer.from(result.data.avatar.data.split(',')[1],'base64');const metadata=await sharp(bytes).metadata();assert.equal(metadata.width,256);assert.equal(metadata.height,256);assert.equal(accounts[b].profile.avatar,undefined);noSecrets(result.data);
   assert.equal((await request('GET','/api/users/avatar/'+a,null)).status,200);await request('DELETE','/api/users/avatar');assert.equal(accounts[a].profile.avatar,undefined);
+});
+test('versioned avatar uses a private browser cache and conditional ETag responses', async () => {
+  accounts[a].profile.avatar = { data: 'data:image/webp;base64,' + images['image/webp'].toString('base64'), contentType: 'image/webp', uploadedAt: new Date('2026-10-27T00:00:00Z') };
+  const first = await request('GET', '/api/users/avatar/' + a, null);
+  assert.equal(first.status, 200);
+  assert.equal(first.headers.get('cache-control'), 'private, max-age=300');
+  assert.ok(first.headers.get('etag'));
+  const unchanged = await fetch(origin + '/api/users/avatar/' + a, { cache: 'no-cache', headers: { 'If-None-Match': first.headers.get('etag') } });
+  assert.equal(unchanged.status, 304);
+  assert.equal((await unchanged.arrayBuffer()).byteLength, 0);
 });
 test('fake, unsupported and oversized avatar uploads are rejected without a database write',async()=>{
   for(const [bytes,type] of [[Buffer.from('<svg/>'),'image/svg+xml'],[Buffer.from('not a png'),'image/png'],[images['image/png'],'image/jpeg'],[Buffer.alloc(5*1024*1024+1),'image/png']]){

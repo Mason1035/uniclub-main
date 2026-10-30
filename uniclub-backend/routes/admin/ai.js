@@ -1,14 +1,17 @@
 const express = require('express');
+const requireAdmin = require('../../middleware/admin');
 const multer = require('multer');
 const { createAiRateLimiter, sendAiError, aiRequest } = require('../../utils/aiHttp');
 const { DeepSeekAssistant } = require('../../services/DeepSeekAssistant');
 const { AiError } = require('../../utils/aiSecret');
 const { SCENARIOS } = require('../../utils/aiPrompts');
 const { LIMITS } = require('../../utils/aiValidation');
+const {withAssistantUsage}=require('../../services/AssistantQuotaService');
 
-// Mounted under /api/admin after the DB-backed requireAdmin middleware.
-function createAiRouter({ assistant = new DeepSeekAssistant(), requestTimeoutMs = 240000 } = {}) {
+// The parent console admits content managers; all AI capabilities remain admin-only.
+function createAiRouter({ assistant = new DeepSeekAssistant(), requestTimeoutMs = 240000, withUsage = withAssistantUsage } = {}) {
   const router = express.Router();
+  router.use(requireAdmin);
   const generationLimit = createAiRateLimiter(20);
   const keyLimit = createAiRateLimiter(10, '密钥操作次数较多，请稍后再试。');
   const upload = multer({ storage: multer.memoryStorage(), limits: { files: LIMITS.images, fileSize: LIMITS.imageBytes, fields: 3, fieldSize: 160 * 1024, parts: 7 } }).array('images', LIMITS.images);
@@ -23,7 +26,7 @@ function createAiRouter({ assistant = new DeepSeekAssistant(), requestTimeoutMs 
   router.get('/status', action(async () => ({
     ...(await assistant.getSettings()), scenarios: Object.entries(SCENARIOS).map(([key, value]) => ({ key, ...value })), limits: LIMITS,
   })));
-  router.post('/test', keyLimit, action(() => assistant.testConnection()));
+  router.post('/test', keyLimit, action(async req => {const scoped=await withUsage(req.user.userId,()=>assistant.testConnection(),{source:'admin-test'});return {...scoped.result,usage:scoped.usage,quota:scoped.quota};}));
   const prepare = (req, res) => !req.is('multipart/form-data') ? undefined : new Promise((resolve, reject) => {
     upload(req, res, uploadError => {
       try {
@@ -36,7 +39,7 @@ function createAiRouter({ assistant = new DeepSeekAssistant(), requestTimeoutMs 
       } catch (error) { reject(error); }
     });
   });
-  router.post('/generate', generationLimit, aiRequest((req, options) => assistant.generate(req.body, req.files, options), { prepare, requestTimeoutMs, releaseBody: true }));
+  router.post('/generate', generationLimit, aiRequest(async (req, options) => {const scoped=await withUsage(req.user.userId,()=>assistant.generate(req.body, req.files, options),{source:'admin'});return {...scoped.result,usage:scoped.usage,quota:scoped.quota};}, { prepare, requestTimeoutMs, releaseBody: true }));
   return router;
 }
 module.exports = createAiRouter();

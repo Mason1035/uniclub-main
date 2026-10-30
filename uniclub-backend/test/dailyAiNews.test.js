@@ -226,3 +226,12 @@ test('external malicious instructions stay in data and protected instructions ar
     assert.ok(!JSON.stringify(request.messages).includes('isolated-test-placeholder'));
   }
 });
+
+test('manual daily-news model scope runs through the complete detached pipeline and prevents publication on quota exhaustion',async()=>{
+  const allowed=fixture();let entered=0;
+  const result=await allowed.service.requestRun({wait:true,modelScope:async run=>{entered++;return run();}});
+  assert.equal(entered,1);assert.equal(result.job.status,'success');
+  const blocked=fixture();
+  const failure=await blocked.service.requestRun({wait:true,modelScope:async()=>{throw new AiError('AI_QUOTA_EXCEEDED','额度不足',429);}});
+  assert.equal(failure.job.status,'failed');assert.equal(failure.job.errorCode,'AI_QUOTA_EXCEEDED');assert.equal(blocked.state.calls.length,0);assert.equal(blocked.state.published.length,0);assert.equal(blocked.state.released,1);
+});

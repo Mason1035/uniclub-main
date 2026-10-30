@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const authenticateToken = require('../middleware/auth');
-const { requireAdmin, isAdminUser } = require('../middleware/admin');
+const { requireStaff, isStaffUser } = require('../middleware/admin');
 const { paginationOf, paged } = require('./admin/_shared');
 const { FeeError, MAX_IMAGE_BYTES } = require('../utils/feeImage');
 const FeeService = require('../services/FeeService');
@@ -33,11 +33,11 @@ function handleError(error, req, res, next) {
   return res.status(500).json({ error: '班费服务暂时无法响应，请稍后重试。' });
 }
 
-function createFeesRouters(service = new FeeService(new FeeRepository(), { isAdmin: isAdminUser })) {
+function createFeesRouters(service = new FeeService(new FeeRepository(), { canManage: isStaffUser })) {
   const userRouter = express.Router();
   const adminRouter = express.Router();
   userRouter.use(privateResponse, authenticateToken);
-  adminRouter.use(privateResponse, requireAdmin);
+  adminRouter.use(privateResponse, requireStaff);
 
   userRouter.get('/settings', async (req, res) => res.json({ settings: await service.settings() }));
   userRouter.get('/payment-qr', async (req, res) => sendImage(res, await service.qr()));

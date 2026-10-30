@@ -1,141 +1,38 @@
-/**
- * 数据概览 - ClassHub admin dashboard.
- * Counters come from GET /api/admin/stats (admin-only, real database counts).
- */
-import React, { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { BookOpen, CalendarDays, Newspaper, ShieldCheck, Users } from 'lucide-react';
-import { errorMessage, getStats, type AdminStats } from './adminApi';
-import { AdminButton, ErrorState, LoadingState, PageHeader, Panel, StatCard } from './components';
+import { useEffect, useState } from 'react';
+import { RefreshCw, TriangleAlert } from 'lucide-react';
+import { useAdminSession } from './adminSession';
+import { errorMessage, getStats } from './adminApi';
+import DashboardCharts from './dashboard/DashboardCharts';
+import DashboardMetrics from './dashboard/DashboardMetrics';
+import DashboardManagement from './dashboard/DashboardManagement';
+import { useDashboardEntrance } from './dashboard/useDashboardMotion';
+import type { ContentDatum, DashboardDays, DashboardStats } from './dashboard/types';
+import './dashboard/dashboard.css';
 
-const AdminDashboard: React.FC = () => {
-  const [stats, setStats] = useState<AdminStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      setStats(await getStats());
-    } catch (err) {
-      setError(errorMessage(err));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  return (
-    <>
-      <PageHeader
-        title="数据概览"
-        subtitle="ClassHub 平台整体运行情况"
-        actions={
-          <AdminButton variant="secondary" onClick={() => void load()} loading={loading}>
-            刷新数据
-          </AdminButton>
-        }
-      />
-
-      {loading && !stats ? (
-        <LoadingState label="正在加载统计数据…" />
-      ) : error ? (
-        <ErrorState message={error} onRetry={() => void load()} />
-      ) : (
-        stats && (
-          <div className="space-y-6">
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <StatCard
-                icon={<Users className="h-5 w-5" />}
-                label="用户数量"
-                value={stats.users}
-                hint={`其中管理员 ${stats.breakdown?.admins ?? 0} 人`}
-              />
-              <StatCard
-                icon={<CalendarDays className="h-5 w-5" />}
-                label="活动数量"
-                value={stats.events}
-                hint="包含草稿与已发布"
-              />
-              <StatCard
-                icon={<Newspaper className="h-5 w-5" />}
-                label="新闻数量"
-                value={stats.news}
-                hint={`待审 ${stats.breakdown?.pendingNews ?? 0} 篇`}
-              />
-              <StatCard
-                icon={<BookOpen className="h-5 w-5" />}
-                label="资源数量"
-                value={stats.resources}
-                hint={`待审 ${stats.breakdown?.pendingResources ?? 0} 个`}
-              />
-            </div>
-
-            <div className="grid gap-4 lg:grid-cols-3">
-              <Panel title="快捷操作">
-                <div className="flex flex-wrap gap-2">
-                  <Link to="/admin/events">
-                    <AdminButton variant="secondary">管理活动</AdminButton>
-                  </Link>
-                  <Link to="/admin/news">
-                    <AdminButton variant="secondary">管理新闻</AdminButton>
-                  </Link>
-                  <Link to="/admin/resources">
-                    <AdminButton variant="secondary">管理资源</AdminButton>
-                  </Link>
-                  <Link to="/admin/members">
-                    <AdminButton variant="secondary">查看成员</AdminButton>
-                  </Link>
-                </div>
-              </Panel>
-
-              <Panel title="待处理事项">
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center justify-between">
-                    <span>待审核资源</span>
-                    <span className="font-semibold tabular-nums text-foreground">
-                      {stats.breakdown?.pendingResources ?? 0}
-                    </span>
-                  </li>
-                  <li className="flex items-center justify-between">
-                    <span>待审核新闻</span>
-                    <span className="font-semibold tabular-nums text-foreground">
-                      {stats.breakdown?.pendingNews ?? 0}
-                    </span>
-                  </li>
-                  <li className="flex items-center justify-between">
-                    <span>管理员账号</span>
-                    <span className="font-semibold tabular-nums text-foreground">
-                      {stats.breakdown?.admins ?? 0}
-                    </span>
-                  </li>
-                </ul>
-              </Panel>
-
-              <Panel title="系统状态">
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <ShieldCheck className="h-4 w-4 text-primary" />
-                    已通过管理员身份校验
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    数据更新时间：{new Date(stats.generatedAt).toLocaleString('zh-CN')}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    班级内容和成员管理仅向管理员开放。
-                  </p>
-                </div>
-              </Panel>
-            </div>
-          </div>
-        )
-      )}
-    </>
-  );
-};
-
-export default AdminDashboard;
+function DashboardContent({stats,busy,onDaysChange}:{stats:DashboardStats;busy:boolean;onDaysChange:(days:DashboardDays)=>void}) {
+  const root=useDashboardEntrance();
+  const session=useAdminSession();
+  const content:ContentDatum[]=[{key:'news',label:'新闻',count:stats.news,to:'/admin/news'},{key:'events',label:'活动',count:stats.events,to:'/admin/events'},{key:'resources',label:'资源',count:stats.resources,to:'/admin/resources'}];
+  return <div ref={root} className="ch-dash__content"><DashboardMetrics stats={stats}/><DashboardCharts roles={stats.roles} timeline={stats.timeline} content={content} busy={busy} onDaysChange={onDaysChange}/><DashboardManagement stats={stats} session={session}/></div>;
+}
+function DashboardSkeleton() {
+  return <div className="ch-dash__skeleton" role="status" aria-label="正在读取统计数据"><div className="ch-dash__metrics">{[0,1,2,3].map(key=><div key={key} className="ch-dash__placeholder"/>)}</div><div className="ch-dash__charts">{[0,1,2].map(key=><div key={key} className="ch-dash__placeholder ch-dash__placeholder--chart"/>)}</div><span className="sr-only">正在读取统计数据…</span></div>;
+}
+export default function AdminDashboard() {
+  const [days,setDays]=useState<DashboardDays>(30),[refresh,setRefresh]=useState(0);
+  const [stats,setStats]=useState<DashboardStats|null>(null),[busy,setBusy]=useState(true),[error,setError]=useState('');
+  const session=useAdminSession();
+  useEffect(()=>{
+    let active=true;
+    const controller=new AbortController();
+    setBusy(true);setError('');
+    getStats(days,controller.signal).then(result=>{if(active)setStats(result);}).catch(failure=>{if(active&&!controller.signal.aborted)setError(errorMessage(failure));}).finally(()=>{if(active)setBusy(false);});
+    return ()=>{active=false;controller.abort();};
+  },[days,refresh,session?.id]);
+  return <div className="ch-dashboard">
+    <header className="ch-dash__heading"><div><h1 className="ch-dash__title">数据概览</h1><p>ClassHub 平台整体运行情况</p></div><button type="button" className="ch-dash__refresh" disabled={busy} onClick={()=>setRefresh(value=>value+1)}><RefreshCw size={17} className={busy?'ch-dash__spin':''}/>{busy?'正在刷新':'刷新数据'}</button></header>
+    {error&&<div className="ch-dash__error" role="alert"><TriangleAlert size={20}/><div><strong>{error}</strong>{stats&&<p>正在显示上次成功读取的数据，图表范围为近 {stats.timeline.days} 天。</p>}</div><button type="button" onClick={()=>setRefresh(value=>value+1)} disabled={busy}>重试</button></div>}
+    {stats?<DashboardContent stats={stats} busy={busy} onDaysChange={setDays}/>:busy?<DashboardSkeleton/>:null}
+    <p className="ch-dash__source">总量包含当前保存的各状态内容；新增趋势按创建日期统计。身份与内容数量均来自后台实时查询。</p>
+  </div>;
+}

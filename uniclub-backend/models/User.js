@@ -87,7 +87,11 @@ const userSchema = new mongoose.Schema({
     default: false
   },
   
-  // Admin privileges
+  // No role default: old isAdmin accounts retain their identity without a bulk migration.
+  role: { type: String, enum: ['student', 'committee', 'teacher', 'admin'] },
+  roleVersion: { type: Number, default: 0 },
+
+  // Legacy compatibility flag; role assignments keep it synchronized.
   isAdmin: {
     type: Boolean,
     default: false

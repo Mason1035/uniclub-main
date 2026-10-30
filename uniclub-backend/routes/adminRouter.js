@@ -1,8 +1,7 @@
 /**
- * Admin-only API surface for the ClassHub management console.
+ * Role-protected API surface for the ClassHub management console.
  *
- * Every route in this router is protected by requireAdmin, which resolves
- * User.isAdmin from MongoDB. The frontend never decides permissions on its own.
+ * Every route resolves the current role from MongoDB. The frontend never decides permissions on its own.
  */
 const express = require('express');
 const router = express.Router();
@@ -14,52 +13,52 @@ const Event = require('../models/Event');
 const News = require('../models/News');
 const Resource = require('../models/Resource');
 const requireAdmin = require('../middleware/admin');
+const { requireStaff, requireRoleManager } = require('../middleware/admin');
+const { ROLES, roleFilter } = require('../utils/roles');
+const { RoleAssignmentService, memberDto } = require('../services/RoleAssignmentService');
+const roles = new RoleAssignmentService();
 const RosterService = require('../services/RosterService');
 const { parseRosterText } = require('../utils/rosterPolicy');
 const rosterService = new RosterService();
 const { escapeRegex, paginationOf, paged } = require('./admin/_shared');
 
-// Every route below requires a verified admin.
-router.use(requireAdmin);
+// Business management is shared by committee, teacher and administrator roles.
+router.use(requireStaff);
+router.use((req, res, next) => { res.set('Cache-Control', 'private, no-store'); next(); });
 router.use('/quantification', require('./quantificationRouter').adminRouter);
 router.use('/fees', require('./feesRouter').adminRouter);
+router.use('/resource-quick-links', require('./resourceQuickLinksRouter').adminRouter);
 
 // 其余管理员模块拆到 routes/admin/ 下，挂载点仍是 /api/admin/*
 router.use('/announcements', require('./admin/announcements'));
 router.use('/past-events', require('./admin/gallery'));
-router.use('/ai/daily-news', require('./admin/dailyNews'));
-router.use('/ai', require('./admin/ai'));
+router.use('/ai/daily-news', requireAdmin, require('./admin/dailyNews'));
+router.use('/ai', requireAdmin, require('./admin/ai'));
+router.use('/feedback', requireAdmin, require('./admin/feedback'));
 
 /* ------------------------------------------------------------------ */
 /* GET /api/admin/stats - dashboard counters                           */
 /* ------------------------------------------------------------------ */
+const { DashboardStatsService } = require('../services/DashboardStatsService');
+const dashboardStats = new DashboardStatsService();
 router.get('/stats', async (req, res) => {
-  try {
-    const [users, events, news, resources, admins, pendingResources, pendingNews] = await Promise.all([
-      User.countDocuments({}),
-      Event.countDocuments({}),
-      News.countDocuments({}),
-      Resource.countDocuments({}),
-      User.countDocuments({ isAdmin: true }),
-      Resource.countDocuments({ status: 'pending' }),
-      News.countDocuments({ status: 'pending' }),
-    ]);
+  if (Object.keys(req.query).some(key => key !== 'days')) return res.status(400).json({ error: '统计接口仅支持 days 时间范围参数。' });
+  try { res.json(await dashboardStats.get(req.query.days)); }
+  catch (error) {
+    if (!error.status) console.error('Dashboard statistics failed:', error.message);
+    res.status(error.status || 503).json({ error:error.status ? error.message : '统计数据暂时无法读取，请稍后重试。' });
+  }
+});
 
-    res.json({
-      users,
-      events,
-      news,
-      resources,
-      breakdown: {
-        admins,
-        pendingResources,
-        pendingNews,
-      },
-      generatedAt: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('❌ Admin stats error:', error);
-    res.status(500).json({ error: 'Failed to load statistics' });
+// Unified member directory; roster mutations and role assignments keep their
+// existing, independently enforced authorization rules.
+const { MemberDirectoryService } = require('../services/MemberDirectoryService');
+const memberDirectory = new MemberDirectoryService();
+router.get('/members', async (req, res) => {
+  try { res.json(await memberDirectory.list(req.query)); }
+  catch (error) {
+    if (!error.status) console.error('Member directory failed:', error.message);
+    res.status(error.status || 503).json({ error: error.status ? error.message : '成员列表暂时无法读取，请稍后重试。' });
   }
 });
 
@@ -76,14 +75,15 @@ router.get('/users', async (req, res) => {
       const rx = new RegExp(escapeRegex(search), 'i');
       filter.$or = [{ name: rx }, { email: rx }, { uniqueId: rx }];
     }
-    if (role === 'admin') filter.isAdmin = true;
-    if (role === 'member') filter.isAdmin = { $ne: true };
+    const requestedRole = role === 'member' ? 'student' : role;
+    if (requestedRole && requestedRole !== 'all' && !ROLES.includes(requestedRole)) return res.status(400).json({ error: '无效的身份筛选。' });
+    if (ROLES.includes(requestedRole)) filter.$and = [roleFilter(requestedRole)];
 
     const [users, total] = await Promise.all([
       User.find(filter)
         // Never select passwordHash. Avatar base64 is far too heavy for a list view,
         // so we only expose whether the user has one.
-        .select('name email uniqueId isAdmin isVerified isEnrolled lastActive createdAt profile.avatar.contentType')
+        .select('name email uniqueId role isAdmin isVerified isEnrolled lastActive createdAt profile.avatar.contentType')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -91,18 +91,7 @@ router.get('/users', async (req, res) => {
       User.countDocuments(filter),
     ]);
 
-    const shaped = users.map((user) => ({
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      uniqueId: user.uniqueId,
-      isAdmin: user.isAdmin === true,
-      isVerified: user.isVerified === true,
-      isEnrolled: user.isEnrolled === true,
-      lastActive: user.lastActive || null,
-      createdAt: user.createdAt || null,
-      hasAvatar: Boolean(user.profile && user.profile.avatar && user.profile.avatar.contentType),
-    }));
+    const shaped = users.map(memberDto);
 
     res.json({ success: true, users: shaped, pagination: paged(page, limit, total) });
   } catch (error) {
@@ -114,48 +103,28 @@ router.get('/users', async (req, res) => {
 /* ------------------------------------------------------------------ */
 /* PATCH /api/admin/users/:id/admin - grant / revoke admin             */
 /* ------------------------------------------------------------------ */
-router.patch('/users/:id/admin', async (req, res) => {
+const assignRole = async (req, res) => {
   try {
-    const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ error: 'Invalid user ID' });
-    }
-    if (typeof req.body.isAdmin !== 'boolean') {
-      return res.status(400).json({ error: 'isAdmin (boolean) is required' });
-    }
-    // Guard against an admin locking themselves out of the console.
-    if (String(req.adminUser._id) === String(id) && req.body.isAdmin === false) {
-      return res.status(400).json({ error: 'You cannot revoke your own admin access' });
-    }
-
-    const user = await User.findByIdAndUpdate(
-      id,
-      { isAdmin: req.body.isAdmin },
-      { new: true }
-    ).select('name email uniqueId isAdmin isVerified lastActive createdAt');
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json({
-      success: true,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        uniqueId: user.uniqueId,
-        isAdmin: user.isAdmin === true,
-        isVerified: user.isVerified === true,
-        lastActive: user.lastActive || null,
-        createdAt: user.createdAt || null,
-        hasAvatar: false,
-      },
-    });
+    const user = await roles.assign(req.user.userId, req.params.id, req.body.role);
+    res.json({ success: true, user: memberDto(user) });
   } catch (error) {
-    console.error('❌ Admin update user error:', error);
-    res.status(500).json({ error: 'Failed to update member' });
+    if (!error.status) console.error('Identity assignment failed:', error.message);
+    res.status(error.status || 503).json({ error: error.status ? error.message : '身份暂时无法调整，请稍后重试。' });
   }
+};
+router.patch('/users/:id/role', requireRoleManager, (req, res, next) => {
+  if (!req.body || Object.keys(req.body).length !== 1 || !ROLES.includes(req.body.role)) {
+    return res.status(400).json({ error: '仅允许提交一个有效的 role 身份字段。' });
+  }
+  return assignRole(req, res, next);
+});
+// Compatibility endpoint remains admin-only and uses the same guarded mutation.
+router.patch('/users/:id/admin', requireAdmin, (req, res, next) => {
+  if (!req.body || Object.keys(req.body).length !== 1 || typeof req.body.isAdmin !== 'boolean') {
+    return res.status(400).json({ error: '仅允许提交 isAdmin 布尔字段。' });
+  }
+  req.body = { role: req.body.isAdmin ? 'admin' : 'student' };
+  return assignRole(req, res, next);
 });
 
 /* ------------------------------------------------------------------ */
@@ -287,7 +256,7 @@ router.get('/resources', async (req, res) => {
 /* ------------------------------------------------------------------ */
 
 /** GET /api/admin/roster - paginated class roster with account status. */
-router.get('/roster', async (req, res) => {
+router.get('/roster', requireAdmin, async (req, res) => {
   try {
     const { page, limit, skip } = paginationOf(req.query);
     const { search } = req.query;
@@ -329,7 +298,7 @@ router.get('/roster', async (req, res) => {
 });
 
 /** POST /api/admin/roster - add/update a student and provision their account. */
-router.post('/roster', async (req, res) => {
+router.post('/roster', requireAdmin, async (req, res) => {
   try {
     const result = await rosterService.upsert(req.body);
     res.status(result.action === 'created' ? 201 : 200).json({ success: true, ...result });
@@ -339,7 +308,7 @@ router.post('/roster', async (req, res) => {
 });
 
 /** POST /api/admin/roster/bulk - supports Excel paste and CSV. */
-router.post('/roster/bulk', async (req, res) => {
+router.post('/roster/bulk', requireAdmin, async (req, res) => {
   try {
     const result = await rosterService.import(parseRosterText(req.body?.text));
     res.json({ success: true, ...result });
@@ -349,7 +318,7 @@ router.post('/roster/bulk', async (req, res) => {
 });
 
 /** DELETE /api/admin/roster/:id - remove an entry (registered users keep their account). */
-router.delete('/roster/:id', async (req, res) => {
+router.delete('/roster/:id', requireAdmin, async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ error: 'Invalid roster ID' });

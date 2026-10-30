@@ -149,14 +149,14 @@ class DailyAiNewsService {
     return { ...status, ai: { configured: ai.configured, provider: ai.provider, model: ai.model }, search: { ...searchConfig, ...(this.searchDiagnostic || { checkedAt: last?.finishedAt || null, searchPerformed: last?.searchPerformed || false, resultCount: last?.searchResultCount || 0, errorCode: searchError ? last.errorCode : null, errorMessage: searchError ? last.errorMessage : null }) }, scheduler: { timezone: 'Asia/Shanghai', automatic: process.env.NODE_ENV === 'production' && !process.env.VERCEL, externalCron: Boolean(process.env.CRON_SECRET) } };
   }
   async saveSettings(body, requestedBy) { await this.repository.saveSettings(body, requestedBy); return this.status(); }
-  async requestRun({ force = false, trigger = 'manual', requestedBy, wait = false } = {}) {
+  async requestRun({ force = false, trigger = 'manual', requestedBy, wait = false, modelScope = async run => run() } = {}) {
     const { date } = shanghaiClock(this.clock());
     const claim = await this.repository.claim({ date, force, trigger, requestedBy });
     if (!claim) {
       const status = await this.repository.getStatus();
       return { started: false, skipped: true, alreadySucceeded: status.activeDate === date, job: status.lastRun };
     }
-    const task = this.execute(claim);
+    const task = this.execute(claim, modelScope);
     this.tasks.set(claim.batchId, task);
     void task.then(() => this.tasks.delete(claim.batchId), () => this.tasks.delete(claim.batchId));
     if (wait) return { started: true, job: await task };
@@ -168,7 +168,7 @@ class DailyAiNewsService {
     try { return await this.requestRun({ trigger: 'scheduler', wait }); }
     catch (error) { if (['ALREADY_RUNNING', 'RETRY_DEFERRED'].includes(error.code)) return { started: false, skipped: true, code: error.code }; throw error; }
   }
-  async execute(claim) {
+  async execute(claim, modelScope = async run => run()) {
     const controller = new AbortController();
     let renewalError = null;
     const deadline = setTimeout(() => controller.abort(), this.timeoutMs); deadline.unref?.();
@@ -182,7 +182,8 @@ class DailyAiNewsService {
       this.logger({ job: 'daily-ai-news', batchDate: claim.date, phase: status, ...metrics });
     };
     try {
-      const generated = await this.generate(claim.config || await this.repository.getSettings(), claim.date, { signal: controller.signal, onPhase: phase });
+      const config = claim.config || await this.repository.getSettings();
+      const generated = await modelScope(() => this.generate(config, claim.date, { signal: controller.signal, onPhase: phase }));
       this.searchDiagnostic.stage = 'publishing';
       await phase('publishing', generated.metrics);
       await this.repository.publish(claim, generated.articles);

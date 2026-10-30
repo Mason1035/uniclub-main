@@ -1,0 +1,618 @@
+/* MindMarket migration skin. Switching data-classhub-design off restores the
+   untouched ClassHub style sheets. Business layout, visibility and state live
+   in the existing components; these rules change their presentation only. */
+@font-face {
+  font-family: 'MindMarket Inter';
+  src: url('/mindmarket/fonts/inter-latin-400-normal.woff2') format('woff2');
+  font-style: normal; font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: 'MindMarket Inter';
+  src: url('/mindmarket/fonts/inter-latin-500-normal.woff2') format('woff2');
+  font-style: normal; font-weight: 500 600; font-display: swap;
+}
+@font-face {
+  font-family: 'MindMarket Inter';
+  src: url('/mindmarket/fonts/inter-latin-700-normal.woff2') format('woff2');
+  font-style: normal; font-weight: 650 900; font-display: swap;
+}
+
+:root[data-classhub-design='mindmarket'] {
+  color-scheme: light;
+  --mm-green: #8ed462;
+  --mm-charcoal: #2c2e2a;
+  --mm-cream: #f5f1e4;
+  --mm-yellow: #f5e211;
+  --mm-blue: #2ba0ff;
+  --mm-coral: #ff705d;
+  --mm-card: #fff;
+  --mm-line: #d8d6ca;
+  --paper: 46 46% 93%;
+  --paper-raised: 0 0% 100%;
+  --paper-deep: 44 28% 87%;
+  --ink: 90 5% 17%;
+  --ink-muted: 84 5% 36%;
+  --line: 51 13% 82%;
+  --line-strong: 70 7% 58%;
+  --action: 90 5% 17%;
+  --action-hover: 95 10% 26%;
+  --on-action: 46 46% 93%;
+  --cyan: 207 100% 58%;
+  --yellow: 55 92% 51%;
+  --magenta: 7 100% 68%;
+  --error: 5 70% 38%;
+  --success: 117 39% 28%;
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--paper-raised);
+  --card-foreground: var(--ink);
+  --popover: var(--paper-raised);
+  --popover-foreground: var(--ink);
+  --primary: var(--action);
+  --primary-foreground: var(--on-action);
+  --secondary: var(--paper-deep);
+  --secondary-foreground: var(--ink);
+  --muted: var(--paper-deep);
+  --muted-foreground: var(--ink-muted);
+  --accent: 98 57% 61%;
+  --accent-foreground: 90 5% 17%;
+  --destructive: var(--error);
+  --destructive-foreground: 0 0% 100%;
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: 117 39% 28%;
+  --page-bg: var(--mm-cream);
+  --surface: var(--mm-card);
+  --surface-solid: var(--mm-card);
+  --border-subtle: var(--mm-line);
+  --radius: 1rem;
+  --radius-card: 1.75rem;
+  --radius-control: .875rem;
+  --shadow-card: none;
+  --shadow-card-hover: none;
+  --card-gap: 1.5rem;
+  --card-padding: clamp(1.5rem, 2.8vw, 2.5rem);
+  --page-max: 80rem;
+  --reading-max: 60rem;
+  --page-gutter: clamp(1.25rem, 4vw, 4rem);
+  --font-latin: 'MindMarket Inter';
+  --mm-font-family: var(--font-latin), 'ClassHub Han Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-ui: var(--mm-font-family);
+  --font-body: var(--font-ui);
+  --font-display: var(--font-ui);
+  --font-editorial: var(--font-ui);
+  --font-reading: var(--font-ui);
+  --font-signature: var(--font-ui);
+  --text-body: 1rem;
+  --text-reading: clamp(1.0625rem, 1rem + .15vw, 1.1875rem);
+  --text-h3: clamp(1.25rem, 1.05rem + .6vw, 1.75rem);
+  --text-h2: clamp(1.75rem, 1.3rem + 1.2vw, 2.75rem);
+  --text-h1: clamp(2.75rem, 1.8rem + 3vw, 5rem);
+  --text-display: clamp(3rem, 1.6rem + 4vw, 5.5rem);
+  --text-title: var(--text-h1);
+  --motion-fast: 180ms;
+  --motion-panel: 300ms;
+  --motion-structural: 400ms;
+  --ease-standard: cubic-bezier(.22, 1, .36, 1);
+  background: var(--page-bg);
+}
+:root.dark[data-classhub-design='mindmarket'] {
+  color-scheme: dark;
+  --mm-card: #34372f;
+  --mm-line: #51564a;
+  --paper: 90 5% 17%;
+  --paper-raised: 83 8% 20%;
+  --paper-deep: 83 8% 25%;
+  --ink: 46 46% 93%;
+  --ink-muted: 51 13% 73%;
+  --line: 85 8% 31%;
+  --line-strong: 85 8% 48%;
+  --action: 98 57% 61%;
+  --action-hover: 98 60% 69%;
+  --on-action: 90 5% 17%;
+  --error: 7 100% 76%;
+  --success: 98 57% 61%;
+  --ring: 98 57% 61%;
+  --page-bg: var(--mm-charcoal);
+  --accent: 98 57% 61%;
+  --destructive-foreground: 90 5% 17%;
+}
+:root[data-classhub-design='mindmarket'][data-classhub-page='home']:not(.dark) {
+  --page-bg: var(--mm-green);
+}
+:root[data-classhub-design='mindmarket'] body {
+  background: var(--page-bg);
+  color: hsl(var(--ink));
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: 1.65;
+}
+:root[data-classhub-design='mindmarket'] ::selection {
+  color: var(--mm-charcoal);
+  background: var(--mm-yellow);
+}
+:root[data-classhub-design='mindmarket'] :where(.site-shell, .admin-workspace, .admin-auth-shell, .auth-layout, .mm-auth, .dialog-panel, .cookie-consent, .pet-menu) {
+  font-family: var(--font-ui);
+}
+:root[data-classhub-design='mindmarket'] :where(.editorial-content, .editorial-titles, .reading-body) {
+  --font-ui: var(--mm-font-family);
+  --font-body: var(--mm-font-family);
+  --font-display: var(--mm-font-family);
+  --font-editorial: var(--mm-font-family);
+  --font-reading: var(--mm-font-family);
+  font-family: var(--mm-font-family);
+}
+:root[data-classhub-design='mindmarket'] :where(.page-shell, .auth-layout, .admin-workspace, .dialog-panel) :is(h1, h2, h3, h4, .editorial-heading, .signature-heading, .font-signature):not(.mm-reference *) {
+  font-family: var(--font-ui);
+  font-style: normal;
+  letter-spacing: -.035em;
+  font-weight: 500;
+}
+:root[data-classhub-design='mindmarket'] :is(.print-offset, .wordmark) { text-shadow: none; }
+:root[data-classhub-design='mindmarket'] :is(.home-starfield, .glass-decoration, .home-card__glass, .home-card__glass-surface, .home-card__glass-light, .home-card__glass-fresnel, .home-card__glass-sheen):not(.mm-navigation-glass *) {
+  display: none !important;
+}
+/* Navigation and cloud cards supply their own material and outer silhouette. */
+:root[data-classhub-design='mindmarket'] :is(.glass-material, .home-card, .glass-card):not(.mm-navigation-glass, .mm-cloud-card) {
+  background: var(--surface) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: var(--radius-card);
+  corner-shape: round;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+:root[data-classhub-design='mindmarket'] :is(.glass-material, .home-card):not(.mm-navigation-glass, .mm-cloud-card)::before { content: none !important; }
+:root[data-classhub-design='mindmarket'] :is(.glass-material, .home-card):not(.mm-navigation-glass, .mm-cloud-card):focus-within {
+  border-color: hsl(var(--ring)) !important;
+}
+:root[data-classhub-design='mindmarket'] .glass-material .glass-material,
+:root[data-classhub-design='mindmarket'] .glass-material .glass-nested {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0;
+  box-shadow: none !important;
+}
+:root[data-classhub-design='mindmarket'] .site-main {
+  padding-top: clamp(2rem, 5vw, 5rem);
+  padding-bottom: clamp(4rem, 7vw, 7rem);
+}
+:root[data-classhub-design='mindmarket'][data-classhub-page='home'] .site-main {
+  max-width: none;
+  padding: 0;
+}
+:root[data-classhub-design='mindmarket'] .site-main > .page-shell { min-width: 0; }
+:root[data-classhub-design='mindmarket'] .page-heading {
+  margin-bottom: clamp(2rem, 4vw, 3.5rem);
+  padding: 0;
+  gap: 1.25rem 2rem;
+  align-items: flex-end;
+}
+:root[data-classhub-design='mindmarket'] .page-heading h1,
+:root[data-classhub-design='mindmarket'] .resource-workspace .page-heading h1 {
+  font-family: var(--font-ui);
+  font-size: var(--text-h1);
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -.05em;
+  text-wrap: balance;
+}
+:root[data-classhub-design='mindmarket'] .page-heading p {
+  max-width: 44rem;
+  margin-top: 1.25rem;
+  font-size: clamp(1rem, .9rem + .3vw, 1.25rem);
+  line-height: 1.7;
+  color: hsl(var(--ink-muted));
+}
+:root[data-classhub-design='mindmarket'] .section-heading { gap: 1rem; margin-bottom: 1.5rem; }
+:root[data-classhub-design='mindmarket'] .section-heading h2 { font-size: var(--text-h2); font-weight: 500; line-height: 1.2; }
+:root[data-classhub-design='mindmarket'] .reading-page { padding: clamp(1.5rem, 5vw, 4rem); }
+:root[data-classhub-design='mindmarket'] .reading-page .page-heading { margin-bottom: 1.5rem; }
+:root[data-classhub-design='mindmarket'] .reading-page .page-heading h1 { font-size: clamp(2.25rem, 1.7rem + 2vw, 4rem); }
+:root[data-classhub-design='mindmarket'] .reading-body { line-height: 1.85; font-weight: 400; }
+:root[data-classhub-design='mindmarket'] .reading-body :is(h2, h3) { margin-top: 2rem; }
+:root[data-classhub-design='mindmarket'] .reading-body a { text-decoration-thickness: 1px; text-underline-offset: .25em; }
+:root[data-classhub-design='mindmarket'] .detail-meta { margin-block: 1rem 2rem; border-color: var(--border-subtle); }
+:root[data-classhub-design='mindmarket'] :is(.detail-image, .gallery-grid img, .reading-page video, .reading-page iframe) { border-radius: 1.25rem; }
+
+/* Cards keep the original data, permissions, actions and reading order. */
+:root[data-classhub-design='mindmarket'] .page-shell :is(.announcement-entry, .news-entry, .schedule-entry, .resource-entry, .archive-entry, .social-entry, .notification-entry, .content-card),
+:root[data-classhub-design='mindmarket'] .page-shell > .content-state:not(.empty-state) {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: none;
+  padding: var(--card-padding);
+}
+:root[data-classhub-design='mindmarket'] .page-shell :is(.announcement-list, .article-list, .schedule-list, .resource-list, .resource-grid, .social-feed, .notification-list, .archive-strip, .saved-list) { gap: 1.5rem; }
+:root[data-classhub-design='mindmarket'] .page-shell :is(.announcement-entry, .news-entry, .schedule-entry, .resource-entry, .archive-entry) h3 { font-family: var(--font-ui); font-size: var(--text-h3); font-weight: 500; line-height: 1.35; }
+:root[data-classhub-design='mindmarket'] .page-shell :is(.announcement-entry, .news-entry, .resource-entry, .social-entry) :is(p, .entry-description) { font-family: var(--font-ui); line-height: 1.8; }
+:root[data-classhub-design='mindmarket'] .page-shell .announcement-entry { gap: 1.25rem; }
+:root[data-classhub-design='mindmarket'] .page-shell .announcement-entry h3 { margin-top: .65rem; }
+:root[data-classhub-design='mindmarket'] .page-shell .announcement-entry time { padding-top: .4rem; }
+:root[data-classhub-design='mindmarket'] .page-shell .news-entry .entry-image { width: 8rem; height: 7rem; border-radius: 1rem; }
+:root[data-classhub-design='mindmarket'] .page-shell .schedule-date { color: hsl(var(--ink)); border-color: var(--border-subtle); }
+:root[data-classhub-design='mindmarket'] .page-shell .schedule-date strong { font-size: 2rem; letter-spacing: -.07em; font-weight: 500; }
+:root[data-classhub-design='mindmarket'] .page-shell .schedule-image { border-radius: 1rem; }
+:root[data-classhub-design='mindmarket'] .page-shell .resource-entry > svg { color: hsl(var(--ink)); background: hsl(var(--paper-deep)); border-radius: .5rem; }
+:root[data-classhub-design='mindmarket'] .entry-meta { color: hsl(var(--ink-muted)); font-family: var(--font-ui); }
+:root[data-classhub-design='mindmarket'] .entry-description { color: hsl(var(--ink-muted)); }
+:root[data-classhub-design='mindmarket'] .status-label { border: 0; border-radius: 999px; padding: .25rem .65rem; background: hsl(var(--paper-deep)); color: hsl(var(--ink)); font-weight: 500; line-height: 1.4; }
+:root[data-classhub-design='mindmarket'] .status-label.important { background: var(--mm-green); color: var(--mm-charcoal); }
+:root[data-classhub-design='mindmarket'] .status-label.urgent { background: var(--mm-coral); color: var(--mm-charcoal); }
+:root[data-classhub-design='mindmarket'] .interaction { border-radius: 999px; padding-inline: .8rem; color: hsl(var(--ink-muted)); }
+:root[data-classhub-design='mindmarket'] .interaction:hover { background: hsl(var(--paper-deep)); border-color: transparent; color: hsl(var(--ink)); }
+:root[data-classhub-design='mindmarket'] .interaction[aria-pressed='true'] { color: var(--mm-charcoal); background: var(--mm-green); }
+:root[data-classhub-design='mindmarket'] .empty-state { border: 0; min-height: 17rem; border-radius: var(--radius-card); background: var(--surface); }
+:root[data-classhub-design='mindmarket'] .empty-state h3 { font-size: 1.5rem; font-weight: 500; }
+:root[data-classhub-design='mindmarket'] .content-state { color: hsl(var(--ink-muted)); border-color: var(--border-subtle); }
+:root[data-classhub-design='mindmarket'] .content-state h3 { color: hsl(var(--ink)); }
+:root[data-classhub-design='mindmarket'] .loading-line { height: .75rem; border-radius: 999px; background: hsl(var(--paper-deep)); }
+:root[data-classhub-design='mindmarket'] .feature-card { gap: 1.5rem; padding: clamp(1.75rem, 4vw, 3rem); }
+:root[data-classhub-design='mindmarket'] .feature-card h2 { font-size: clamp(1.8rem, 2.3vw, 2.75rem); font-weight: 500; }
+:root[data-classhub-design='mindmarket'] .feature-card:nth-child(2) { background: var(--mm-green) !important; color: var(--mm-charcoal); }
+:root[data-classhub-design='mindmarket'] .feature-card:nth-child(2) p { color: var(--mm-charcoal); }
+:root[data-classhub-design='mindmarket'] .feature-card:nth-child(3) { background: var(--mm-yellow) !important; color: var(--mm-charcoal); }
+:root[data-classhub-design='mindmarket'] .feature-card:nth-child(3) p { color: var(--mm-charcoal); }
+:root[data-classhub-design='mindmarket'] .feature-card:nth-child(n+2) .ed-button { background: var(--mm-charcoal); border-color: var(--mm-charcoal); color: var(--mm-cream); }
+:root[data-classhub-design='mindmarket'] .feature-card:nth-child(n+2) .ed-button:hover { background: #44483d; border-color: #44483d; }
+
+/* Flat, generous controls; semantics and pressed/checked/open states remain. */
+:root[data-classhub-design='mindmarket'] :is(.ed-button, .ui-button) {
+  border-radius: 999px;
+  min-height: 3rem;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  font-size: .9375rem;
+  line-height: 1.35;
+  padding: .8rem 1.5rem;
+  box-shadow: none;
+  transition: background-color 180ms var(--ease-standard), color 180ms var(--ease-standard), transform 180ms var(--ease-standard);
+}
+:root[data-classhub-design='mindmarket'] .ed-button { background: hsl(var(--action)); color: hsl(var(--on-action)); border-color: hsl(var(--action)); }
+:root[data-classhub-design='mindmarket'] .ed-button:hover { background: hsl(var(--action-hover)); }
+:root[data-classhub-design='mindmarket'] .ed-button.secondary { color: hsl(var(--ink)); background: transparent; border-color: hsl(var(--ink)); }
+:root[data-classhub-design='mindmarket'] .ed-button.secondary:hover { background: hsl(var(--ink)); color: hsl(var(--paper)); }
+:root[data-classhub-design='mindmarket'] :is(.ed-button, .ui-button):active:not(:disabled) { transform: scale(.98); }
+:root[data-classhub-design='mindmarket'] :is(.ed-button, .ui-button):disabled,
+:root[data-classhub-design='mindmarket'] :is(.ed-button, .ui-button)[aria-disabled='true'] { opacity: .5; transform: none; }
+:root[data-classhub-design='mindmarket'] :where(.page-shell, .auth-layout, .mm-auth, .dialog-panel, .admin-workspace, .admin-auth-shell, .resource-quick-access) :is(input, textarea, select):not(:where([type='checkbox'], [type='radio'], [type='range'], [type='file'], [type='hidden'])) {
+  min-height: 3rem;
+  border: 1px solid hsl(var(--line-strong));
+  border-radius: var(--radius-control);
+  background: var(--surface-solid) !important;
+  color: hsl(var(--ink));
+  padding: .75rem 1rem;
+  font-family: var(--font-ui);
+  line-height: 1.5;
+  box-shadow: none;
+}
+:root[data-classhub-design='mindmarket'] :where(.page-shell, .auth-layout, .mm-auth, .dialog-panel, .admin-workspace, .admin-auth-shell) :is(input, textarea)::placeholder { color: hsl(var(--ink-muted)); opacity: 1; }
+:root[data-classhub-design='mindmarket'] :where(.page-shell, .auth-layout, .mm-auth, .dialog-panel, .admin-workspace, .admin-auth-shell) :is(input, textarea, select):disabled { color: hsl(var(--ink-muted)); background: hsl(var(--paper-deep)) !important; opacity: .6; }
+:root[data-classhub-design='mindmarket'] :where(.page-shell, .auth-layout, .mm-auth, .dialog-panel, .admin-workspace, .admin-auth-shell) :is(input, textarea, select)[aria-invalid='true'] { border-color: hsl(var(--error)); box-shadow: 0 0 0 1px hsl(var(--error)); }
+:root[data-classhub-design='mindmarket'] :where(.page-shell, .auth-layout, .mm-auth, .dialog-panel, .admin-workspace, .admin-auth-shell) :is(input[type='checkbox'], input[type='radio'], input[type='range']) { accent-color: hsl(var(--action)); }
+:root[data-classhub-design='mindmarket'] :where(.page-shell, .auth-layout, .mm-auth, .dialog-panel, .admin-workspace, .admin-auth-shell) :is(input, select, textarea, button, a, [role='button'], [tabindex]):focus-visible {
+  outline: 2px solid hsl(var(--ring)) !important;
+  outline-offset: 4px;
+}
+/* Preserve input adornment space instead of letting the shared padding cover it. */
+:root[data-classhub-design='mindmarket'] :where(.page-shell, .auth-layout, .mm-auth, .dialog-panel, .admin-workspace, .admin-auth-shell) input.pr-12 { padding-right: 3rem; }
+:root[data-classhub-design='mindmarket'] :is(.auth-layout, .mm-auth) #login-password { padding-right: 3.25rem; }
+:root[data-classhub-design='mindmarket'] .mm-auth .form-field input { width: 100%; }
+:root[data-classhub-design='mindmarket'] .mm-auth .form-field .icon-control { height: 3rem; width: 3rem; color: hsl(var(--ink-muted)); }
+:root[data-classhub-design='mindmarket'] .ui-button.w-11 { padding: .75rem; }
+:root[data-classhub-design='mindmarket'] .form-field { gap: .65rem; margin-bottom: 1.5rem; }
+:root[data-classhub-design='mindmarket'] .form-field label { font-size: .9375rem; font-weight: 500; }
+:root[data-classhub-design='mindmarket'] :is(.form-error, .interaction-error, .fee-error, .random-call-draw-error) { color: hsl(var(--error)); }
+:root[data-classhub-design='mindmarket'] :is(.form-note, .fee-hint) { color: hsl(var(--ink-muted)); }
+:root[data-classhub-design='mindmarket'] :is(.text-link, .back-link) { color: hsl(var(--ink)); text-underline-offset: .3em; }
+:root[data-classhub-design='mindmarket'] .text-link:hover { text-decoration-thickness: 2px; }
+:root[data-classhub-design='mindmarket'] .filter-bar { margin-block: 0 2rem; gap: .75rem 1rem; }
+:root[data-classhub-design='mindmarket'] .filter-options { gap: .6rem; }
+:root[data-classhub-design='mindmarket'] .filter-option { min-height: 3rem; border: 1px solid hsl(var(--line-strong)); padding: .7rem 1.25rem; background: transparent; color: hsl(var(--ink)); font-weight: 500; }
+:root[data-classhub-design='mindmarket'] .filter-option[aria-pressed='true'] { background: hsl(var(--action)); color: hsl(var(--on-action)); border-color: hsl(var(--action)); }
+:root[data-classhub-design='mindmarket'] .filter-option:hover:not([aria-pressed='true']) { background: var(--surface); }
+:root[data-classhub-design='mindmarket'] .classhub-tabs-list { padding: .35rem; border-radius: 999px; background: hsl(var(--paper-deep)); gap: .25rem; height: auto; }
+:root[data-classhub-design='mindmarket'] .classhub-tabs-list::before { border-radius: 999px; background: hsl(var(--action)); }
+:root[data-classhub-design='mindmarket'] .classhub-tabs-trigger { border-radius: 999px; min-height: 2.75rem; padding-inline: 1rem; font-weight: 500; }
+:root[data-classhub-design='mindmarket'] .classhub-tabs-trigger[data-state='active'] { color: hsl(var(--on-action)); background-color: var(--tabs-active-background, hsl(var(--action))); box-shadow: none; }
+:root[data-classhub-design='mindmarket'] .classhub-tabs-list:not([data-indicator-ready='true']) { --tabs-active-background: hsl(var(--action)); }
+:root[data-classhub-design='mindmarket'] [role='switch'] { border-color: transparent; }
+:root[data-classhub-design='mindmarket'] [role='switch'][data-state='checked'] { background: var(--mm-green); }
+:root[data-classhub-design='mindmarket'] [role='checkbox'][data-state='checked'] { background: hsl(var(--action)); color: hsl(var(--on-action)); }
+:root[data-classhub-design='mindmarket'] :is(.quant-progress progress, [role='progressbar']) { border-radius: 999px; overflow: hidden; }
+
+/* Portal surfaces are outside .site-shell, hence the root-scoped selectors. */
+:root[data-classhub-design='mindmarket'] .dialog-panel {
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  border: 1px solid hsl(var(--line));
+  border-radius: 1.75rem;
+  background: var(--surface-solid);
+  color: hsl(var(--ink));
+  box-shadow: 0 18px 65px rgb(44 46 42 / .18);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+:root[data-classhub-design='mindmarket'] .dialog-panel :is(h2, [id^='radix-'][class*='text-lg']) { font-size: 1.75rem; line-height: 1.2; font-weight: 500; }
+:root[data-classhub-design='mindmarket'] .dialog-overlay { background: rgb(44 46 42 / .56); -webkit-backdrop-filter: none; backdrop-filter: none; }
+:root[data-classhub-design='mindmarket'] [data-radix-popper-content-wrapper] > :is([role='menu'], [role='listbox'], [data-side]) {
+  background: var(--surface-solid);
+  color: hsl(var(--ink));
+  border-color: var(--border-subtle);
+  box-shadow: 0 12px 36px rgb(44 46 42 / .16);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+:root[data-classhub-design='mindmarket'] :is([role='menu'], [role='listbox'], [data-radix-popper-content-wrapper] > *) { border-radius: 1rem; font-family: var(--font-ui); }
+:root[data-classhub-design='mindmarket'] [data-radix-popper-content-wrapper] :is([role='menuitem'], [role='menuitemradio'], [role='option']) { border-radius: .6rem; min-height: 2.5rem; }
+:root[data-classhub-design='mindmarket'] .dialog-panel [cmdk-item][data-selected='true'] { background: hsl(var(--paper-deep)); color: hsl(var(--ink)); }
+:root[data-classhub-design='mindmarket'] .dialog-panel.search-panel { --search-padding: 1.75rem; border-radius: 1.75rem; }
+:root[data-classhub-design='mindmarket'] .search-panel .search-title { font-size: 1.75rem; font-weight: 500; line-height: 1.25; margin-bottom: 1.5rem; }
+:root[data-classhub-design='mindmarket'] .search-field { border-radius: 999px; background: hsl(var(--paper)); padding-inline: 1rem; border-color: hsl(var(--line-strong)); }
+:root[data-classhub-design='mindmarket'] .search-panel .search-field__input { border: 0; background: transparent !important; padding-inline: 0; border-radius: 0; }
+:root[data-classhub-design='mindmarket'] .search-panel .search-field__input:focus-visible { outline: none !important; }
+:root[data-classhub-design='mindmarket'] .search-field:focus-within { outline: 2px solid hsl(var(--ring)); outline-offset: 3px; box-shadow: none; }
+:root[data-classhub-design='mindmarket'] .search-result { border-radius: 1rem; padding: 1rem; }
+:root[data-classhub-design='mindmarket'] .search-result h3 { font-size: 1rem; letter-spacing: -.02em; }
+
+/* Home business slots follow the reference's rounded, solid colour modules. */
+:root[data-classhub-design='mindmarket'] .home-card-grid {
+  max-width: 80rem;
+  padding: clamp(2rem, 6vw, 6rem) var(--page-gutter);
+  margin-inline: auto;
+  gap: 1.5rem;
+}
+:root[data-classhub-design='mindmarket'] .home-card {
+  --home-card-radius: 1.75rem;
+  padding: clamp(1.5rem, 2.8vw, 2.5rem);
+  gap: 1.5rem;
+  background: var(--surface) !important;
+  border-color: transparent !important;
+  border-radius: 1.75rem;
+  min-height: 15rem;
+}
+:root[data-classhub-design='mindmarket'] .home-card__heading {
+  border-bottom: 0;
+  align-items: flex-start;
+  gap: .6rem 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0;
+}
+:root[data-classhub-design='mindmarket'] .home-card__heading :is(h2, .editorial-heading, .signature-heading) {
+  font-family: var(--font-ui);
+  font-size: clamp(1.65rem, 1.2rem + 1.3vw, 2.5rem);
+  line-height: 1.18;
+  letter-spacing: -.04em;
+  font-weight: 500;
+}
+:root[data-classhub-design='mindmarket'] .home-card__link { font-size: .875rem; font-weight: 500; min-height: 2rem; }
+:root[data-classhub-design='mindmarket'] .home-card__link:hover { text-decoration: underline; text-underline-offset: .25em; }
+:root[data-classhub-design='mindmarket'] .home-card .content-state { min-height: auto; background: transparent; }
+:root[data-classhub-design='mindmarket'] .home-card .content-state h3 { font-size: 1.125rem; font-family: var(--font-ui); }
+:root[data-classhub-design='mindmarket'] .home-card :is(.announcement-entry, .news-entry, .resource-entry, .schedule-entry, .home-social-entry, .archive-entry) { background: transparent; border: 0; border-radius: 0; padding: 1rem 0; box-shadow: none; }
+:root[data-classhub-design='mindmarket'] .home-card :is(.announcement-entry, .news-entry, .resource-entry, .schedule-entry, .archive-entry) h3 { font-family: var(--font-ui); font-size: 1.1875rem; font-weight: 500; line-height: 1.5; letter-spacing: -.025em; }
+:root[data-classhub-design='mindmarket'] .home-card :is(.announcement-entry, .home-social-entry) + :is(.announcement-entry, .home-social-entry) { border-top: 1px solid hsl(var(--line)); }
+:root[data-classhub-design='mindmarket'] .home-card .announcement-preview a { color: hsl(var(--ink)); }
+:root[data-classhub-design='mindmarket'] .home-card__art { align-self: start; }
+:root[data-classhub-design='mindmarket'] .home-featured { max-width: 80rem; margin-inline: auto; padding-inline: var(--page-gutter); }
+
+/* Calendar, resource shortcuts and content interaction areas. */
+:root[data-classhub-design='mindmarket'] .events-page section[aria-label='活动月历'] { background: var(--surface); border-radius: var(--radius-card); padding: var(--card-padding); border-color: var(--border-subtle); box-shadow: none; }
+:root[data-classhub-design='mindmarket'] .calendar-grid { border-color: var(--border-subtle); border-radius: 1rem; }
+:root[data-classhub-design='mindmarket'] .calendar-cell { background: var(--surface); border-color: var(--border-subtle); padding: .65rem; }
+:root[data-classhub-design='mindmarket'] .calendar-day { border-radius: 999px; font-weight: 500; }
+:root[data-classhub-design='mindmarket'] .calendar-day[data-today='true'] { background: var(--mm-green); color: var(--mm-charcoal); border-color: transparent; }
+:root[data-classhub-design='mindmarket'] .calendar-day[aria-pressed='true'] { background: hsl(var(--action)); color: hsl(var(--on-action)); }
+:root[data-classhub-design='mindmarket'] .calendar-event { color: hsl(var(--ink)); }
+:root[data-classhub-design='mindmarket'] .resource-quick-access__surface { padding: 1.75rem; }
+:root[data-classhub-design='mindmarket'] .resource-quick-access h2 { font-size: 1.75rem; font-weight: 500; letter-spacing: -.04em; }
+:root[data-classhub-design='mindmarket'] .resource-quick-access__link { border-radius: 1rem; border: 0; background: hsl(var(--paper)); padding: 1rem; }
+:root[data-classhub-design='mindmarket'] .resource-quick-access__link:hover { background: hsl(var(--paper-deep)); }
+:root[data-classhub-design='mindmarket'] .resource-quick-access__icon { border-radius: 50%; color: var(--mm-charcoal); background: var(--mm-green); }
+:root[data-classhub-design='mindmarket'] .resource-quick-access__icon--educoder { color: var(--mm-charcoal); background: var(--mm-coral); }
+:root[data-classhub-design='mindmarket'] .resource-quick-access__icon--chaoxing { color: var(--mm-charcoal); background: var(--mm-yellow); }
+
+/* Member login, settings, fee receipts, upload/confirmation desks and pet UI. */
+:root[data-classhub-design='mindmarket'] .auth-layout {
+  width: 100%; max-width: none;
+  padding: clamp(2rem, 7vw, 7rem) max(var(--page-gutter), calc((100vw - 76rem) / 2));
+  gap: clamp(2rem, 7vw, 7rem);
+  background: var(--mm-green);
+  color: var(--mm-charcoal);
+}
+:root.dark[data-classhub-design='mindmarket'] .auth-layout { background: var(--mm-charcoal); color: var(--mm-cream); }
+:root[data-classhub-design='mindmarket'] .auth-brand h1 { font-family: var(--font-ui); font-size: clamp(2.75rem, 4.5vw, 5rem); line-height: 1.12; letter-spacing: -.05em; font-weight: 500; }
+:root[data-classhub-design='mindmarket'] .auth-brand p { color: inherit; font-size: 1.125rem; line-height: 1.7; }
+:root[data-classhub-design='mindmarket'] .auth-form { color: hsl(var(--ink)); padding: clamp(1.75rem, 4vw, 3.25rem); border-color: transparent !important; }
+:root[data-classhub-design='mindmarket'] .auth-form h2 { font-size: 2.5rem; font-weight: 500; letter-spacing: -.04em; }
+:root[data-classhub-design='mindmarket'] .auth-logo-wrap { margin-bottom: 2.5rem; }
+:root[data-classhub-design='mindmarket'] .auth-illustration { width: 12rem; }
+:root[data-classhub-design='mindmarket'] .account-settings-nav { max-width: none; padding: .65rem; gap: .5rem; border-radius: 1.5rem; background: var(--surface); box-shadow: none; margin-block: 0 2rem; }
+:root[data-classhub-design='mindmarket'] .account-settings-nav a { padding: .75rem 1rem; border-radius: 999px; color: hsl(var(--ink)); }
+:root[data-classhub-design='mindmarket'] .account-settings-nav a:hover { background: hsl(var(--paper-deep)); }
+:root[data-classhub-design='mindmarket'] .settings-workspace :is(.account-section, .pet-settings) { max-width: none; border-radius: var(--radius-card); padding: var(--card-padding); background: var(--surface); border-color: var(--border-subtle); box-shadow: none; }
+:root[data-classhub-design='mindmarket'] :is(.account-section-heading, .pet-settings-heading) { padding-bottom: 1.25rem; margin-bottom: 1.5rem; }
+:root[data-classhub-design='mindmarket'] :is(.account-section-heading, .pet-settings-heading) h2 { font-size: clamp(1.5rem, 2vw, 2.25rem); font-weight: 500; }
+:root[data-classhub-design='mindmarket'] .account-section-number { font-size: .8125rem; color: hsl(var(--ink-muted)); }
+:root[data-classhub-design='mindmarket'] .account-identity { padding: 1.5rem; border: 0; border-radius: 1rem; background: hsl(var(--paper)); }
+:root[data-classhub-design='mindmarket'] :is(.quant-page .quant-instructions, .quant-page .quant-desk, .fee-page .fee-qr-desk, .fee-page .fee-submission-desk) { padding: var(--card-padding); background: var(--surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-card); box-shadow: none; }
+:root[data-classhub-design='mindmarket'] :is(.quant-instructions, .quant-desk, .fee-page) h2 { font-family: var(--font-ui); font-size: clamp(1.5rem, 2vw, 2.25rem); line-height: 1.3; font-weight: 500; letter-spacing: -.04em; }
+:root[data-classhub-design='mindmarket'] :is(.quant-note, .fee-notice) { background: hsl(var(--paper)); border: 0; border-left: 4px solid var(--mm-green); border-radius: 1rem; padding: 1.25rem; }
+:root[data-classhub-design='mindmarket'] .quant-note.warning { border-left-color: var(--mm-coral); }
+:root[data-classhub-design='mindmarket'] :is(.quant-drop, .fee-file-control) { border: 2px dashed hsl(var(--line-strong)); border-radius: 1.25rem; background: hsl(var(--paper)); min-height: 9rem; padding: 1.5rem; }
+:root[data-classhub-design='mindmarket'] .quant-drop:not(:disabled):hover,
+:root[data-classhub-design='mindmarket'] .quant-drop[data-dragging='true'] { background: hsl(var(--accent) / .18); border-color: hsl(var(--ring)); }
+:root[data-classhub-design='mindmarket'] .fee-selected-image { border-radius: 1rem; border-color: var(--border-subtle); }
+:root[data-classhub-design='mindmarket'] .fee-image { border-radius: 1rem; }
+:root[data-classhub-design='mindmarket'] .pet-bubble { padding: .75rem 1rem; border-radius: 1.25rem; background: var(--mm-green); color: var(--mm-charcoal); border: 0; box-shadow: none; }
+:root[data-classhub-design='mindmarket'] .pet-menu { border-radius: 1.25rem; border-color: var(--border-subtle); padding: .5rem; background: var(--surface-solid); color: hsl(var(--ink)); box-shadow: 0 12px 36px rgb(44 46 42 / .16); }
+:root[data-classhub-design='mindmarket'] .pet-menu button { border-radius: .75rem; }
+:root[data-classhub-design='mindmarket'] .pet-select { border-radius: 1rem; }
+:root[data-classhub-design='mindmarket'] .home-appearance-toggle { border: 1px solid currentColor; background: transparent; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+:root[data-classhub-design='mindmarket'] .home-appearance-toggle[aria-checked='true'] { background: var(--mm-green); color: var(--mm-charcoal); border-color: transparent; box-shadow: none; }
+
+/* Management UI uses the same flat reference palette; every existing control,
+   table, approval state and editor remains mounted in its original component. */
+:root[data-classhub-design='mindmarket'] .admin-workspace { background: var(--page-bg); }
+:root[data-classhub-design='mindmarket'] .admin-sidebar { background: var(--mm-green); color: var(--mm-charcoal); border: 0; padding: 1.75rem 1rem; }
+:root[data-classhub-design='mindmarket'] .admin-sidebar nav a,
+:root[data-classhub-design='mindmarket'] .admin-sidebar > div:last-child a { color: var(--mm-charcoal); border-radius: 999px; padding: .85rem 1rem; font-size: .875rem; font-weight: 500; }
+:root[data-classhub-design='mindmarket'] .admin-sidebar nav a:hover { background: rgb(245 241 228 / .5); }
+:root[data-classhub-design='mindmarket'] .admin-sidebar nav a[aria-current='page'] { background: var(--mm-charcoal); color: var(--mm-cream); }
+:root[data-classhub-design='mindmarket'] .admin-sidebar > div:last-child { border-color: rgb(44 46 42 / .2); }
+:root[data-classhub-design='mindmarket'] .admin-sidebar .masthead-logo-contrast { display: none; }
+:root[data-classhub-design='mindmarket'] .admin-topbar { height: 5rem; background: var(--page-bg); border-color: var(--border-subtle); }
+:root[data-classhub-design='mindmarket'] .admin-topbar button:not(.home-appearance-toggle):not(.icon-control) { border-radius: 999px; padding: .6rem 1rem; border-color: hsl(var(--ink)); }
+:root[data-classhub-design='mindmarket'] .admin-workspace > div > main { padding-top: 3rem; padding-bottom: 5rem; }
+:root[data-classhub-design='mindmarket'] .admin-workspace h1 { font-size: clamp(2.25rem, 3.5vw, 3.75rem); line-height: 1.12; font-weight: 500; letter-spacing: -.045em; }
+:root[data-classhub-design='mindmarket'] .admin-panel { border-radius: 1.5rem; }
+:root[data-classhub-design='mindmarket'] .admin-panel > header { padding: 1.5rem; border-color: var(--border-subtle); background: transparent; }
+:root[data-classhub-design='mindmarket'] .admin-panel > header h2 { font-size: 1.5rem; font-weight: 500; letter-spacing: -.035em; }
+:root[data-classhub-design='mindmarket'] .admin-stat-card { border-color: transparent !important; border-radius: 1.5rem; padding: 1.75rem; }
+:root[data-classhub-design='mindmarket'] .admin-stat-card:nth-child(2) { background: var(--mm-yellow) !important; color: var(--mm-charcoal); }
+:root[data-classhub-design='mindmarket'] .admin-stat-card:nth-child(3) { background: var(--mm-blue) !important; color: var(--mm-charcoal); }
+:root[data-classhub-design='mindmarket'] .admin-stat-card:nth-child(4) { background: var(--mm-coral) !important; color: var(--mm-charcoal); }
+:root[data-classhub-design='mindmarket'] .admin-stat-card:nth-child(n+2) :is(.text-foreground, .text-muted-foreground, .text-primary) { color: var(--mm-charcoal); }
+:root[data-classhub-design='mindmarket'] .admin-stat-card .uppercase { text-transform: none; letter-spacing: 0; font-size: .875rem; }
+:root[data-classhub-design='mindmarket'] .admin-stat-card .text-3xl { font-size: 3rem; font-weight: 500; letter-spacing: -.05em; }
+:root[data-classhub-design='mindmarket'] .admin-stat-card .rounded-sm { border-radius: 50%; background: rgb(44 46 42 / .08); }
+:root[data-classhub-design='mindmarket'] :is(.admin-workspace, .admin-auth-shell, .dialog-panel, .fee-page, .quant-page) button.rounded-sm { border-radius: 999px; }
+:root[data-classhub-design='mindmarket'] .admin-menu nav a { border-radius: 999px; min-height: 3rem; padding: .85rem 1rem; color: hsl(var(--ink)); }
+:root[data-classhub-design='mindmarket'] .admin-menu nav a:hover { background: hsl(var(--paper-deep)); }
+:root[data-classhub-design='mindmarket'] .admin-menu nav a[aria-current='page'] { background: hsl(var(--action)); color: hsl(var(--on-action)); }
+:root[data-classhub-design='mindmarket'] .admin-workspace table { font-family: var(--font-ui); font-size: .875rem; }
+:root[data-classhub-design='mindmarket'] .admin-workspace thead { background: hsl(var(--paper)); }
+:root[data-classhub-design='mindmarket'] .admin-workspace thead tr { color: hsl(var(--ink-muted)); text-transform: none; letter-spacing: 0; }
+:root[data-classhub-design='mindmarket'] .admin-workspace :is(th, td) { padding: 1rem 1.25rem; }
+:root[data-classhub-design='mindmarket'] .admin-workspace tbody tr { border-color: var(--border-subtle); }
+:root[data-classhub-design='mindmarket'] .admin-workspace tbody tr:hover { background: hsl(var(--accent) / .12); }
+:root[data-classhub-design='mindmarket'] .admin-workspace :is(.quant-admin-toolbar, .quant-selection) { gap: .75rem; }
+:root[data-classhub-design='mindmarket'] .admin-auth-shell { background: var(--mm-green); }
+:root.dark[data-classhub-design='mindmarket'] .admin-auth-shell { background: var(--mm-charcoal); }
+:root[data-classhub-design='mindmarket'] .admin-auth-shell .glass-material { border-color: transparent !important; }
+:root[data-classhub-design='mindmarket'] .ai-scenarios { gap: .75rem; }
+:root[data-classhub-design='mindmarket'] .ai-scenarios button { border-radius: 1rem; padding: 1rem; min-height: 4rem; box-shadow: none; background: hsl(var(--paper)); border: 1px solid var(--border-subtle); }
+:root[data-classhub-design='mindmarket'] .ai-scenario-edge { display: none; }
+:root[data-classhub-design='mindmarket'] .ai-scenarios button.ai-scenario-publish { box-shadow: none; border-color: var(--border-subtle); }
+:root[data-classhub-design='mindmarket'] .ai-scenarios button[aria-pressed='true'] { background: var(--mm-green); border-color: transparent; color: var(--mm-charcoal); font-weight: 500; }
+:root[data-classhub-design='mindmarket'] .ai-scenarios button:disabled { background: hsl(var(--paper-deep)); color: hsl(var(--ink-muted)); }
+:root[data-classhub-design='mindmarket'] .ai-answer { line-height: 1.8; }
+:root[data-classhub-design='mindmarket'] .ai-answer pre { border-radius: 1rem; padding: 1.25rem; }
+:root[data-classhub-design='mindmarket'] .ai-answer a { color: hsl(var(--ink)); }
+:root[data-classhub-design='mindmarket'] .ai-images figure { border-radius: 1rem; border-color: var(--border-subtle); padding: .75rem; }
+:root[data-classhub-design='mindmarket'] .ai-images img { border-radius: .6rem; }
+:root[data-classhub-design='mindmarket'] .ai-answer blockquote { border-left: 4px solid var(--mm-green); padding-left: 1.25rem; }
+
+/* Existing random drawing still chooses the result; only its stage is reskinned. */
+:root[data-classhub-design='mindmarket'] .random-call-stage { border-radius: 2rem; background: var(--surface); padding: 3rem 1.5rem; margin-top: 2.5rem; }
+:root[data-classhub-design='mindmarket'] .random-call-object { background: var(--mm-green); border: 0; box-shadow: none; }
+:root[data-classhub-design='mindmarket'] .random-call-object svg { stroke: var(--mm-charcoal); }
+:root[data-classhub-design='mindmarket'] .random-call-draw-label { font-size: 1.125rem; letter-spacing: -.02em; padding-left: 0; font-weight: 500; }
+:root[data-classhub-design='mindmarket'] .random-call-draw:hover:not(:disabled) .random-call-object,
+:root[data-classhub-design='mindmarket'] .random-call-draw:active:not(:disabled) .random-call-object { box-shadow: none; }
+:root[data-classhub-design='mindmarket'] .random-call-sleeve { border-radius: 1rem; background: var(--mm-yellow); border: 0; box-shadow: none; color: var(--mm-charcoal); }
+:root[data-classhub-design='mindmarket'] .random-call-page .random-call-cover,
+:root[data-classhub-design='mindmarket'] .random-call-page .random-call-avatar-fallback { border-radius: .75rem; }
+:root[data-classhub-design='mindmarket'] .random-call-album-caption h2 { font-family: var(--font-ui); font-weight: 500; letter-spacing: -.035em; }
+:root[data-classhub-design='mindmarket'] .random-call-album-caption p { color: var(--mm-charcoal); }
+:root[data-classhub-design='mindmarket'] .random-call-vinyl { background: var(--mm-charcoal); box-shadow: none; border: 0; }
+:root[data-classhub-design='mindmarket'] .random-call-vinyl-label { background: var(--mm-coral); border: 0; box-shadow: none; }
+:root[data-classhub-design='mindmarket'] .random-call-repeat { min-height: 3rem; border-radius: 999px; background: hsl(var(--action)); color: hsl(var(--on-action)); padding: .8rem 1.5rem; gap: .3rem; }
+
+/* Utility pages discard the old space/terminal visual, keeping their actions. */
+:root[data-classhub-design='mindmarket'][data-classhub-page='not-found'] .site-main { padding-block: 3rem 5rem; }
+:root[data-classhub-design='mindmarket'] .not-found-number { font-size: clamp(9rem, 20vw, 19rem); font-weight: 500; letter-spacing: -.09em; line-height: 1; }
+:root[data-classhub-design='mindmarket'] .not-found-number > span { color: var(--mm-green); background: none; }
+:root[data-classhub-design='mindmarket'] .not-found-number > .not-found-zero { color: var(--mm-coral); background: none; }
+:root[data-classhub-design='mindmarket'] .not-found-number > span:last-of-type { color: var(--mm-blue); background: none; }
+:root[data-classhub-design='mindmarket'] :is(.not-found-spark, .not-found-studio) { display: none; }
+:root[data-classhub-design='mindmarket'] .not-found-page h1 { font-size: clamp(2rem, 4vw, 4rem); font-weight: 500; letter-spacing: -.05em; }
+:root[data-classhub-design='mindmarket'] .not-found-description { max-width: 38rem; margin-top: 1.5rem; }
+:root[data-classhub-design='mindmarket'] .not-found-actions { margin-top: 2rem; gap: .75rem; }
+:root[data-classhub-design='mindmarket'] .not-found-actions .not-found-button { height: auto; min-height: 3rem; border-radius: 999px; box-shadow: none; padding: .85rem 1.5rem; }
+:root[data-classhub-design='mindmarket'] .not-found-actions .not-found-button--home { background: hsl(var(--action)); color: hsl(var(--on-action)); }
+:root[data-classhub-design='mindmarket'] .not-found-actions .not-found-button--search { background: transparent; border-color: hsl(var(--ink)); }
+:root[data-classhub-design='mindmarket'] .privacy-page .reading-body { max-width: 70ch; }
+:root[data-classhub-design='mindmarket'] .privacy-page h2 { font-size: 1.5rem; font-weight: 500; }
+:root[data-classhub-design='mindmarket'] .privacy-page :is(p, li) { font-size: 1rem; line-height: 1.85; }
+:root[data-classhub-design='mindmarket'] .cookie-consent__card { background: var(--surface-solid); border: 1px solid var(--border-subtle); border-radius: 1.5rem; box-shadow: 0 14px 40px rgb(44 46 42 / .15); }
+:root[data-classhub-design='mindmarket'] .cookie-consent h2 { font-size: 1.75rem; font-weight: 500; letter-spacing: -.035em; }
+:root[data-classhub-design='mindmarket'] .cookie-consent__why,
+:root[data-classhub-design='mindmarket'] .cookie-consent__categories { border-radius: 1rem; }
+:root[data-classhub-design='mindmarket'] .cookie-consent__footer { padding: .75rem; gap: .5rem; border: 0; }
+:root[data-classhub-design='mindmarket'] .cookie-consent__footer button { border: 0 !important; border-radius: 999px; min-height: 2.75rem; padding: .6rem .5rem; }
+:root[data-classhub-design='mindmarket'] .cookie-consent__footer .cookie-consent__accept { background: var(--mm-green); color: var(--mm-charcoal); }
+:root[data-classhub-design='mindmarket'] .cookie-consent__control { background: var(--mm-charcoal); color: var(--mm-cream); border: 1px solid var(--mm-cream); box-shadow: none; }
+:root[data-classhub-design='mindmarket'] .cookie-consent__switch:checked { background: var(--mm-green); border-color: var(--mm-green); }
+:root[data-classhub-design='mindmarket'] .cookie-consent__switch:checked::before { background: var(--mm-charcoal); }
+
+@media (min-width: 1280px) {
+  :root[data-classhub-design='mindmarket'] .resource-quick-access { top: 8rem; max-height: calc(100dvh - 10rem); }
+}
+@media (max-width: 1023px) {
+  :root[data-classhub-design='mindmarket'] .admin-workspace > div > main { padding-top: 2rem; }
+  :root[data-classhub-design='mindmarket'] .page-shell :is(.article-list, .schedule-list, .saved-list) { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 767px) {
+  :root[data-classhub-design='mindmarket'] { --card-gap: 1rem; --card-padding: 1.5rem; --radius-card: 1.5rem; --page-gutter: 1.25rem; }
+  :root[data-classhub-design='mindmarket'] .site-main { padding-top: 2rem; padding-bottom: 3.5rem; }
+  :root[data-classhub-design='mindmarket'] .page-heading { margin-bottom: 2rem; gap: 1.5rem; }
+  :root[data-classhub-design='mindmarket'] .page-heading h1,
+  :root[data-classhub-design='mindmarket'] .resource-workspace .page-heading h1 { font-size: clamp(2.5rem, 9vw, 4rem); }
+  :root[data-classhub-design='mindmarket'] .page-heading p { font-size: 1rem; margin-top: 1rem; }
+  :root[data-classhub-design='mindmarket'] .reading-page { padding: 1.5rem; }
+  :root[data-classhub-design='mindmarket'] .page-shell :is(.announcement-entry, .news-entry, .schedule-entry, .resource-entry, .archive-entry, .social-entry, .notification-entry, .content-card) { padding: 1.5rem; }
+  :root[data-classhub-design='mindmarket'] .page-shell .announcement-entry { grid-template-columns: 2.75rem minmax(0, 1fr); gap: .75rem; }
+  :root[data-classhub-design='mindmarket'] .page-shell .announcement-entry .entry-illustration { width: 2.75rem; }
+  :root[data-classhub-design='mindmarket'] .page-shell .news-entry .entry-image { width: 5rem; height: 5rem; }
+  :root[data-classhub-design='mindmarket'] .page-shell .schedule-date strong { font-size: 1.625rem; }
+  :root[data-classhub-design='mindmarket'] .home-card-grid { gap: 1rem; padding-block: 2rem 3rem; }
+  :root[data-classhub-design='mindmarket'] .home-card { border-radius: 1.5rem; padding: 1.5rem; gap: 1rem; min-height: auto; }
+  :root[data-classhub-design='mindmarket'] .home-card__heading :is(h2, .editorial-heading, .signature-heading) { font-size: 1.75rem; }
+  :root[data-classhub-design='mindmarket'] .home-card .home-card__body { padding-top: 1rem; border-color: var(--border-subtle); }
+  :root[data-classhub-design='mindmarket'] .home-card :is(.announcement-entry, .news-entry, .resource-entry, .schedule-entry, .home-social-entry, .archive-entry) { padding: .75rem 0; }
+  :root[data-classhub-design='mindmarket'] .filter-bar { margin-bottom: 1.5rem; }
+  :root[data-classhub-design='mindmarket'] .filter-option { min-height: 2.75rem; padding: .55rem 1rem; }
+  :root[data-classhub-design='mindmarket'] .auth-layout { padding: 2rem 1.25rem 3rem; }
+  :root[data-classhub-design='mindmarket'] .auth-logo-wrap { margin-bottom: 1.75rem; }
+  :root[data-classhub-design='mindmarket'] .auth-brand h1 { font-size: clamp(2.5rem, 10vw, 4rem); }
+  :root[data-classhub-design='mindmarket'] .auth-brand p { font-size: 1rem; margin-bottom: 2rem; }
+  :root[data-classhub-design='mindmarket'] .auth-form { margin-top: 2rem; padding: 1.75rem 1.5rem; }
+  :root[data-classhub-design='mindmarket'] .auth-form h2 { font-size: 2rem; }
+  :root[data-classhub-design='mindmarket'] .account-settings-nav { gap: .25rem; }
+  :root[data-classhub-design='mindmarket'] .account-settings-nav a { padding: .65rem .75rem; font-size: .8125rem; }
+  :root[data-classhub-design='mindmarket'] .calendar-cell { min-height: 4rem; padding: .15rem; }
+  :root[data-classhub-design='mindmarket'] .calendar-day { min-height: 2.5rem; }
+  :root[data-classhub-design='mindmarket'] .events-page section[aria-label='活动月历'] { padding: 1rem; }
+  :root[data-classhub-design='mindmarket'] .admin-topbar { height: 4.5rem; }
+  :root[data-classhub-design='mindmarket'] .admin-workspace h1 { font-size: 2.25rem; }
+  :root[data-classhub-design='mindmarket'] .admin-panel > header { padding: 1.25rem; }
+  :root[data-classhub-design='mindmarket'] .admin-stat-card { padding: 1.25rem; }
+  :root[data-classhub-design='mindmarket'] .admin-stat-card .text-3xl { font-size: 2.5rem; }
+  :root[data-classhub-design='mindmarket'] .ai-scenarios { gap: .5rem; }
+  :root[data-classhub-design='mindmarket'] .ai-scenarios button { padding: .85rem; font-size: .8125rem; }
+  :root[data-classhub-design='mindmarket'] .random-call-stage { border-radius: 1.5rem; padding-inline: .75rem; }
+  :root[data-classhub-design='mindmarket'] .random-call-page .page-heading h1 { font-size: clamp(2.5rem, 9vw, 4rem); }
+  :root[data-classhub-design='mindmarket'] .dialog-panel.search-panel { --search-padding: 1.5rem; }
+}
+@media (max-width: 479px) {
+  :root[data-classhub-design='mindmarket'] { --page-gutter: 1rem; --card-padding: 1.25rem; }
+  :root[data-classhub-design='mindmarket'] .home-card { padding: 1.25rem; }
+  :root[data-classhub-design='mindmarket'] .home-card__heading { margin-bottom: 0; }
+  :root[data-classhub-design='mindmarket'] .page-shell :is(.announcement-entry, .news-entry, .schedule-entry, .resource-entry, .archive-entry, .social-entry, .notification-entry, .content-card) { padding: 1.25rem; }
+  :root[data-classhub-design='mindmarket'] .reading-page { padding: 1.25rem; }
+  :root[data-classhub-design='mindmarket'] .empty-state { min-height: 12rem; padding: 1.5rem; }
+  :root[data-classhub-design='mindmarket'] .empty-state h3 { font-size: 1.25rem; }
+  :root[data-classhub-design='mindmarket'] .auth-form { padding: 1.5rem 1.25rem; }
+  :root[data-classhub-design='mindmarket'] .dialog-panel { padding: 1.5rem; border-radius: 1.5rem; }
+  :root[data-classhub-design='mindmarket'] .dialog-panel :is(h2, [id^='radix-'][class*='text-lg']) { font-size: 1.5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-classhub-design='mindmarket'] :is(.ed-button, .ui-button, .filter-option, .home-card, .classhub-tabs-trigger, .quant-drop, .pet-menu) { transition: none; }
+  :root[data-classhub-design='mindmarket'] :is(.ed-button, .ui-button):active:not(:disabled) { transform: none; }
+}
+@media (forced-colors: active) {
+  :root[data-classhub-design='mindmarket'] :is(.glass-material, .home-card, .dialog-panel, .cookie-consent__card, .pet-menu) { border: 1px solid CanvasText !important; background: Canvas !important; color: CanvasText; }
+  :root[data-classhub-design='mindmarket'] :is(.status-label, .filter-option[aria-pressed='true'], .interaction[aria-pressed='true']) { border: 1px solid Highlight; }
+}

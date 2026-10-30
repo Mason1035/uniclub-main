@@ -1,0 +1,81 @@
+/* Official unmodified local fonts. Latin keeps MindMarket Inter throughout. */
+@font-face {
+  font-family: 'ClassHub MiSans';
+  src: url('/fonts/classhub/MiSans-Regular.woff2') format('woff2');
+  font-style: normal; font-weight: 400; font-display: swap;
+  unicode-range: U+2010-2027,U+2E80-9FFF,U+F900-FAFF,U+FE10-FE1F,U+FE30-FE4F,U+FF00-FFEF,U+20000-323AF;
+}
+@font-face {
+  font-family: 'ClassHub MiSans';
+  src: url('/fonts/classhub/MiSans-Medium.woff2') format('woff2');
+  font-style: normal; font-weight: 500; font-display: swap;
+  unicode-range: U+2010-2027,U+2E80-9FFF,U+F900-FAFF,U+FE10-FE1F,U+FE30-FE4F,U+FF00-FFEF,U+20000-323AF;
+}
+@font-face {
+  font-family: 'ClassHub Smiley Sans';
+  src: url('/fonts/classhub/SmileySans-Oblique.woff2') format('woff2');
+  font-style: normal; font-weight: 400; font-display: swap;
+  unicode-range: U+2010-2027,U+2E80-9FFF,U+F900-FAFF,U+FE10-FE1F,U+FE30-FE4F,U+FF00-FFEF,U+20000-323AF;
+}
+
+:root[data-classhub-design='mindmarket'] {
+  --mm-font-family: var(--font-latin), 'ClassHub MiSans', 'ClassHub Han Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --mm-font-heading: var(--font-latin), 'ClassHub Smiley Sans', 'ClassHub MiSans', 'ClassHub Han Sans', 'PingFang SC', sans-serif;
+  --font-ui: var(--mm-font-family);
+  --font-body: var(--mm-font-family);
+  --font-reading: var(--mm-font-family);
+  --font-display: var(--mm-font-heading);
+  --font-editorial: var(--mm-font-heading);
+  --font-signature: var(--mm-font-heading);
+}
+:root[data-classhub-design='mindmarket'] :where(.editorial-content,.editorial-titles,.reading-body) {
+  --font-display: var(--mm-font-heading);
+  --font-editorial: var(--mm-font-heading);
+  --font-reading: var(--mm-font-family);
+}
+:root[data-classhub-design='mindmarket'] .mm-reference {
+  font-family: var(--font-body);
+  --font-sans: var(--font-ui);
+}
+:root[data-classhub-design='mindmarket'] :is(.site-shell,.admin-workspace,.admin-auth-shell,.auth-layout,.mm-auth,.dialog-panel,.mm-mobile-panel) :is(h1,h2,h3,h4,h5,h6),
+:root[data-classhub-design='mindmarket'] .mm-footer-invitation > p {
+  font-family: var(--mm-font-heading);
+  /* Smiley has one real weight and its own slanted contours. */
+  font-synthesis: none;
+}
+:root[data-classhub-design='mindmarket'] :is(nav a,nav button,button,[role='button'],.ed-button,.ui-button,.mm-pill,.c-button,.mm-header-cta) {
+  font-family: var(--font-ui);
+  font-weight: 500;
+}
+:root[data-classhub-design='mindmarket'] :is(time,.entry-meta,.status-label,.mm-eyebrow) {
+  font-family: var(--font-ui);
+  font-weight: 400;
+}
+
+/* Cloud headings have more specific legacy card rules than ordinary headings. */
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .home-card.mm-cloud-card :is(h2,h3,h4),
+:root[data-classhub-design='mindmarket'] .mm-home-clouds .mm-home-brief.mm-cloud-card h2 {
+  font-family: var(--mm-font-heading);
+  font-style: normal;
+  font-weight: 400;
+  font-synthesis: none;
+  letter-spacing: 0;
+}
+
+/* These are navigation group titles, with full contrast and room to breathe. */
+:root[data-classhub-design='mindmarket'] .mm-footer-grid h2 {
+  margin-bottom: 22px;
+  font-size: clamp(1.375rem,1.1rem + .5vw,1.625rem);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.35;
+  color: inherit;
+  opacity: 1;
+}
+:root.dark[data-classhub-design='mindmarket'] .mm-footer-grid h2 { color: inherit; }
+:root[data-classhub-design='mindmarket'] .mm-footer-font-credit {
+  display: block; margin-top: 3px; font-size: 11px; font-weight: 400; opacity: .72;
+}
+@media(max-width:639px) {
+  :root[data-classhub-design='mindmarket'] .mm-footer-grid h2 { margin-bottom: 16px; }
+}

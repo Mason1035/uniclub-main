@@ -1,0 +1,73 @@
+const usage = '教学展示引用；图片版权归中国国家博物馆及原作者，保留来源与完整器物形态，不作为开放授权图片提供。';
+
+export const artifacts = [
+  {
+    id: 'belt',
+    title: '任弼时长征过草地时吃剩的皮带',
+    dateLabel: '1936年',
+    collection: '中国国家博物馆',
+    material: '皮革 · 长77厘米',
+    context: '1936年，红二方面军北上过草地，粮食极度短缺。此前红四方面军已从这里经过，沿途可获得的食物更少；这段经历应与1935年中央红军过草地分别理解。',
+    action: '任弼时与战士一起寻找野菜、草根。食物进一步耗尽后，他与警卫员把皮带分段，经过烧、刮、煮充饥。国博保存的这段皮带尚有切割痕迹，是当年没有吃完的部分。',
+    reflection: '一件日常用品留下了极端缺粮环境的实物证据。它使“共同承担困难”有了具体形态：军队领导人与普通战士同样面对饥饿，也共同寻找坚持前进的办法。',
+    image: {
+      src: '/temp/media/belt.webp',
+      alt: '中国国家博物馆收藏的任弼时长征过草地时吃剩的皮带',
+      caption: '任弼时长征过草地时吃剩的皮带，1936年，皮革，长77厘米。文物照片，中国国家博物馆藏。',
+      type: '文物照片' as const,
+      sourceUrl: 'https://www.chnmuseum.cn/Portals/0/web/zt/20160922longmarch/index.html',
+      credit: '中国国家博物馆', usage,
+    },
+    sources: [
+      { title: '信念·精神·传承——纪念红军长征胜利80周年大型馆藏文物展', url: 'https://www.chnmuseum.cn/Portals/0/web/zt/20160922longmarch/index.html', publisher: '中国国家博物馆' },
+      { title: '任弼时在长征过草地时吃剩的皮带', url: 'https://www.chnmuseum.cn/sp/gbzp/hsbb/202105/t20210514_250025.shtml', publisher: '中国国家博物馆／新华社' },
+    ],
+    eventIds: ['ganzi'],
+  },
+  {
+    id: 'lamp',
+    title: '林伯渠长征时用的马灯',
+    dateLabel: '1934—1935年',
+    collection: '中国国家博物馆',
+    material: '玻璃、铁 · 高24厘米',
+    context: '1934年10月，近五十岁的林伯渠随中央红军参加长征，承担筹款和供给等工作。崎岖山路上的夜行需要照明，伤病员与掉队人员也需要同伴照应。',
+    action: '据国博展览介绍及李坚真回忆，林伯渠将马灯的光亮照向同行者，在险路和溪流边提醒、帮助战友。这盏灯由他保存，1961年2月由夫人朱明捐赠给博物馆。',
+    reflection: '马灯既是实用的行军器具，也是互相扶助的见证。理解长征不能只有战斗与行程，还要看普通夜行中怎样照顾他人，以及供给工作如何支持整支队伍继续前进。',
+    image: {
+      src: '/temp/media/lamp.webp',
+      alt: '中国国家博物馆收藏的林伯渠长征马灯',
+      caption: '林伯渠长征时用的马灯，1934—1935年，玻璃、铁，高24厘米。文物照片，中国国家博物馆藏。',
+      type: '文物照片' as const,
+      sourceUrl: 'https://www.chnmuseum.cn/zp/zpml/gmww/202112/t20211207_252709.shtml',
+      credit: '中国国家博物馆', usage,
+    },
+    sources: [
+      { title: '林伯渠长征时用的马灯', url: 'https://www.chnmuseum.cn/zp/zpml/gmww/202112/t20211207_252709.shtml', publisher: '中国国家博物馆' },
+      { title: '长征胜利80周年馆藏文物展：林伯渠长征时使用的马灯', url: 'https://www.chnmuseum.cn/Portals/0/web/zt/20160922longmarch/index.html', publisher: '中国国家博物馆' },
+    ],
+    eventIds: ['grassland', 'wuqi'],
+  },
+  {
+    id: 'receipt',
+    title: '红军给白利寺喇嘛的收据',
+    dateLabel: '1936年6月13日',
+    collection: '中国国家博物馆',
+    material: '纸 · 16×10.6厘米',
+    context: '1936年，红四方面军在甘孜筹粮，准备与红二、红六军团会合北上。白利寺所在地区群众起初对红军心存疑虑，粮食供给又直接关系部队能否继续行军。',
+    action: '红军尊重当地宗教习俗、保护寺院。格达活佛逐渐了解红军后，动员群众支援粮食。6月13日，供给部开具收据，记录白利寺支援的青稞、豌豆，纸条保留了实际往来的痕迹。',
+    reflection: '收据把群众支持与严守纪律联系在一起：信任来自具体行动，支援也有可核对的记录。它见证了甘孜藏族同胞对红军的帮助；收藏单位是中国国家博物馆，不能误写为成都本地其他展馆馆藏。',
+    image: {
+      src: '/temp/media/receipt.webp',
+      alt: '红四方面军给四川甘孜白利寺喇嘛的粮食收据',
+      caption: '红军给白利寺喇嘛的收据，1936年6月13日，纸，16×10.6厘米。文物照片，中国国家博物馆藏。',
+      type: '文物照片' as const,
+      sourceUrl: 'https://www.chnmuseum.cn/zp/zpml/gmww/202112/t20211207_252702.shtml',
+      credit: '中国国家博物馆', usage,
+    },
+    sources: [
+      { title: '红军给白利寺喇嘛的收据', url: 'https://www.chnmuseum.cn/zp/zpml/gmww/202112/t20211207_252702.shtml', publisher: '中国国家博物馆' },
+      { title: '长征胜利80周年馆藏文物展：红四方面军为白利寺支援粮食开的收据', url: 'https://www.chnmuseum.cn/Portals/0/web/zt/20160922longmarch/index.html', publisher: '中国国家博物馆' },
+    ],
+    eventIds: ['ganzi'],
+  },
+];

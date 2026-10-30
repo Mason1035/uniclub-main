@@ -38,6 +38,7 @@ const pages = {
   AdminGallery: lazy(() => import('./pages/admin/AdminGallery')),
   AdminNotifications: lazy(() => import('./pages/admin/AdminNotifications')),
   AdminAi: lazy(() => import('./pages/admin/AdminAi')),
+  AdminFeedback: lazy(() => import('./pages/admin/AdminFeedback')),
   AdminQuantification: lazy(() => import('./pages/admin/AdminQuantification')),
   AdminFees: lazy(() => import('./pages/admin/AdminFees')),
 
@@ -65,6 +66,7 @@ export const appRouteConfig = createRoutesFromElements(<>
         <Route path="gallery" element={<pages.AdminGallery />} />
         <Route path="notifications" element={<pages.AdminNotifications />} />
         <Route path="ai" element={<pages.AdminAi />} />
+        <Route path="feedback" element={<pages.AdminFeedback />} />
         <Route path="quantification" element={<pages.AdminQuantification />} />
         <Route path="fees" element={<pages.AdminFees />} />
       </Route>

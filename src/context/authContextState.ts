@@ -1,8 +1,12 @@
+import type { RoleIdentity } from '../lib/roles';
 import { createContext, useContext } from 'react';
 
-export interface User {
+export interface User extends RoleIdentity {
   id: string;
   name: string;
+  uniqueId: string;
+  avatarUrl?: string;
+  profile?: { bio: string; location: string; website: string; interests: string[] };
   displayName?: string | null;
   email: string;
   avatar?: {
@@ -13,6 +17,12 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
+  status: 'member' | 'guest' | 'checking';
+  accountKey: string;
+  verifying: boolean;
+  verified: boolean;
+  hasToken: boolean;
+  establishSession: (token: string, user: User) => void;
   loading: boolean;
   error: string | null;
   login: (uniqueId: string, password: string) => Promise<void>;

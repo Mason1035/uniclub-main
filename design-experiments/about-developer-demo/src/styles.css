@@ -1,0 +1,71 @@
+@font-face { font-family: 'Demo Space'; src: url('./assets/fonts/SpaceGrotesk-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+* { box-sizing: border-box; }
+:root { color: #15171e; background: #ccd7e9; font-family: 'ClassHub Grotesk', 'ClassHub Han Sans', -apple-system, sans-serif; }
+body { margin: 0; } #root { isolation: isolate; }
+a { color: inherit; text-decoration: none; } a:focus-visible { outline: 2px solid #6265a4; outline-offset: 6px; }
+/* 固定底色始终覆盖视口；柔光层只做有限平移，不旋转/放大全屏纹理。 */
+.ambient-background { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: #ccd7e9; }
+#demo-smooth-wrapper { position: relative; z-index: 1; }
+.ambient-drift { position: absolute; inset: -6%; }
+.ambient-background.is-animated .ambient-drift { transform: translate3d(0, 0, 0); will-change: transform; }
+.ambient-blue { background: radial-gradient(ellipse at 20% 38%, #c3d3ea 5%, #cbd8ea99 40%, transparent 72%); }
+.ambient-rose { background: radial-gradient(ellipse at 65% 70%, #eedde3bf 3%, #e6e0e48c 30%, transparent 67%); }
+.ambient-silver { background: radial-gradient(ellipse at 70% 10%, #e4e8ec99, transparent 65%); }
+.demo-header { position: fixed; z-index: 20; inset: 0 0 auto; display: flex; align-items: center; justify-content: space-between;
+  height: 82px; padding: 0 40px; background: #d3dce91c; }
+.demo-header img { height: auto; display: block; }.people-link, .original-link { font-size: 12px; }
+.eyebrow { font-size: 10px; letter-spacing: .08em; color: #596172; }
+.demo-intro { position: relative; padding: 146px 40px 80px; overflow: clip; }
+.intro-meta { display: flex; justify-content: space-between; gap: 32px; }
+.intro-meta h1 { font-family: 'ClassHub Han Serif', 'Songti SC', serif; font-size: 28px; font-weight: 500; margin: 15px 0 0; }
+.intro-meta p { font-size: 16px; line-height: 1.5; margin: 0; width: 263px; }
+.intro-title, .story-statement { font-family: 'Demo Space', sans-serif; font-weight: 400; line-height: 1.03;
+  letter-spacing: -.015em; word-spacing: 1px; font-size: clamp(40px, 4.15vw, 72px); }
+.intro-title { position: relative; width: calc(100% - 310px); margin: 67px 0 0; z-index: 2; }
+.intro-object { position: absolute; right: 13%; top: 45%; width: 23vw; max-width: 330px; transform: rotate(12deg); opacity: .65; z-index: 1; pointer-events: none; }
+.intro-object .geometry { height: auto; }
+.about-content { padding: 0 40px; }
+.about-chapter { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr); gap: 8%; padding: 115px 0;
+  scroll-margin-top: 110px; }
+.chapter-heading h2 { font-family: 'ClassHub Han Serif', 'Songti SC', serif; font-size: clamp(32px, 3.2vw, 50px);
+  line-height: 1.35; font-weight: 500; margin: 24px 0 0; }
+.chapter-english { font-family: 'Demo Space', sans-serif; font-size: clamp(35px, 4vw, 65px); line-height: 1.04; margin: 65px 0 0; letter-spacing: -.015em; }
+.story-chapter { grid-template-columns: minmax(0, 1fr) 263px; gap: 45px; padding-top: 60px; padding-bottom: 145px; }
+.story-chapter .chapter-label { font-family: inherit; font-size: 14px; margin: 0 0 35px; }
+.story-statement { margin: 0; }.story-chapter .chapter-body { padding-top: 53px; }
+.chapter-body { max-width: 740px; min-width: 0; }.chapter-body > :first-child { margin-top: 0; }.chapter-body > :last-child { margin-bottom: 0; }
+.chapter-body p { font-size: 16px; color: #4f5767; line-height: 1.9; margin: 24px 0; overflow-wrap: anywhere; }
+.chapter-body .lead-copy { font-size: clamp(18px, 1.65vw, 23px); color: #252c3b; line-height: 1.85; }
+.story-chapter .chapter-body p, .story-chapter .chapter-body .lead-copy { font-size: 15px; line-height: 1.75; color: #353d4e; }
+.features-list { list-style: none; margin: 0; padding: 0; }
+.features-list li { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 18px; padding: 26px 0; border-bottom: 1px solid #7283a22e; }
+.features-list li:first-child { padding-top: 0; }.feature-number { color: #5b6980; font-size: 11px; padding-top: 8px; }
+.features-list h3 { font-family: 'ClassHub Han Serif', 'Songti SC', serif; font-size: 24px; line-height: 1.5; font-weight: 500; margin: 0 0 9px; }
+.features-list p { margin: 0; }.chapter-body .content-note { font-size: 13px; line-height: 1.85; max-width: 600px; }
+.text-link { display: inline-flex; align-items: center; justify-content: space-between; gap: 35px; font-size: 14px;
+  border-bottom: 1px solid #71809b80; padding: 14px 0 10px; margin-top: 10px; transition: color .2s; }
+.text-link:hover, .inline-link:hover { color: #545bad; }.inline-link { border-bottom: 1px solid #71809b80; color: #3e4962; }
+.developer-copy { padding-bottom: 130px; }
+.demo-end { display: flex; align-items: center; min-height: 75svh; padding: 100px 40px; }.end-copy { max-width: 700px; }
+.demo-end h2 { font-family: 'ClassHub Han Serif', 'Songti SC', serif; font-size: clamp(40px, 5.8vw, 78px); font-weight: 500; line-height: 1.25; margin: 40px 0 25px; }
+.demo-end p { font-size: 16px; color: #4f5767; line-height: 1.95; }
+footer { padding: 25px 40px; border-top: 1px solid #7283a22e; color: #566176; font-size: 11px; }
+@media(max-width:1280px) and (min-width:900px) { .intro-title, .story-statement { font-size: 48px; } }
+@media(max-width:899px) {
+ .demo-header { height: 70px; padding: 0 24px; background: #d2dce94d; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+ .demo-header img { width: 115px; }.people-link { font-size: 10px; }.original-link { display: none; }
+ .demo-intro { padding: 114px 24px 40px; }
+ .intro-meta { display: block; }.intro-meta h1 { font-size: 23px; margin-top: 14px; }
+ .intro-meta p { width: 100%; max-width: 270px; font-size: 13px; margin-top: 23px; }
+ .intro-title { width: 100%; margin: 54px 0 40px; font-size: clamp(28px, 5.7vw, 48px); line-height: 1.12; letter-spacing: 0; }
+ .intro-object { top: 49%; right: -7%; width: 42vw; opacity: .55; }
+ .about-content { padding: 0 24px; }.about-chapter { grid-template-columns: minmax(0, 1fr); gap: 30px; padding: 58px 0; scroll-margin-top: 94px; }
+ .chapter-heading h2 { font-size: 32px; margin-top: 16px; }.chapter-heading h2 br { display: none; }
+ .chapter-english { font-size: 36px; margin-top: 32px; }.story-chapter .chapter-label { margin-bottom: 28px; }
+ .story-statement { font-size: clamp(26px, 5.9vw, 48px); line-height: 1.15; letter-spacing: 0; }.story-chapter .chapter-body { padding-top: 0; }
+ .chapter-body p { font-size: 15px; line-height: 1.9; }.chapter-body .lead-copy { font-size: 19px; line-height: 1.85; }
+ .features-list li { grid-template-columns: 23px minmax(0, 1fr); gap: 12px; padding: 24px 0; }.features-list h3 { font-size: 23px; }
+ .chapter-body .content-note { font-size: 12px; }.text-link { font-size: 13px; gap: 28px; }.developer-copy { padding-bottom: 70px; }
+ .demo-end { padding: 75px 24px; min-height: 65svh; }.demo-end p { font-size: 15px; } footer { padding: 24px; }
+}
+@media(prefers-reduced-motion:reduce) { html { scroll-behavior: auto; } .text-link { transition: none; } }

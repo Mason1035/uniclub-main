@@ -1,20 +1,16 @@
 import { ThemeContext } from './themeContextState';
-import React, { useLayoutEffect } from 'react';
+import { useHomeAppearance } from '../hooks/useHomeAppearance';
+import { clearGlassMapCache } from '../lib/graphics/homeGlassLens';
+import { useEffect, useMemo, type ReactNode } from 'react';
 
-const LIGHT_THEME = { isDarkMode: false } as const;
-
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  useLayoutEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove('dark');
-    root.style.colorScheme = 'light';
-    // Retire the old preference, including previously saved dark selections.
-    try { localStorage.removeItem('theme'); } catch { /* Light mode does not require storage. */ }
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const { starry, toggle } = useHomeAppearance();
+  useEffect(() => {
+    try { localStorage.removeItem('theme'); } catch { /* Retire only the legacy preference. */ }
   }, []);
-
-  return (
-    <ThemeContext.Provider value={LIGHT_THEME}>
-      {children}
-    </ThemeContext.Provider>
-  );
-};
+  useEffect(() => {
+    if (!starry) clearGlassMapCache();
+  }, [starry]);
+  const value = useMemo(() => ({ isDarkMode: starry, toggleDarkMode: toggle }), [starry, toggle]);
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+}

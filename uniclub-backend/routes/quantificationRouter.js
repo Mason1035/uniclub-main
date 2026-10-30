@@ -1,7 +1,7 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const authenticate = require('../middleware/auth');
-const requireAdmin = require('../middleware/admin');
+const { requireAdmin, requireStaff } = require('../middleware/admin');
 const Service = require('../services/QuantificationService');
 const { assertFields } = require('../utils/quantificationPolicy');
 
@@ -10,7 +10,7 @@ function createRouters(service = new Service()) {
   const adminRouter = express.Router();
   const noCache = (req, res, next) => { res.set('Cache-Control', 'no-store, private'); next(); };
   router.use(authenticate, noCache);
-  adminRouter.use(requireAdmin, noCache);
+  adminRouter.use(requireStaff, noCache);
   const uploadLimit = rateLimit({ windowMs: 60 * 60 * 1000, limit: 12, keyGenerator: req => req.user.userId, standardHeaders: 'draft-7', legacyHeaders: false, message: { error: '本小时上传次数较多，请稍后再试。', code: 'UPLOAD_LIMIT' } });
   const credentialLimit = rateLimit({ windowMs: 60 * 60 * 1000, limit: 120, keyGenerator: req => req.user.userId, standardHeaders: 'draft-7', legacyHeaders: false, message: { error: '上传授权请求过于频繁，请稍后再试。' } });
   router.get('/collections', async (req, res) => res.json(await service.run(s => s.collections())));
@@ -22,21 +22,21 @@ function createRouters(service = new Service()) {
   router.get('/uploads/:id/parts', async (req, res) => res.json(await service.run(s => s.parts(req.params.id, req.user.userId))));
   router.post('/uploads/:id/complete', async (req, res) => { assertFields(req.body, []); res.json(await service.run(s => s.confirm(req.params.id, req.user.userId))); });
   router.post('/uploads/:id/abort', async (req, res) => { assertFields(req.body, []); res.json(await service.run(s => s.abort(req.params.id, req.user.userId))); });
-  // Owner-only endpoint. Administrators have explicit endpoints below.
+  // Owner-only endpoint. Content managers have explicit endpoints below.
   router.get('/submissions/:id/download', async (req, res) => res.json(await service.run(s => s.download(req.params.id, req.user.userId))));
 
-  adminRouter.get('/files', async (req, res) => res.json(await service.run(s => s.storageFiles())));
-  adminRouter.post('/files/downloads', async (req, res) => { assertFields(req.body, ['keys']); res.json(await service.run(s => s.storageDownloads(req.body.keys))); });
-  adminRouter.get('/storage', (req, res) => res.json(service.storageConfig()));
-  adminRouter.put('/storage', async (req, res) => res.json(await service.saveStorageConfig(req.body, req.user.userId)));
-  adminRouter.post('/storage/test', async (req, res) => { assertFields(req.body, []); res.json(await service.run(s => s.testStorageConfig())); });
+  adminRouter.get('/files', requireAdmin, async (req, res) => res.json(await service.run(s => s.storageFiles())));
+  adminRouter.post('/files/downloads', requireAdmin, async (req, res) => { assertFields(req.body, ['keys']); res.json(await service.run(s => s.storageDownloads(req.body.keys))); });
+  adminRouter.get('/storage', requireAdmin, (req, res) => res.json(service.storageConfig()));
+  adminRouter.put('/storage', requireAdmin, async (req, res) => res.json(await service.saveStorageConfig(req.body, req.user.userId)));
+  adminRouter.post('/storage/test', requireAdmin, async (req, res) => { assertFields(req.body, []); res.json(await service.run(s => s.testStorageConfig())); });
   adminRouter.get('/collections', async (req, res) => res.json(await service.run(s => s.collections(true))));
   adminRouter.post('/collections', async (req, res) => res.status(201).json({ collection: await service.run(s => s.createCollection(req.body, req.user.userId)) }));
   adminRouter.patch('/collections/:id', async (req, res) => res.json({ collection: await service.run(s => s.editCollection(req.params.id, req.body)) }));
   adminRouter.get('/collections/:id/submissions', async (req, res) => res.json(await service.run(s => s.overview(req.params.id, req.query))));
   adminRouter.get('/submissions/:id/download', async (req, res) => res.json(await service.run(s => s.download(req.params.id, req.user.userId, true))));
   adminRouter.post('/downloads', async (req, res) => { assertFields(req.body, ['submissionIds']); res.json(await service.run(s => s.bulkDownload(req.body.submissionIds, req.user.userId))); });
-  adminRouter.post('/cleanup', async (req, res) => { assertFields(req.body, []); res.json(await service.run(s => s.cleanup())); });
+  adminRouter.post('/cleanup', requireAdmin, async (req, res) => { assertFields(req.body, []); res.json(await service.run(s => s.cleanup())); });
   const errors = (err, req, res, next) => {
     if (res.headersSent) return next(err);
     if (!err.status) console.error('[quantification] request failed; no request body or cloud credentials logged');

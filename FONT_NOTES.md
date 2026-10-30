@@ -104,7 +104,7 @@ Hero、Display、H1–H3、功能正文、阅读正文采用集中管理的 `cla
 - JavaScript 禁用时，`noscript` 内正常 stylesheet 保留完整字体覆盖；专项夹具观察到全部 199 face，以及生僻中文与扩展 Latin 的 tail 请求。动态姓名/正文在 extended CSS 完成注册前短暂使用现有系统 fallback，之后按 `swap` 替换；其他系统极生僻字仍受原源字体及系统 fallback 限制。
 - extended CSS、loader JS 和每个 WOFF2 均按内容 SHA-256 前 10 位命名，适合匹配内容哈希资源的长期 immutable 缓存。`fonts-core.css` 由 Vite 编入带 hash 的共享 CSS；其固定 public 路径不要单独设一年 immutable。
 
-旧 Noto / Geist 文件保留在原目录以保护既有资源与未提交文件，但正式加载入口不再引用；浏览器验证没有请求这些旧字体。没有增加字体切换动画或字体加载状态控件。
+旧 Noto / Geist 文件在字体迁移时曾保留，但正式加载入口已不再引用；迁移时的浏览器验证没有请求这些旧字体。2026-10-10 按用户要求清理了 `public/fonts/` 根目录下的旧分片、字体 CSS 与配套 OFL 文件，正式 `public/fonts/classhub/` 保留。没有增加字体切换动画或字体加载状态控件。
 
 ## 6. 重建
 

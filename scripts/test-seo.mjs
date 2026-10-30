@@ -32,7 +32,9 @@ test('public build contains real guest HTML and one coherent metadata set withou
     const html = read(page.file);
     const head = html.split('</head>')[0];
     const body = html.split('<div id="root">')[1];
-    assert.ok(body?.includes('masthead-brand')); assert.ok(body?.includes('footer-links'));
+    assert.match(body, /class="mm-header"/);
+    assert.match(body, /aria-label="ClassHub 首页"/);
+    assert.match(body, /aria-label="页脚导航"/);
     assert.equal((head.match(/rel="canonical"/g) || []).length, 1);
     assert.ok(head.includes(`href="${site.origin + page.path}"`));
     assert.equal((head.match(/name="description"/g) || []).length, 1);
@@ -50,7 +52,7 @@ test('public build contains real guest HTML and one coherent metadata set withou
     }
   }
   assert.match(read('index.html'), /班级重要消息，集中在这里/);
-  assert.match(read('about.html'), /如何开始使用/);
+  assert.match(read('about.html'), /先浏览首页，再使用班级管理员开通的账号登录/);
   assert.match(read('privacy.html'), /账号与必要存储/);
 });
 

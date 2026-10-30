@@ -199,6 +199,7 @@ app.use('/api/curation', curationRouter);
 console.log('✅ Curation router mounted at /api/curation');
 
 app.use('/api/resources', resourceRouter);
+app.use('/api/resource-quick-links', require('./routes/resourceQuickLinksRouter'));
 console.log('✅ Resource router mounted at /api/resources');
 
 app.use('/api/notifications', notificationRouter);
@@ -207,7 +208,7 @@ console.log('✅ Notification router mounted at /api/notifications');
 app.use('/api/past-events', pastEventRouter);
 console.log('✅ Past Event router mounted at /api/past-events');
 
-// ClassHub admin console API (every route requires User.isAdmin === true)
+// ClassHub console API: live role checks protect business and system capabilities.
 const adminRouter = require('./routes/adminRouter');
 app.use('/api/admin', adminRouter);
 console.log('✅ Admin router mounted at /api/admin');
@@ -231,6 +232,10 @@ console.log('✅ Featured router mounted at /api/featured');
 // Search router
 const searchRouter = require('./routes/searchRouter');
 app.use('/api/search', searchRouter);
+
+// Authenticated member AI: permission-filtered retrieval, private memory and usage.
+app.use('/api/assistant', require('./routes/assistantFeedbackRouter'));
+app.use('/api/assistant', require('./routes/assistantRouter'));
 console.log('✅ Search router mounted at /api/search');
 
 // Debug endpoint: 班级名单概览。

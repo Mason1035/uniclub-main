@@ -38,6 +38,15 @@ function rejectedThinkingOption(error) {
   return null;
 }
 
+// Only the provider's exact counters are billable evidence. Missing usage is
+// explicitly unknown; text length or local token estimates are never charged.
+function normalizeUsage(value) {
+  const missing = { promptTokens: 0, completionTokens: 0, totalTokens: 0, reported: false };
+  if (!value || !['prompt_tokens', 'completion_tokens', 'total_tokens'].every(key => Number.isSafeInteger(value[key]) && value[key] >= 0)) return missing;
+  if (value.total_tokens !== value.prompt_tokens + value.completion_tokens) return missing;
+  return { promptTokens: value.prompt_tokens, completionTokens: value.completion_tokens, totalTokens: value.total_tokens, reported: true };
+}
+
 function completionDelay(ms, signal) {
   return new Promise((resolve, reject) => {
     const abort = () => { clearTimeout(timer); signal?.removeEventListener('abort', abort); reject(new AiError('CANCELLED', '请求已取消。', 499)); };
@@ -72,13 +81,21 @@ class DeepSeekAssistant {
     if (!doc?.configured) throw new AiError('NOT_CONFIGURED', '尚未配置 DeepSeek API Key，请先配置密钥。', 503);
     return decrypt(doc.secret);
   }
-  async completion(key, messages, { json = false, onDelta, signal, maxTokens = 4096, reasoning = false,
+  async completion(key, messages, { json = false, onDelta, onUsage, signal, maxTokens = 4096, reasoning = false,
     reasoningEffort = 'low', retries = 0, allowReasoningFallback = true,
     _attempt = 0, _omitThinking = false, _omitEffort = false } = {}) {
-    let response;
+    let response, allocation, usage = normalizeUsage(null);
+    const captureUsage = async value => {
+      const next = normalizeUsage(value);
+      if (!next.reported || usage.reported) return;
+      usage = next;
+      await allocation?.report(next);
+      await onUsage?.(next);
+    };
     try {
+      allocation = await require('./AssistantQuotaService').reserveCompletion(messages, maxTokens);
       response = await this.http.post('/chat/completions', {
-        model: MODEL, messages, max_tokens: maxTokens,
+        model: MODEL, messages, max_tokens: allocation?.maxTokens ?? maxTokens,
         ...(!_omitThinking && { thinking: { type: reasoning ? 'enabled' : 'disabled' } }),
         ...(reasoning && !_omitEffort && { reasoning_effort: ['low', 'high', 'max'].includes(reasoningEffort) ? reasoningEffort : 'low' }),
         ...(json && { response_format: { type: 'json_object' } }),
@@ -88,12 +105,13 @@ class DeepSeekAssistant {
         ...(onDelta && { responseType: 'stream' }),
       });
       if (!onDelta) {
+        await captureUsage(response.data?.usage);
         const answer = response.data?.choices?.[0]?.message?.content;
         const finish = response.data?.choices?.[0]?.finish_reason;
         if (finish && !['stop', 'length'].includes(finish)) throw new AiError('INCOMPLETE_STREAM', 'AI 回答被中止，请稍后重试。', 502);
         if (typeof answer !== 'string' || !answer.trim()) throw new AiError('EMPTY_OUTPUT', 'DeepSeek 没有返回内容，请重新生成。', 502);
         if (answer.length > LIMITS.answer) throw new AiError('OUTPUT_TOO_LONG', 'AI 回答过长，请缩小问题范围后重试。', 502);
-        return { answer, truncated: response.data.choices[0].finish_reason === 'length' };
+        return { answer, truncated: response.data.choices[0].finish_reason === 'length', usage };
       }
       let pending = '', answer = '', finished = false, truncated = false;
       const consume = async line => {
@@ -103,6 +121,7 @@ class DeepSeekAssistant {
         if (payload === '[DONE]') { finished = true; return; }
         let chunk;
         try { chunk = JSON.parse(payload); } catch { throw new AiError('INVALID_PROVIDER_STREAM', 'DeepSeek 响应格式异常，请重新生成。', 502); }
+        await captureUsage(chunk.usage);
         if (chunk.error) throw new AiError('PROVIDER_UNAVAILABLE', 'DeepSeek 服务异常，请稍后重试。', 502);
         const finish = chunk.choices?.[0]?.finish_reason;
         if (finish && !['stop', 'length'].includes(finish)) throw new AiError('INCOMPLETE_STREAM', 'AI 回答被中止，请稍后重试。', 502);
@@ -129,13 +148,13 @@ class DeepSeekAssistant {
       if (pending.trim()) await consume(pending.trim());
       if (!finished) throw new AiError('INCOMPLETE_STREAM', 'DeepSeek 连接中断，回答未完整接收，请重新生成。', 502);
       if (!answer.trim()) throw new AiError('EMPTY_OUTPUT', 'DeepSeek 没有返回内容，请重新生成。', 502);
-      return { answer, truncated };
+      return { answer, truncated, usage };
     } catch (error) {
       // axios errors contain headers and image bodies: never log/serialize them.
       response?.data?.destroy?.(); error.response?.data?.destroy?.();
       const safe = providerError(error);
       const rejected = allowReasoningFallback && reasoning && rejectedThinkingOption(error);
-      const options = { json, onDelta, signal, maxTokens, reasoning, reasoningEffort, retries, allowReasoningFallback,
+      const options = { json, onDelta, onUsage, signal, maxTokens, reasoning, reasoningEffort, retries, allowReasoningFallback,
         _attempt: _attempt + 1, _omitThinking, _omitEffort };
       // Never retry a streamed answer; emitted text cannot be safely replayed.
       // Both normal retries and capability fallback share a total two-call cap.
@@ -262,4 +281,4 @@ class DeepSeekAssistant {
   }
 }
 
-module.exports = { DeepSeekAssistant, publicSettings, providerError, MODEL, BASE_URL };
+module.exports = { DeepSeekAssistant, publicSettings, providerError, normalizeUsage, MODEL, BASE_URL };

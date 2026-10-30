@@ -12,9 +12,17 @@ import ContentState from '../components/ContentState';
 import AnimatedTerminalText from '../components/AnimatedTerminalText';
 import HomeSectionCard from '../components/home/HomeSectionCard';
 import IOSInstallCard from '../components/home/IOSInstallCard';
+import { useHomeEntryAnimation } from '../lib/homeEntry';
 import { useAuth } from '../context/authContextState';
 import { useUser } from '../context/userContextState';
 import './home-hero.css';
+import { useMindMarketDesign } from '../design/mindmarket/DesignContext';
+import MMHomePrelude, { MMHomeCallout } from '../design/mindmarket/MMHomePrelude';
+import { MMMarquee } from '../design/mindmarket/MMMarquee';
+import { MMCarousel } from '../design/mindmarket/MMCarousel';
+import { scrollMindMarketTo } from '../design/mindmarket/MMScrollCoordinator';
+import '../design/mindmarket/cloud-cards.css';
+const MMHomeBrief = lazy(() => import('../design/mindmarket/MMHomeBrief'));
 
 const heroPhrases = ['learning from it.', 'imagining beyond it.', 'connecting through it.'] as const;
 const HOME_LIMITS = { announcement: 1, news: 1, activity: 1, resource: 1, pulse: 2, gallery: 2 } as const;
@@ -25,26 +33,32 @@ const EventCard = lazy(() => loadMemberCards().then(module => ({ default: module
 const ResourceCard = lazy(() => loadMemberCards().then(module => ({ default: module.ResourceCard })));
 const PastEventCard = lazy(() => loadMemberCards().then(module => ({ default: module.PastEventCard })));
 function GuestHomeState({ title, description, to }: { title: string; description: string; to: string }) {
-  return <div className="home-guest-state"><h3>{title}</h3><p>{description}</p><Link className="text-link" to="/auth" state={{ from: to }}>登录后查看 →</Link></div>;
+  return <div data-auth-guest className="home-guest-state"><h3>{title}</h3><p>{description}</p><Link className="text-link" to="/auth" state={{ from: to }}>登录后查看 →</Link></div>;
 }
 export default function Homepage() {
   const auth = useAuth();
+  const animateEntry = useHomeEntryAnimation();
+  const mindmarket = useMindMarketDesign();
   const { isAuthenticated, isLoading, user } = useUser();
-  const member = !auth.loading && !isLoading && !!auth.user && isAuthenticated;
-  // Scope cached member content by account; guests never render or request it.
-  const account = member ? auth.user?.id || user.uniqueId : 'guest';
+  const member = !!auth.user && isAuthenticated;
+  const checking = auth.loading || isLoading;
+  const memberLayout = member || checking;
+  // A token can request protected data while /auth/me verifies it in parallel.
+  const canRequest = auth.hasToken ?? member;
+  // The session scope remains stable even when no display cache exists yet.
+  const account = canRequest ? auth.accountKey || auth.user?.uniqueId || user.uniqueId || 'pending' : 'guest';
+  const identityError = checking ? auth.error : null;
   const hero = useRef<HTMLElement>(null);
   const page = useRef<HTMLDivElement>(null);
   const [memberCardsReady, setMemberCardsReady] = useState(false);
   useEffect(() => {
-    if (!member) return;
     let active = true;
-    // Fetch the member-only presentation in parallel with its data. Revisit
+    // Public resource cards and member content share this presentation chunk. Revisit
     // reveal targets when the chunk finishes, even if queries were cached.
     void loadMemberCards().then(() => { if (active) setMemberCardsReady(true); })
       .catch(error => { if (active) console.error('Member homepage presentation failed to load:', error); });
     return () => { active = false; };
-  }, [member]);
+  }, [canRequest]);
   useGSAP(() => {
     const media = gsap.matchMedia();
     media.add({
@@ -52,7 +66,7 @@ export default function Homepage() {
       mobile: '(max-width: 767px)',
       reduce: '(prefers-reduced-motion: reduce)',
     }, ({ conditions }) => {
-      if (conditions?.reduce || !hero.current) return;
+      if (!animateEntry || conditions?.reduce || !hero.current) return;
       const select = gsap.utils.selector(hero);
       const intro = gsap.timeline({
         defaults: { ease: 'power2.out', clearProps: 'transform,opacity,visibility' },
@@ -65,19 +79,19 @@ export default function Homepage() {
       const element = hero.current;
       element.addEventListener('focusin', finish);
       return () => element.removeEventListener('focusin', finish);
-    }, hero);
+    }, page);
     return () => media.revert();
-  }, { scope: hero });
-  const news=useQuery({queryKey:['news','home',account,'latest',HOME_LIMITS.news],enabled:member,queryFn:async()=>listFrom<ApiNews>((await api.get(`/api/news?view=home&sort=latest&limit=${HOME_LIMITS.news}`)).data,'news','articles')});
-  const announcements=useQuery({queryKey:['announcements','home',account,'latest',HOME_LIMITS.announcement],enabled:member,queryFn:async()=>listFrom<Announcement>((await api.get(`/api/announcements?sort=latest&limit=${HOME_LIMITS.announcement}`)).data,'announcements')});
-  const events=useQuery({queryKey:['events','home',account,'latest',HOME_LIMITS.activity],enabled:member,queryFn:async()=>listFrom<MongoEvent>((await api.get(`/api/events?status=published&sort=latest&limit=${HOME_LIMITS.activity}`)).data,'events')});
-  const resources=useQuery({queryKey:['resources','home',account,'newest',HOME_LIMITS.resource],enabled:member,queryFn:async()=>listFrom<ApiResource>((await api.get(`/api/resources?status=approved&sortBy=newest&limit=${HOME_LIMITS.resource}`)).data,'resources')});
-  const posts=useQuery({queryKey:['social','home',account,HOME_LIMITS.pulse],enabled:member,queryFn:async()=>listFrom<ApiSocialPost>((await api.get(`/api/social/posts?limit=${HOME_LIMITS.pulse}`)).data,'posts')});
-  const past=useQuery({queryKey:['past-events','home',account,HOME_LIMITS.gallery],enabled:member,queryFn:async()=>listFrom<ApiPastEvent>((await api.get(`/api/past-events?limit=${HOME_LIMITS.gallery}`)).data,'data','events')});
+  }, { scope: page, dependencies: [animateEntry] });
+  const news=useQuery({queryKey:['news','home',account,'latest',HOME_LIMITS.news],enabled:canRequest,queryFn:async()=>listFrom<ApiNews>((await api.get(`/api/news?view=home&sort=latest&limit=${HOME_LIMITS.news}`)).data,'news','articles')});
+  const announcements=useQuery({queryKey:['announcements','home',account,'latest',HOME_LIMITS.announcement],enabled:canRequest,queryFn:async()=>listFrom<Announcement>((await api.get(`/api/announcements?sort=latest&limit=${HOME_LIMITS.announcement}`)).data,'announcements')});
+  const events=useQuery({queryKey:['events','home',account,'latest',HOME_LIMITS.activity],enabled:canRequest,queryFn:async()=>listFrom<MongoEvent>((await api.get(`/api/events?status=published&sort=latest&limit=${HOME_LIMITS.activity}`)).data,'events')});
+  const resources=useQuery({queryKey:['resources','home','public','newest',HOME_LIMITS.resource],queryFn:async()=>listFrom<ApiResource>((await api.get(`/api/resources?status=approved&sortBy=newest&limit=${HOME_LIMITS.resource}`)).data,'resources')});
+  const posts=useQuery({queryKey:['social','home',account,HOME_LIMITS.pulse],enabled:canRequest,queryFn:async()=>listFrom<ApiSocialPost>((await api.get(`/api/social/posts?limit=${HOME_LIMITS.pulse}`)).data,'posts')});
+  const past=useQuery({queryKey:['past-events','home',account,HOME_LIMITS.gallery],enabled:canRequest,queryFn:async()=>listFrom<ApiPastEvent>((await api.get(`/api/past-events?limit=${HOME_LIMITS.gallery}`)).data,'data','events')});
   useHomeScrollReveal(page, `${memberCardsReady}|${[news, announcements, events, resources, posts, past].map(query => `${query.status}:${query.dataUpdatedAt}`).join('|')}`);
   return (
     <div ref={page} className="home-page">
-      <section ref={hero} className="hero">
+      {mindmarket ? <><nav className="mm-home-shortcuts" aria-label="首页快捷入口" data-pet-avoid><a href="#classhub-daily" onClick={event=>{if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;const target=document.getElementById('classhub-daily');if(!target)return;event.preventDefault();scrollMindMarketTo(target,true);target.focus({preventScroll:true});}}>直达公告与近期事务 <span aria-hidden="true">↓</span></a></nav><MMHomePrelude/></> : <section ref={hero} className="hero">
         <h1 className="hero-title" lang="en">
           <span>The future isn't <span className="hero-title__ending">writing code.</span></span>
           <span className="hero-title__completion"><span>It's&nbsp;</span><AnimatedTerminalText phrases={heroPhrases}/></span>
@@ -89,31 +103,33 @@ export default function Homepage() {
             <Link className="text-link min-h-11 inline-flex items-center text-sm" to="/events">看看近期活动 →</Link>
           </div>
         </div>
-      </section>
-
+      </section>}
+      <div className={mindmarket ? 'mm-home-clouds' : undefined}>
+      {mindmarket && <div id="classhub-daily" tabIndex={-1} className="home-business-heading"><h2>{memberLayout ? '今天的班级' : '班级消息与日常'}</h2><p>{memberLayout ? '公告、近期活动和常用事务，打开就能找到。' : '先看看班级空间，登录后查看完整内容。'}</p></div>}
       <div className="home-card-grid">
         <HomeSectionCard kind="announcement" title="近期公告" to="/announcements" linkLabel="全部公告" wide>
-          {member ? <Suspense fallback={<ContentState loading/>}><ContentState loading={announcements.isLoading} error={announcements.error} empty={!announcements.data?.length} emptyTitle="暂无新公告" onRetry={()=>void announcements.refetch()}>
+          {memberLayout ? <Suspense fallback={<ContentState loading/>}><ContentState loading={checking ? !identityError : announcements.isLoading} error={identityError || announcements.error} empty={!announcements.data?.length} emptyTitle="暂无新公告" onRetry={()=>{if(identityError)window.dispatchEvent(new Event('auth:changed'));else void announcements.refetch();}}>
             {announcements.data?.slice(0,HOME_LIMITS.announcement).map(item=><AnnouncementCard key={item._id} announcement={item} clampBody/>)}
           </ContentState></Suspense> : <GuestHomeState title="班级重要消息，集中在这里" description="课程提醒、班级通知与最新安排，登录后查看。" to="/announcements"/>}
         </HomeSectionCard>
+        {mindmarket && memberLayout && <Suspense fallback={<section className="mm-home-brief mm-cloud-card mm-cloud-card--brief" role="status" aria-busy="true"><div className="mm-home-brief__heading"><h2>近期事务</h2></div><div className="mm-home-brief__items">{['量化材料','班费凭证','我的通知'].map(title=><div key={title}><span>{title}</span><p>正在获取…</p><small>正在获取近期事务…</small></div>)}</div></section>}><MMHomeBrief account={account}/></Suspense>}
         <HomeSectionCard kind="activity" title="接下来，一起参与" titleTone="editorial" to="/events" linkLabel="活动日程">
-          {member ? <Suspense fallback={<ContentState loading/>}><ContentState loading={events.isLoading} error={events.error} empty={!events.data?.length} emptyTitle="暂无近期活动" onRetry={()=>void events.refetch()}>
+          {memberLayout ? <Suspense fallback={<ContentState loading/>}><ContentState loading={checking ? !identityError : events.isLoading} error={identityError || events.error} empty={!events.data?.length} emptyTitle="暂无近期活动" onRetry={()=>{if(identityError)window.dispatchEvent(new Event('auth:changed'));else void events.refetch();}}>
             <div className="schedule-list">{events.data?.slice(0,HOME_LIMITS.activity).map(item=><EventCard key={item._id||item.id} {...transformToEventCard(item)} isCompact/>)}</div>
           </ContentState></Suspense> : <GuestHomeState title="一起安排下一次相聚" description="查看班级活动、时间与参与方式。" to="/events"/>}
         </HomeSectionCard>
         <HomeSectionCard kind="resource" title="共享资源" to="/resources" linkLabel="资源目录">
-          {member ? <Suspense fallback={<ContentState loading/>}><ContentState loading={resources.isLoading} error={resources.error} empty={!resources.data?.length} emptyTitle="暂无共享资源" onRetry={()=>void resources.refetch()}>
+          <Suspense fallback={<ContentState loading/>}><ContentState loading={resources.isLoading} error={resources.error} empty={!resources.data?.length} emptyTitle="暂无共享资源" onRetry={()=>void resources.refetch()}>
             {resources.data?.slice(0,HOME_LIMITS.resource).map(item=><ResourceCard key={item._id} {...item} id={item._id} updatedAt={item.updatedAt||item.createdAt} fileSize={formatBytes(item.file?.size)||item.fileSize} author={item.uploadedBy?.name} isCompact/>)}
-          </ContentState></Suspense> : <GuestHomeState title="资料有去处，查找更方便" description="班级共享的学习资料与文件，仅向登录成员开放。" to="/resources"/>}
+          </ContentState></Suspense>
         </HomeSectionCard>
         <HomeSectionCard kind="news" title="正在发生" titleTone="editorial" to="/news" linkLabel="全部新闻">
-          {member ? <Suspense fallback={<ContentState loading/>}><ContentState loading={news.isLoading} error={news.error} empty={!news.data?.length} emptyTitle="暂无新消息" onRetry={()=>void news.refetch()}>
+          {memberLayout ? <Suspense fallback={<ContentState loading/>}><ContentState loading={checking ? !identityError : news.isLoading} error={identityError || news.error} empty={!news.data?.length} emptyTitle="暂无新消息" onRetry={()=>{if(identityError)window.dispatchEvent(new Event('auth:changed'));else void news.refetch();}}>
             {news.data?.slice(0,HOME_LIMITS.news).map(item=><NewsCard key={item._id} {...item}/>)}
           </ContentState></Suspense> : <GuestHomeState title="记录班级的新消息" description="阅读新闻、分享见闻，关注身边正在发生的事。" to="/news"/>}
         </HomeSectionCard>
         <HomeSectionCard kind="pulse" title="班级动态" titleTone="editorial" to="/social" linkLabel="去聊聊">
-          {member ? <ContentState loading={posts.isLoading} error={posts.error} empty={!posts.data?.length} emptyTitle="还没有新动态" onRetry={()=>void posts.refetch()}>
+          {memberLayout ? <ContentState loading={checking ? !identityError : posts.isLoading} error={identityError || posts.error} empty={!posts.data?.length} emptyTitle="还没有新动态" onRetry={()=>{if(identityError)window.dispatchEvent(new Event('auth:changed'));else void posts.refetch();}}>
             {posts.data?.slice(0,HOME_LIMITS.pulse).map(item=><article className="home-social-entry" key={item._id}>
               <p className="font-semibold">{item.author?.name||'班级成员'}</p>
               <time className="entry-meta">{formatDate(item.createdAt)}</time>
@@ -123,12 +139,14 @@ export default function Homepage() {
           </ContentState> : <GuestHomeState title="日常分享，只给班级伙伴" description="成员的动态与讨论保留在班级空间里。" to="/social"/>}
         </HomeSectionCard>
         <HomeSectionCard kind="gallery" title="相聚的记忆" titleTone="editorial" to="/events" linkLabel="往期活动" wide>
-          {member ? <Suspense fallback={<ContentState loading/>}><ContentState loading={past.isLoading} error={past.error} empty={!past.data?.length} emptyTitle="暂无活动相册" onRetry={()=>void past.refetch()}>
-            <div className="archive-strip">{past.data?.slice(0,HOME_LIMITS.gallery).map(item=><PastEventCard key={item._id} {...item} id={item._id}/>)}</div>
+          {memberLayout ? <Suspense fallback={<ContentState loading/>}><ContentState loading={checking ? !identityError : past.isLoading} error={identityError || past.error} empty={!past.data?.length} emptyTitle="暂无活动相册" onRetry={()=>{if(identityError)window.dispatchEvent(new Event('auth:changed'));else void past.refetch();}}>
+            {mindmarket ? <MMCarousel label="相聚的记忆">{(past.data || []).slice(0,HOME_LIMITS.gallery).map(item=><PastEventCard key={item._id} {...item} id={item._id}/>)}</MMCarousel> : <div className="archive-strip">{past.data?.slice(0,HOME_LIMITS.gallery).map(item=><PastEventCard key={item._id} {...item} id={item._id}/>)}</div>}
           </ContentState></Suspense> : <GuestHomeState title="让相聚留下记录" description="班级活动照片与往期回忆，登录后慢慢看。" to="/events"/>}
         </HomeSectionCard>
       </div>
+      </div>
       <IOSInstallCard/>
+      {mindmarket && <><MMMarquee/><MMHomeCallout/></>}
     </div>
   );
 }

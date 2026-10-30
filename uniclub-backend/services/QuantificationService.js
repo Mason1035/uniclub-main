@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { hasPermission } = require('../utils/roles');
 const Repository = require('./QuantificationRepository');
 const createStorageAdapter = require('./storage');
 const StorageSettings = require('./QuantificationStorageSettings');
@@ -49,7 +50,7 @@ class QuantificationService {
     const items = await this.repo.listCollections(admin);
     return { collections: items.map(c => this.describeCollection(c)), storage: this.storage.describe(), limits: { maxFileBytes: MAX_FILE_BYTES, partBytes: PART_BYTES } };
   }
-  async access(userId) { const u = await this.repo.getUser(userId); return { canManage: u?.isAdmin === true }; }
+  async access(userId) { const u = await this.repo.getUser(userId); return { canManage: hasPermission(u, 'content:manage') }; }
   async createCollection(body, userId) { return this.describeCollection(await this.repo.createCollection({ ...validateCollection(body), createdBy: userId })); }
   async editCollection(id, body) {
     const c = await this.collection(id, true);

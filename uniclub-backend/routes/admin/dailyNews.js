@@ -3,7 +3,9 @@ const requireAdmin = require('../../middleware/admin');
 const { createAiRateLimiter, sendAiError } = require('../../utils/aiHttp');
 const { DailyNewsError, errorForDailyNews } = require('../../utils/dailyNewsErrors');
 
-function createDailyNewsRouter({ service, authorize = requireAdmin } = {}) {
+const {AssistantQuotaService,withAssistantUsage}=require('../../services/AssistantQuotaService');
+
+function createDailyNewsRouter({ service, authorize = requireAdmin, quota = new AssistantQuotaService(), withUsage = withAssistantUsage } = {}) {
   const router = express.Router();
   const current = () => service || require('../../services/DailyAiNewsService').getDailyNewsService();
   router.use(authorize);
@@ -20,14 +22,17 @@ function createDailyNewsRouter({ service, authorize = requireAdmin } = {}) {
     const status = await current().status();
     const today = require('../../utils/dailyNewsSchedule').batchDate();
     if (!req.body.force && status.activeDate === today) throw new DailyNewsError('ALREADY_GENERATED');
+    await quota.assertAvailable(req.user.userId);
+    const modelScope = async run => (await withUsage(req.user.userId, run, {source:'admin-daily-news'})).result;
     // ECS returns immediately and the admin polls persisted job status. Vercel
     // must await its job because serverless runtimes can freeze after response.
-    const result = await current().requestRun({ force: req.body.force === true, trigger: 'manual', requestedBy: req.adminUser._id, wait: Boolean(process.env.VERCEL) });
+    const result = await current().requestRun({ force: req.body.force === true, trigger: 'manual', requestedBy: req.adminUser._id, wait: Boolean(process.env.VERCEL), modelScope });
     res.status(result.started ? 202 : 200).json(result);
   }));
   router.post('/dry-run', createAiRateLimiter(2), handler(async (req, res) => {
     if (req.body?.confirm !== true) throw new DailyNewsError('CONFIRM_REQUIRED');
-    res.json(await current().dryRun());
+    const scoped = await withUsage(req.user.userId, () => current().dryRun(), {source:'admin-daily-preview'});
+    res.json({...scoped.result, usage:scoped.usage, quota:scoped.quota});
   }));
   return router;
 }

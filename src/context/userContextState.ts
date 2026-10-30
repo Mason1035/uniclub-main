@@ -1,6 +1,7 @@
+import type { RoleIdentity } from '../lib/roles';
 import { createContext, useContext, type Dispatch, type SetStateAction } from 'react';
 
-export interface User {
+export interface User extends RoleIdentity {
   id: string;
   email: string;
   name: string;
@@ -18,7 +19,7 @@ export interface User {
   profileImage: string | null;
 }
 
-export interface AuthUser {
+export interface AuthUser extends RoleIdentity {
   email: string;
   name: string;
   displayName?: string | null;

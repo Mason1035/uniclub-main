@@ -1,10 +1,12 @@
+import { useMindMarketDesign } from '../design/mindmarket/DesignContext';
+import { MMFooter } from '../design/mindmarket/MMFooter';
 import { Link } from 'react-router-dom';
 import { Github } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 
 const PROJECT_URL = 'https://github.com/Mason1035/uniclub-main';
 
-export default function SiteFooter() {
+function LegacySiteFooter() {
   return <footer className="site-footer">
     <div className="site-container footer-inner">
       <div className="footer-identity">
@@ -22,4 +24,9 @@ export default function SiteFooter() {
       </nav>
     </div>
   </footer>;
+}
+
+export default function SiteFooter() {
+  const mindmarket = useMindMarketDesign();
+  return mindmarket ? <MMFooter/> : <LegacySiteFooter/>;
 }

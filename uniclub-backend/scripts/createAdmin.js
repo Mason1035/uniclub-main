@@ -87,6 +87,8 @@ const main = async () => {
 
     if (existing) {
       existing.isAdmin = true;
+      existing.role = 'admin';
+      existing.roleVersion = (existing.roleVersion || 0) + 1;
       if (updatePassword) {
         existing.passwordHash = await bcrypt.hash(password, 10);
         existing.tokenVersion = (existing.tokenVersion || 0) + 1;
@@ -106,6 +108,7 @@ const main = async () => {
         isEnrolled: true,
         isVerified: true,
         isAdmin: true,
+        role: 'admin',
       });
       action = 'created';
     }

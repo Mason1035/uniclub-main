@@ -49,6 +49,9 @@ api.interceptors.response.use(
       window.dispatchEvent(new CustomEvent('auth:expired'));
     }
     
+    if (error.response?.status === 403 && sentToken && sentToken === readToken()) {
+      window.dispatchEvent(new Event('auth:permissions-changed'));
+    }
     return Promise.reject(error);
   }
 );
